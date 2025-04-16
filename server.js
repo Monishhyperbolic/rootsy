@@ -4,11 +4,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const connection = mysql.createConnection({
-  host: '34.56.197.58',
-  user: 'rootsy',
-  password: '123456',
-  database: 'rootsy',
-  port: 3306 // default for MySQL
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: 3306 // default for MySQL
 });
 
 app.get('/', (req, res) => {
