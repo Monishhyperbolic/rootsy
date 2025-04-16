@@ -12,10 +12,10 @@ app.use(express.json());  // To handle JSON data in requests
 
 // MySQL connection setup using environment variables
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,     // Google Cloud SQL public IP
-  user: process.env.DB_USER,     // Your DB user
-  password: process.env.DB_PASS, // Your DB password
-  database: process.env.DB_NAME  // Your DB name
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST, // e.g., IP or host name of your Cloud SQL
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASS,
 });
 
 // Connect to MySQL DB
