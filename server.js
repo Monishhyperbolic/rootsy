@@ -1,81 +1,76 @@
 const express = require('express');
-const cors = require('cors');
 const mysql = require('mysql2');
+const cors = require('cors');
 
-// Create the express app
+require('dotenv').config();
+
 const app = express();
-const PORT = process.env.PORT || 10000;
-
-// Middleware
+const PORT = process.env.PORT || 3000;
 app.use(cors());
-app.use(express.json());  // To handle JSON data in requests
+app.use(express.json());
 
-// MySQL connection setup using environment variables
+// Create connection using Railway MySQL ENV VARS
 const db = mysql.createConnection({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST, // e.g., IP or host name of your Cloud SQL
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASS,
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
 
-// Connect to MySQL DB
 db.connect(err => {
   if (err) {
-    console.error('MySQL connection failed:', err);
-    process.exit(1);  // Exit the process if connection fails
+    console.error('Database connection failed:', err.stack);
+    return;
   }
-  console.log('Connected to MySQL DB');
+  console.log('Connected to Railway MySQL database');
 });
 
-// Basic route for the root URL
-app.get('/', (req, res) => {
-  res.send('Welcome to RootsY!');
+// Get all categories
+app.get('/api/categories', (req, res) => {
+  db.query('SELECT * FROM categories', (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
 });
 
-// Get all or filtered products (based on query parameter)
+// Get all products or filter by category
 app.get('/api/products', (req, res) => {
-  const { category, minPrice, maxPrice } = req.query;
-
-  // Construct the SQL query with possible filters
-  let sql = 'SELECT * FROM products WHERE 1=1'; // Start with a query that always returns true
-
-  // Apply category filter if available
-  if (category) {
-    sql += ' AND category = ?';
-  }
-
-  // Apply price range filters if available
-  if (minPrice) {
-    sql += ' AND price >= ?';
-  }
-  if (maxPrice) {
-    sql += ' AND price <= ?';
-  }
-
-  // Prepare query parameters
+  const { category_id, min_price, max_price } = req.query;
+  let sql = 'SELECT * FROM products WHERE 1';
   const params = [];
-  if (category) params.push(category);
-  if (minPrice) params.push(minPrice);
-  if (maxPrice) params.push(maxPrice);
 
-  // Execute the query
+  if (category_id) {
+    sql += ' AND category_id = ?';
+    params.push(category_id);
+  }
+
+  if (min_price) {
+    sql += ' AND price >= ?';
+    params.push(min_price);
+  }
+
+  if (max_price) {
+    sql += ' AND price <= ?';
+    params.push(max_price);
+  }
+
   db.query(sql, params, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(results);
   });
 });
 
-// Get a single product by ID
+// Get single product by ID
 app.get('/api/product/:id', (req, res) => {
   const { id } = req.params;
   db.query('SELECT * FROM products WHERE id = ?', [id], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0) return res.status(404).json({ error: 'Product not found' });
-    res.json(results[0]);  // Return the first (and only) product
+    if (!results.length) return res.status(404).json({ error: 'Product not found' });
+    res.json(results[0]);
   });
 });
 
-// Start the server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

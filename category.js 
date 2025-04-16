@@ -1,4 +1,4 @@
-const BASE_URL = 'https://rootsy.onrender.com/api';
+const BASE_URL = 'https://rootsy.railway.internal/api';
 const productList = document.getElementById('product-list');
 const filter = document.getElementById('filter');
 
