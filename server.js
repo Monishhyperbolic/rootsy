@@ -1,28 +1,19 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-const { Pool } = require('pg');  // Import pg Pool
 const path = require('path');
+require('dotenv').config();
+
+const pool = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Set up the PostgreSQL connection using the connection string from Railway
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,  // Required for Railway production databases
-  }
-});
-
 app.use(cors());
 app.use(express.json());
-
-// Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check
 app.get('/', (req, res) => {
-  res.send('✅ API is running. Try /api/categories or /api/products');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Get all categories
@@ -35,14 +26,14 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// Get products with optional filtering (category_id)
+// Get products with optional filtering
 app.get('/api/products', async (req, res) => {
   const { category_id } = req.query;
-  let sql = 'SELECT * FROM products WHERE 1=1';
+  let sql = 'SELECT * FROM products';
   const params = [];
 
   if (category_id) {
-    sql += ' AND category_id = $1';
+    sql += ' WHERE category_id = $1';
     params.push(category_id);
   }
 
@@ -54,24 +45,6 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// Get a single product by ID
-app.get('/api/product/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const result = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Start the server
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
