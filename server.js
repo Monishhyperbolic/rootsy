@@ -27,7 +27,24 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// Get products with optional filtering
+// Get a single category by ID (optional)
+app.get('/api/category/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const result = await pool.query('SELECT * FROM categories WHERE id = $1', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get products with optional filtering (category_id, min_price, max_price)
 app.get('/api/products', async (req, res) => {
   const { category_id, min_price, max_price } = req.query;
   let sql = 'SELECT * FROM products WHERE 1=1';
@@ -59,7 +76,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// Get single product by ID
+// Get a single product by ID
 app.get('/api/product/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -71,6 +88,36 @@ app.get('/api/product/:id', async (req, res) => {
     }
 
     res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add a new category
+app.post('/api/categories', async (req, res) => {
+  const { name, description } = req.body;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO categories (name, description) VALUES ($1, $2) RETURNING *',
+      [name, description]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Add a new product
+app.post('/api/products', async (req, res) => {
+  const { name, image_url, price, category_id, description, model_url } = req.body;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO products (name, image_url, price, category_id, description, model_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, image_url, price, category_id, description, model_url]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
