@@ -7,12 +7,14 @@
       "start": "node index.js"
     },
     "dependencies": {
-      "start": "node server.js"
       "express": "^4.17.1",
       "cors": "^2.8.5",
       "pg": "^8.7.1",
       "mysql2": "^2.3.3"
     }
+    "scripts": {
+  "start": "node server.js"
+}
   }
   
 
