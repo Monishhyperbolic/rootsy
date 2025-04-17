@@ -10,7 +10,7 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
 
-    fetch(`https://rootsy.onrender.com/api/product/${id}`)
+    fetch(`https://rootsy.railway.internal/api/product/${id}`)
       .then(res => res.json())
       .then(product => {
         const detail = document.getElementById('details');
