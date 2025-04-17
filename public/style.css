@@ -1,40 +1,54 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
+  margin: 2rem;
+  background-color: #f9f9f9;
 }
 
 h1 {
-  text-align: center;
-  margin-top: 20px;
+  color: #2c3e50;
+}
+
+.filter-box {
+  margin-bottom: 1.5rem;
+}
+
+select {
+  padding: 0.5rem;
+  font-size: 1rem;
 }
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
 }
 
 .card {
-  background: white;
-  padding: 10px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: 0.3s ease;
 }
 
 .card img {
-  width: 100%;
-  height: auto;
+  max-width: 100%;
+  border-radius: 8px;
+  height: 120px;
+  object-fit: cover;
+}
+
+.card:hover {
+  transform: scale(1.05);
 }
 
 .card h3 {
-  text-align: center;
-  font-size: 18px;
+  margin: 0.5rem 0 0.2rem;
+  color: #333;
 }
 
 .card p {
-  text-align: center;
-  color: green;
+  color: #27ae60;
   font-weight: bold;
 }

@@ -9,17 +9,16 @@
 <body>
   <h1>Roots – Fruits & Vegetables</h1>
 
-  <div>
+  <div class="filter-box">
     <label for="filter">Filter by Category:</label>
     <select id="filter">
       <option value="">All</option>
-      <option value="1">Vegetables</option>
-      <option value="2">Fruits</option>
     </select>
   </div>
 
   <div id="product-list" class="product-grid"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="category.js"></script>
 </body>
 </html>
