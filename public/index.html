@@ -2,24 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roots - Categories</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Roots – Fruits & Vegetables</h1>
 
+  <!-- Category filter -->
   <div>
     <label for="filter">Filter by Category:</label>
     <select id="filter">
       <option value="">All</option>
-      <option value="Fruits">Fruits</option>
-      <option value="Vegetables">Vegetables</option>
+      <!-- Category options will be populated here dynamically -->
     </select>
   </div>
 
+  <!-- Product list -->
   <div id="product-list" class="product-grid"></div>
 
+  <!-- External JS -->
   <script src="category.js"></script>
 </body>
 </html>
