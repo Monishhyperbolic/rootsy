@@ -18,6 +18,9 @@ app.get('/', (req, res) => {
 app.get('/api/categories', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM categories');
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No categories found' });
+    }
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -47,6 +50,9 @@ app.get('/api/products', async (req, res) => {
 
   try {
     const result = await pool.query(sql, params);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No products found' });
+    }
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
