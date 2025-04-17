@@ -3,11 +3,15 @@ const cors = require('cors');
 require('dotenv').config();
 
 const pool = require('./db');
+const path = require('path');  // To work with paths
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check
 app.get('/', (req, res) => {
