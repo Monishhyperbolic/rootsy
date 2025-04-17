@@ -1,22 +1,19 @@
-// server.js
 const express = require('express');
-const cors = require('cors');
+const path = require('path');
+const pool = require('./db'); // Import the database connection
 require('dotenv').config();
 
-const pool = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static('public')); // Serves frontend HTML/CSS/JS
+app.use(express.static(path.join(__dirname, 'public')));  // Serve static files like CSS, JS
 
-// Health Check
+// Serve the HTML index page
 app.get('/', (req, res) => {
-  res.send('✅ API is running. Try /api/categories or /api/products');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Get all categories
+// API route to get all categories
 app.get('/api/categories', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM categories');
@@ -26,36 +23,26 @@ app.get('/api/categories', async (req, res) => {
   }
 });
 
-// Get products (with optional filtering by category_id)
+// API route to get products based on category
 app.get('/api/products', async (req, res) => {
-  const { category_id } = req.query;
+  const { category } = req.query;
+  let sql = 'SELECT * FROM products';
+  const params = [];
+
+  if (category) {
+    sql += ' WHERE category_id = $1';
+    params.push(category);
+  }
+
   try {
-    let query = 'SELECT * FROM products';
-    const params = [];
-
-    if (category_id) {
-      query += ' WHERE category_id = $1';
-      params.push(category_id);
-    }
-
-    const result = await pool.query(query, params);
+    const result = await pool.query(sql, params);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Get single product
-app.get('/api/product/:id', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
+// Start the server
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
