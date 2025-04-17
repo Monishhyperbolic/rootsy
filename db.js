@@ -1,11 +1,6 @@
-const { Pool } = require('pg');
+import postgres from 'postgres'
 
-// Configure PostgreSQL connection
-const pool = new Pool({
-  connectionString:postgresql://postgres:123456@db.takraoqafzlolecjgtgn.supabase.co:5432/postgres,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+const connectionString = process.env.DATABASE_URL
+const sql = postgres(connectionString)
 
-module.exports = pool;
+export default sql
