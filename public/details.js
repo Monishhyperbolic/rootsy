@@ -1,4 +1,4 @@
-const BASE_URL = 'https://rootsy.railway.internal/api';
+const BASE_URL = 'postgres-production-1341.up.railway.app';
 const params = new URLSearchParams(window.location.search);
 const productId = params.get('id');
 
