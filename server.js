@@ -1,11 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-
-const pool = require('./db');
+const { Pool } = require('pg');  // Import pg Pool
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Set up the PostgreSQL connection using the connection string from Railway
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,  // Required for Railway production databases
+  }
+});
 
 app.use(cors());
 app.use(express.json());
