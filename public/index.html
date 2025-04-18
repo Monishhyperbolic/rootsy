@@ -39,36 +39,39 @@
           }
         });
 
-        // Geolocation logic
-        function showLocation(lat, lon) {
-          const locElem = document.getElementById('user-location');
-          if (locElem) {
-            locElem.textContent = `(Lat: ${lat.toFixed(3)}, Lon: ${lon.toFixed(3)})`;
-          }
+        // Geolocation logic for city
+        function setCityText(text) {
+          const cityElem = document.getElementById('user-city');
+          if (cityElem) cityElem.textContent = text;
         }
-        function showLocationError(message) {
-          const locElem = document.getElementById('user-location');
-          if (locElem) {
-            locElem.textContent = `(Location unavailable)`;
-          }
+
+        function fetchCity(lat, lon) {
+          setCityText("Locating...");
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+            .then(response => response.json())
+            .then(data => {
+              let city = "";
+              if (data && data.address) {
+                city = data.address.city || data.address.town || data.address.village ||
+                       data.address.hamlet || data.address.county || data.address.state || "";
+              }
+              setCityText(city ? `(${city})` : "(City unavailable)");
+            })
+            .catch(() => setCityText("(City unavailable)"));
         }
-        function detectUserLocation() {
-          const locElem = document.getElementById('user-location');
-          if (locElem) locElem.textContent = '(Detecting...)';
+
+        function detectUserCity() {
+          setCityText("Locating...");
           if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-              function(position) {
-                showLocation(position.coords.latitude, position.coords.longitude);
-              },
-              function(error) {
-                showLocationError();
-              }
+              pos => fetchCity(pos.coords.latitude, pos.coords.longitude),
+              err => setCityText("(Location denied)")
             );
           } else {
-            showLocationError();
+            setCityText("(Geolocation not supported)");
           }
         }
-        detectUserLocation();
+        detectUserCity();
       };
 
       function signOutUser() {
@@ -137,7 +140,7 @@
         padding:2px 7px;
         margin-left:3px;
       }
-      #user-location {
+      #user-city {
         font-size: 0.95em;
         color: #27ae60;
         margin-left: 8px;
@@ -173,7 +176,7 @@
                 <div class="delivery">
                     <span>Deliver to</span>
                     <span>all</span>
-                    <span id="user-location">(Detecting...)</span>
+                    <span id="user-city" style="margin-left:8px; color:#27ae60;">Locating...</span>
                 </div>
             </div>
             <div class="navbar-center">
