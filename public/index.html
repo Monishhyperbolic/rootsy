@@ -1,24 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Roots - Categories</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <title>Product Browser</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    select {
+      padding: 8px;
+      font-size: 16px;
+    }
+    ul {
+      margin-top: 20px;
+      padding-left: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Roots – Fruits & Vegetables</h1>
+  <h1>Browse Products by Category</h1>
+  <label for="categorySelect">Select Category:</label>
+  <select id="categorySelect"></select>
+  <ul id="productList"></ul>
 
-  <div>
-    <label for="filter">Filter by Category:</label>
-    <select id="filter">
-      <option value="">All</option>
-    </select>
-  </div>
-
-  <div id="product-list" class="product-grid"></div>
-
-  <script src="category.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
