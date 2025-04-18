@@ -1,72 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login Page</title>
-  <link rel="stylesheet" href="sign_in.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script>
-    // Initialize Supabase
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co'; // <-- your Supabase URL
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // <-- your anon key
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Auth Example</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        const { createClient } = supabase;
+        const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co'; // Replace with your Supabase project URL
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // Replace with your anon key
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Email/password sign-in
-    async function handleSignIn(event) {
-      event.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        alert(error.message);
-      } else {
-        alert('Sign in successful!');
-        // window.location.href = '/dashboard'; // Optional: redirect
-      }
-    }
+        async function signUp() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-    // Google OAuth sign-in
-    async function signInWithGoogle() {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google'
-      });
-      if (error) {
-        alert(error.message);
-      }
-      // On success, user will be redirected to your callback URL
-    }
-  </script>
+            const { user, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+
+            if (error) {
+                console.error('Error signing up:', error);
+                alert(error.message);
+            } else {
+                console.log('User signed up:', user);
+                alert('Sign up successful! Please check your email for confirmation.');
+            }
+        }
+
+        async function signIn() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { user, error } = await supabase.auth.signIn({
+                email,
+                password,
+            });
+
+            if (error) {
+                console.error('Error signing in:', error);
+                alert(error.message);
+            } else {
+                console.log('User signed in:', user);
+                alert('Sign in successful!');
+            }
+        }
+
+        async function signOut() {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Error signing out:', error);
+                alert(error.message);
+            } else {
+                console.log('User signed out');
+                alert('Sign out successful!');
+            }
+        }
+
+        async function signInWithGoogle() {
+            const { user, error } = await supabase.auth.signIn({
+                provider: 'google',
+            });
+
+            if (error) {
+                console.error('Error signing in with Google:', error);
+                alert(error.message);
+            } else {
+                console.log('User signed in with Google:', user);
+            }
+        }
+    </script>
 </head>
 <body>
-  <div class="container">
-    <div class="login-section">
-      <h2>Welcome Back 👋</h2>
-      <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
-
-      <form onsubmit="handleSignIn(event)">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="Example@email.com" required />
-
-        <label>Password</label>
-        <input type="password" id="password" placeholder="at least 8 characters" required />
-        <div class="forgot"><a href="#">Forgot Password?</a></div>
-
-        <button type="submit">Sign in</button>
-      </form>
-
-      <div class="divider">Or</div>
-
-      <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
-      
-      <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
-
-      <footer>© 2023 ALL RIGHTS RESERVED</footer>
+    <div class="container">
+        <h1>Supabase Auth Example</h1>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="signUp()">Sign Up</button>
+        <button onclick="signIn()">Sign In</button>
+        <button onclick="signOut()">Sign Out</button>
+        <button onclick="signInWithGoogle()">Sign In with Google</button>
     </div>
-
-    <div class="image-section">
-      <img src="images/thumbnail.avif" alt="Artistic Poster" />
-    </div>
-  </div>
 </body>
 </html>
