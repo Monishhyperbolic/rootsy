@@ -39,55 +39,39 @@
           }
         });
 
-        // Geolocation Logic
-        const locationElement = document.getElementById('user-location');
-        
-        function showPosition(position) {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+        // Geolocation logic for street + city
+        function setLocationText(text) {
+          const locElem = document.getElementById('user-location');
+          if (locElem) locElem.textContent = text;
+        }
+        function fetchLocation(lat, lon) {
+          setLocationText("Locating...");
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
             .then(response => response.json())
             .then(data => {
+              let address = data.address || {};
+              let street = address.road || address.pedestrian || address.footway || address.cycleway || address.path || "";
+              let city = address.city || address.town || address.village || address.hamlet || address.county || address.state || "";
               let locationString = "";
-              if(data.address) {
-                // Build address string with available components
-                const components = [];
-                if(data.address.road) components.push(data.address.road);
-                if(data.address.suburb) components.push(data.address.suburb);
-                if(data.address.city) components.push(data.address.city);
-                if(data.address.town) components.push(data.address.town);
-                if(data.address.village) components.push(data.address.village);
-                
-                locationString = components.join(', ');
-              }
-              locationElement.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${locationString || 'Location not available'}`;
+              if (street && city) locationString = `${street}, ${city}`;
+              else if (city) locationString = city;
+              else locationString = "Location unavailable";
+              setLocationText(locationString);
             })
-            .catch(error => {
-              locationElement.textContent = 'Error fetching location';
-              console.error('Geocoding error:', error);
-            });
+            .catch(() => setLocationText("Location unavailable"));
         }
-
-        function showError(error) {
-          const messages = {
-            PERMISSION_DENIED: 'Location access denied',
-            POSITION_UNAVAILABLE: 'Location unavailable',
-            TIMEOUT: 'Location request timed out'
-          };
-          locationElement.textContent = messages[error.code] || 'Location detection failed';
+        function detectUserLocation() {
+          setLocationText("Locating...");
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              pos => fetchLocation(pos.coords.latitude, pos.coords.longitude),
+              err => setLocationText("Location denied")
+            );
+          } else {
+            setLocationText("Geolocation not supported");
+          }
         }
-
-        if(navigator.geolocation) {
-          locationElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting location...';
-          navigator.geolocation.getCurrentPosition(showPosition, showError, {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-          });
-        } else {
-          locationElement.textContent = 'Geolocation not supported';
-        }
+        detectUserLocation();
       };
 
       function signOutUser() {
@@ -165,9 +149,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .fa-spinner {
-        margin-right: 5px;
-      }
     </style>
 </head>
 <body>
@@ -198,7 +179,8 @@
                 </a>
                 <div class="delivery">
                     <span>Deliver to</span>
-                    <span id="user-location">Detecting location...</span>
+                    <span>all</span>
+                    <span id="user-location">Locating...</span>
                 </div>
             </div>
             <div class="navbar-center">
@@ -228,61 +210,58 @@
         </div>
     </header>
 
-    <!-- Rest of your page content remains exactly the same -->
-
     <div class="promo-banner">
-        <div class="promo-content">
-            <p class="discount-label">Weekend Discount</p>
-            <h1>Shopping with us for better quality and the best price</h1>
-            <p>We have prepared special discounts for you on grocery products. Don't miss these opportunities...</p>
-            <button class="shop-now">Shop Now</button>
-            <p class="price">
-                <span class="current-price">$21.67</span>
-                <span class="original-price">$26.67</span>
-            </p>
-            <p class="limited-time">Don't miss this limited-time offer!</p>
-        </div>
-        <div class="promo-image">
-            <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
-            <spline-viewer url="https://prod.spline.design/thNH5uJDT63OHiPD/scene.splinecode"></spline-viewer>
-        </div>
-    </div>
-    <div class="category-container">
+      <div class="promo-content">
+          <p class="discount-label">Weekend Discount</p>
+          <h1>Shopping with us for better quality and the best price</h1>
+          <p>We have prepared special discounts for you on grocery products. Don't miss these opportunities...</p>
+          <button class="shop-now">Shop Now</button>
+          <p class="price">
+              <span class="current-price">$21.67</span>
+              <span class="original-price">$26.67</span>
+          </p>
+          <p class="limited-time">Don't miss this limited-time offer!</p>
+      </div>
+      <div class="promo-image">
+        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+        <spline-viewer url="https://prod.spline.design/thNH5uJDT63OHiPD/scene.splinecode"></spline-viewer>      </div>
+  </div>
+  <div class="category-container">
       <div class="category-tab">
           <div class="category">
-              <img src="images/fruits&images.png" alt="Fruits & Vegetables">
+              <img src="https://i.postimg.cc/hG5N0NzH/fruits-images.png" alt="Fruits & Vegetables">
               <p>Fruits & Vegetables</p>
           </div>
           <div class="category">
-              <img src="images/stationary.png" alt="stationary">
+              <img src="https://i.postimg.cc/NG7psWGB/stationary.png" alt="stationary">
               <p>stationary</p>
           </div>
           <div class="category">
-              <img src="images/beverages.png" alt="Beverages">
+              <img src="https://i.postimg.cc/wMSPdNcF/beverages.png" alt="Beverages">
               <p>Beverages</p>
           </div>
           <div class="category">
-              <img src="images/meats.png" alt="Meats & Seafood">
+              <img src="https://i.postimg.cc/d01zrJ12/meats.png" alt="Meats & Seafood">
               <p>Meats & Seafood</p>
           </div>
           <div class="category">
-              <img src="images/cookies.webp" alt="Biscuits & Snacks">
+              <img src="https://i.postimg.cc/Gts7z2wD/cookies.webp" alt="Biscuits & Snacks">
               <p>Biscuits & Snacks</p>
           </div>
           <div class="category">
-              <img src="images/breads.png" alt="Breads & Bakery">
+              <img src="https://i.postimg.cc/bw05KsGH/breads.png" alt="Breads & Bakery">
               <p>Breads & Bakery</p>
           </div>
           <div class="category">
-              <img src="images/dairy.webp" alt="Breakfast & Dairy">
+              <img src="https://i.postimg.cc/4xZG7CVP/dairy.webp" alt="Breakfast & Dairy">
               <p>Breakfast & Dairy</p>
           </div>
           <div class="category">
-              <img src="images/handicrafts.png" alt="Handicrafts">
+              <img src="https://i.postimg.cc/gJfFG1Gv/handicrafts.png" alt="Handicrafts">
               <p>Handicrafts</p>
           </div>
           <div class="category">
-              <img src="images/textiles.png" alt="textiles">
+              <img src="https://i.postimg.cc/W4F5szzH/textiles.png" alt="textiles">
               <p>Grocery & Staples</p>
           </div>
       </div>
@@ -290,176 +269,162 @@
 
   <div class="header">Editor's Pick</div>
   <div class="view-all-wrapper">
-      <button class="view-all-btn">View All <span class="arrow">â†’</span></button>
+      <button class="view-all-btn">View All <span class="arrow">→</span></button>
     </div>
 <div class="dashboard">
   <div class="card">
     <div class="discount-badge">75%</div>
-    <img src="images/apple juice.png" class="product-image" alt="Apple Juice">
+    <img src="https://i.postimg.cc/JzbwMpFX/apple-juice.png" class="product-image" alt="Apple Juice">
     <div class="tag">ORGANIC</div>
     <div class="title">100 Percent Apple Juice - 64 fl oz Bottle</div>
     <div class="price">$0.50 <span class="original-price">$1.98</span></div>
     <button class="add-to-cart">Add to cart</button>
   </div>
-
-  <!-- Repeat this structure for other products -->
-
   <div class="card">
     <div class="discount-badge">11%</div>
-    <img src="images/fried chicken.png" class="product-image" alt="Rising Pizza">
+    <img src="https://i.postimg.cc/nLht2vdQ/fried-chicken.png" class="product-image" alt="Rising Pizza">
     <div class="title">Great Value Rising Crust Frozen Pizza, Supreme</div>
     <div class="price">$8.99 <span class="original-price">$9.99</span></div>
     <button class="add-to-cart">Add to cart</button>
   </div>
-
   <div class="card">
     <div class="discount-badge">41%</div>
-    <img src="images/orange pulp.png" class="product-image" alt="Orange Juice">
+    <img src="https://i.postimg.cc/m2sJVYk2/orange-pulp.png" class="product-image" alt="Orange Juice">
     <div class="title">Simply Orange Pulp Free Juice - 52 fl oz</div>
     <div class="price">$2.45 <span class="original-price">$4.13</span></div>
     <button class="add-to-cart">Add to cart</button>
   </div>
-
   <div class="card">
     <div class="discount-badge">21%</div>
-    <img src="images/brown bread.png" class="product-image" alt="California Pizza">
+    <img src="https://i.postimg.cc/9XSsT35T/brown-bread.png" class="product-image" alt="California Pizza">
     <div class="title">California Pizza Kitchen Margherita, Crispy Thin Crust</div>
     <div class="price">$11.77 <span class="original-price">$14.77</span></div>
     <button class="add-to-cart">Add to cart</button>
   </div>
-
   <div class="card">
     <div class="discount-badge">59%</div>
-    <img src="images/melon.png" class="product-image" alt="Melon">
+    <img src="https://i.postimg.cc/HnQKdxZg/melon.png" class="product-image" alt="Melon">
     <div class="tag">ORGANIC</div>
     <div class="title">Cantaloupe Melon Fresh Organic Cut</div>
     <div class="price">$1.25 <span class="original-price">$2.98</span></div>
     <button class="add-to-cart">Add to cart</button>
   </div>
-
   <div class="card">
     <div class="discount-badge">18%</div>
-    <img src="images/cornflakes.png" class="product-image" alt="cornflakes">
+    <img src="https://i.postimg.cc/G38d6xbF/cornflakes.png" class="product-image" alt="cornflakes">
     <div class="title">Angel Soft Toilet Paper, 9 Mega Rolls</div>
     <div class="price">$14.12 <span class="original-price">$17.12</span></div>
     <button class="add-to-cart">Add to cart</button>
   </div>
-
   <div class="card">
       <div class="discount-badge">59%</div>
-      <img src="images/berries.webp" class="product-image" alt="Melon">
+      <img src="https://i.postimg.cc/vT1jjh9c/berries.webp" class="product-image" alt="Melon">
       <div class="tag">ORGANIC</div>
       <div class="title">Cantaloupe Melon Fresh Organic Cut</div>
       <div class="price">$1.25 <span class="original-price">$2.98</span></div>
       <button class="add-to-cart">Add to cart</button>
     </div>
-
     <div class="card">
       <div class="discount-badge">18%</div>
-      <img src="images/pancake mix.webp" class="product-image" alt="Toilet Paper">
+      <img src="https://i.postimg.cc/y8fGV2Pk/pancake-mix.webp" class="product-image" alt="Toilet Paper">
       <div class="title">Angel Soft Toilet Paper, 9 Mega Rolls</div>
       <div class="price">$14.12 <span class="original-price">$17.12</span></div>
       <button class="add-to-cart">Add to cart</button>
     </div>
-
 </div>   
-
-
 
     <div class="header">Category Products</div>
     <div class="view-all-wrapper">
-      <button class="view-all-btn">View All <span class="arrow">â†’</span></button>
+      <button class="view-all-btn">View All <span class="arrow">→</span></button>
     </div>
     
 
     <div class="banner-container">
       <div class="banner-box" id="banner1">
         <div class="banner-slide active">
-          <img src="images/banner_1.jpg" width="100%" height="100%" style="object-fit: cover;">
+          <img src="https://i.postimg.cc/W4jB3MRH/banner-1.jpg" width="100%" height="100%" style="object-fit: cover;">
           <div class="banner-content">
             <div class="banner-tag">Only This Week</div>
             <div class="banner-title">Make your grocery shopping easy with us</div>
             <div class="banner-subtitle">Feed your family the best</div>
-            <div class="shop-btn">Shop Now â†’</div>
+            <div class="shop-btn">Shop Now →</div>
           </div>
         </div>
         <div class="banner-slide">
-          <img src="images/banner_2.png " width="100%" height="100%" style="object-fit: cover;">
+          <img src="https://i.postimg.cc/pTL3QRLQ/banner-2.png" width="100%" height="100%" style="object-fit: cover;">
           <div class="banner-content">
             <div class="banner-tag">Only This Week</div>
             <div class="banner-title">Fresh picks at great prices</div>
             <div class="banner-subtitle">Your weekly essentials sorted</div>
-            <div class="shop-btn">Shop Now â†’</div>
+            <div class="shop-btn">Shop Now →</div>
           </div>
         </div>
       </div>
       <div class="banner-box" id="banner2">
         <div class="banner-slide active">
-          <img src="images/banner_4.jpg" width="100%" height="100%" style="object-fit: cover;">
+          <img src="https://i.postimg.cc/g0Df6nmk/banner-4.jpg" width="100%" height="100%" style="object-fit: cover;">
           <div class="banner-content">
             <div class="banner-tag">Only This Week</div>
             <div class="banner-title">Get your everyday needs here with us</div>
             <div class="banner-subtitle">A different kind of grocery store</div>
-            <div class="shop-btn">Shop Now â†’</div>
+            <div class="shop-btn">Shop Now →</div>
           </div>
         </div>
         <div class="banner-slide">
-          <img src="images/banner4.webp " width="100%" height="100%" style="object-fit: cover;">
+          <img src="https://i.postimg.cc/ZRs2V2WG/banner4.webp" width="100%" height="100%" style="object-fit: cover;">
           <div class="banner-content">
             <div class="banner-tag">Only This Week</div>
             <div class="banner-title">Tasty treats & sweets picks</div>
             <div class="banner-subtitle">Discover and save big</div>
-            <div class="shop-btn">Shop Now â†’</div>
+            <div class="shop-btn">Shop Now →</div>
           </div>
         </div>
       </div>
     </div>
 
-
     <div class="cat-container">
       <div class="ccard">
-          <img src="images/brown eggs.webp" alt="Product 1">
+          <img src="https://i.postimg.cc/CxptPjKx/brown-eggs.webp" alt="Product 1">
           <h3>Organic Apple Juice</h3>
           <p class="price">$5.99 <span class="original-price">$7.99</span></p>
           <p class="discount">25% Off</p>
           <button class="add-to-cart">Add to Cart</button>
       </div>
       <div class="ccard">
-          <img src="images/chips.png" alt="Product 2">
+          <img src="https://i.postimg.cc/1zJj32r8/chips.png" alt="Product 2">
           <h3>Farm Fresh Bread</h3>
           <p class="price">$2.99 <span class="original-price">$3.99</span></p>
           <p class="discount">20% Off</p>
           <button class="add-to-cart">Add to Cart</button>
       </div>
       <div class="ccard">
-          <img src="images/brown eggs.webp" alt="Product 3">
+          <img src="https://i.postimg.cc/CxptPjKx/brown-eggs.webp" alt="Product 3">
           <h3>Organic Brown Eggs</h3>
           <p class="price">$3.49 <span class="original-price">$4.49</span></p>
           <p class="discount">22% Off</p>
           <button class="add-to-cart">Add to Cart</button>
       </div>
       <div class="ccard">
-          <img src="images/strawberries.webp" alt="Product 4">
+          <img src="https://i.postimg.cc/NfDJ4ZZp/strawberries.webp" alt="Product 4">
           <h3>Fresh Strawberries</h3>
           <p class="price">$6.49 <span class="original-price">$8.49</span></p>
           <p class="discount">23% Off</p>
           <button class="add-to-cart">Add to Cart</button>
       </div>
       <div class="ccard">
-          <img src="images/rice.png" alt="Product 3">
+          <img src="https://i.postimg.cc/g2BM98zh/rice.png" alt="Product 3">
           <h3>Organic Brown Eggs</h3>
           <p class="price">$3.49 <span class="original-price">$4.49</span></p>
           <p class="discount">22% Off</p>
           <button class="add-to-cart">Add to Cart</button>
       </div>
       <div class="ccard">
-          <img src="images/honey.png" alt="Product 4">
+          <img src="https://i.postimg.cc/tRxGBRzD/honey.png" alt="Product 4">
           <h3>Fresh Strawberries</h3>
           <p class="price">$6.49 <span class="original-price">$8.49</span></p>
           <p class="discount">23% Off</p>
           <button class="add-to-cart">Add to Cart</button>
       </div>
-      
   </div>
 
   <div class="banner2">
@@ -469,61 +434,59 @@
       </div>
       <div class="banner2-percentage">50%</div>
       <div class="banner2-images">
-          <img src="images/pepsi.png" alt="Food Item">
-          <img src="images/pomogr.png" alt="Healthy Lifestyle">
-          <img src="images/organic.png" alt="Shopping Experience">
+          <img src="https://i.postimg.cc/VNdV54G4/pepsi.png" alt="Food Item">
+          <img src="https://i.postimg.cc/K8Y9sJ2F/pomogr.png" alt="Healthy Lifestyle">
+          <img src="https://i.postimg.cc/c4Bjzvt7/organic.png" alt="Shopping Experience">
       </div>
   </div>
 
-  <footer>
-      <div class="newsletter">
-          <p>Join our newsletter for exclusive discounts!</p>
-          <form>
-              <input type="email" placeholder="Enter your email">
-              <button type="submit">Subscribe</button>
-          </form>
-      </div>
-      <div class="footer-content">
-          <div class="column">
-              <h3>Need Help?</h3>
-              <p>Contact our support team: info@example.com</p>
-              <p>Call us: 0 800 300-353</p>
-          </div>
-          <div class="column">
-              <h3>Company Info</h3>
-              <ul>
-                  <li><a href="#">About Us</a></li>
-                  <li><a href="#">Careers</a></li>
-              </ul>
-          </div>
-          <div class="column">
-              <h3>Follow Us</h3>
-              <div class="social-media">
-                  <a href="#"><img src="images/facebook.webp" alt="Facebook"></a>
-                  <a href="#"><img src="images/twitter.webp" alt="Twitter"></a>
-                  <a href="#"><img src="images/instagram.webp" alt="Instagram"></a>
-              </div>
-          </div>
-          <div class="column">
-              <h3>Payment Methods</h3>
-              <div class="payment-methods">
-                  <i class="fa-brands fa-cc-visa"></i>
-                  <i class="fa-brands fa-cc-mastercard"></i>
-                  <i class="fa-brands fa-cc-paypal"></i>
-              </div>
-          </div>
-      </div>
-      <div class="copyright">
-          Copyright 2024 Â© Jinstore WooCommerce WordPress Theme. All rights reserved. Powered by BlackRise Themes.
-      </div>
-      <div class="links">
-          <a href="#">Terms and Conditions</a> |
-          <a href="#">Privacy Policy</a> |
-          <a href="#">Order Tracking</a>
-      </div>
-  </footer>
-
-<script src="script.js"> </script>
+    <footer>
+        <div class="newsletter">
+            <p>Join our newsletter for exclusive discounts!</p>
+            <form>
+                <input type="email" placeholder="Enter your email">
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+        <div class="footer-content">
+            <div class="column">
+                <h3>Need Help?</h3>
+                <p>Contact our support team: info@example.com</p>
+                <p>Call us: 0 800 300-353</p>
+            </div>
+            <div class="column">
+                <h3>Company Info</h3>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                </ul>
+            </div>
+            <div class="column">
+                <h3>Follow Us</h3>
+                <div class="social-media">
+                    <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                    <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                    <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+                </div>
+            </div>
+            <div class="column">
+                <h3>Payment Methods</h3>
+                <div class="payment-methods">
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                    <i class="fa-brands fa-cc-paypal"></i>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            Copyright 2024 © Jinstore WooCommerce WordPress Theme. All rights reserved. Powered by BlackRise Themes.
+        </div>
+        <div class="links">
+            <a href="#">Terms and Conditions</a> |
+            <a href="#">Privacy Policy</a> |
+            <a href="#">Order Tracking</a>
+        </div>
+    </footer>
+<script src="script.js"></script>
 </body>
-
 </html>
