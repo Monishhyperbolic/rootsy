@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login Page</title>
-  <link rel="stylesheet" href="sign_in.css" />
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="sign_up.css" />
   <!-- Firebase App (the core Firebase SDK) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <!-- Firebase Auth SDK -->
@@ -12,7 +12,7 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    // Firebase config
+    // Firebase config (replace with your own)
     const firebaseConfig = {
       apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
       authDomain: "rootsy-ec110.firebaseapp.com",
@@ -22,14 +22,12 @@
       appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
       measurementId: "G-0Y636N5BPV"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Initialize Supabase with Firebase JWT
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co'; // <-- your Supabase URL
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // <-- your anon key
+    // Supabase config (replace with your own)
+    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
     const supabase = supabaseJs.createClient(
       supabaseUrl,
       supabaseAnonKey,
@@ -41,11 +39,11 @@
       }
     );
 
-    // Example: Sync user to Supabase after login
-    async function syncToSupabase(user) {
+    // Sync user to Supabase
+    async function syncToSupabase(user, fullName) {
       const { data, error } = await supabase
         .from('profiles')
-        .upsert([{ id: user.uid, email: user.email }]);
+        .upsert([{ id: user.uid, email: user.email, full_name: fullName }]);
       if (error) {
         console.error('Supabase error:', error);
       } else {
@@ -53,27 +51,30 @@
       }
     }
 
-    // Email/password sign-in
-    async function handleSignIn(event) {
+    // Email/password sign-up
+    async function handleSignUp(event) {
       event.preventDefault();
+      const fullName = document.getElementById('fullname').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       try {
-        const cred = await auth.signInWithEmailAndPassword(email, password);
-        await syncToSupabase(cred.user);
-        window.location.href = "index.html"; // Redirect after login
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        await syncToSupabase(cred.user, fullName);
+        window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
       }
     }
 
-    // Google sign-in
-    async function signInWithGoogle() {
+    // Google sign-up
+    async function signUpWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
         const cred = await auth.signInWithPopup(provider);
-        await syncToSupabase(cred.user);
-        window.location.href = "index.html"; // Redirect after login
+        // Full name from Google profile if available
+        const fullName = cred.user.displayName || "";
+        await syncToSupabase(cred.user, fullName);
+        window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
       }
@@ -82,32 +83,34 @@
 </head>
 <body>
   <div class="container">
-    <div class="login-section">
-      <h2>Welcome Back 👋</h2>
-      <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
+    <div class="signup-section">
+      <h2>Create Account 👋</h2>
+      <p class="subtitle">Welcome! Enter your details to start your journey with us.</p>
 
-      <form onsubmit="handleSignIn(event)">
+      <form onsubmit="handleSignUp(event)">
+        <label>Full Name</label>
+        <input type="text" id="fullname" placeholder="Your name" required />
+
         <label>Email</label>
         <input type="email" id="email" placeholder="Example@email.com" required />
 
         <label>Password</label>
         <input type="password" id="password" placeholder="at least 8 characters" required />
-        <div class="forgot"><a href="#">Forgot Password?</a></div>
 
-        <button type="submit">Sign in</button>
+        <button type="submit">Sign up</button>
       </form>
 
       <div class="divider">Or</div>
 
-      <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
+      <button class="google-btn" type="button" onclick="signUpWithGoogle()">Sign up with Google</button>
       
-      <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
+      <p class="login">Already have an account? <a href="index.html">Sign in</a></p>
 
       <footer>© 2023 ALL RIGHTS RESERVED</footer>
     </div>
 
     <div class="image-section">
-      <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
+      <img src="https://i.postimg.cc/tJtr8cJR/signup-visual.avif" alt="Artistic Poster" />
     </div>
   </div>
 </body>
