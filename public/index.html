@@ -19,7 +19,7 @@
 
         async function fetchData() {
             const { data, error } = await supabase
-                .from('products') // Replace with your table name
+                .from('categories') 
                 .select('*');
 
             if (error) {
@@ -28,7 +28,6 @@
                 console.log('Data:', data);
             }
         }
-
         fetchData();
     </script>
 </body>
