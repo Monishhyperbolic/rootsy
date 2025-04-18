@@ -9,8 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <!-- Firebase Auth SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
     // Firebase config
     const firebaseConfig = {
@@ -27,41 +25,14 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Initialize Supabase with Firebase JWT
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co'; // <-- your Supabase URL
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // <-- your anon key
-    const supabase = supabaseJs.createClient(
-      supabaseUrl,
-      supabaseAnonKey,
-      {
-        accessToken: async () => {
-          const user = firebase.auth().currentUser;
-          return user ? await user.getIdToken(false) : null;
-        }
-      }
-    );
-
-    // Example: Sync user to Supabase after login
-    async function syncToSupabase(user) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .upsert([{ id: user.uid, email: user.email }]);
-      if (error) {
-        console.error('Supabase error:', error);
-      } else {
-        console.log('User synced to Supabase:', data);
-      }
-    }
-
     // Email/password sign-in
     async function handleSignIn(event) {
       event.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       try {
-        const cred = await auth.signInWithEmailAndPassword(email, password);
-        await syncToSupabase(cred.user);
-        window.location.href = "index.html"; // Redirect after login
+        await auth.signInWithEmailAndPassword(email, password);
+        window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
       }
@@ -71,9 +42,8 @@
     async function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
-        const cred = await auth.signInWithPopup(provider);
-        await syncToSupabase(cred.user);
-        window.location.href = "index.html"; // Redirect after login
+        await auth.signInWithPopup(provider);
+        window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
       }
