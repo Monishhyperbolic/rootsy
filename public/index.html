@@ -47,31 +47,25 @@
           window.location.href = "sign_in.html";
         });
       }
-      
+
       // --- CART LOGIC ---
-      // Get cart from localStorage or initialize
       function getCart() {
         return JSON.parse(localStorage.getItem('cart') || '[]');
       }
-      // Save cart to localStorage
       function setCart(cart) {
         localStorage.setItem('cart', JSON.stringify(cart));
       }
-      // Add product to cart (by name and price)
       function addToCartFromCard(cardElem) {
         // Get product info from card
-        const title = cardElem.querySelector('.title, h3').innerText;
+        let titleElem = cardElem.querySelector('.title, h3');
+        const title = titleElem ? titleElem.innerText : 'Product';
         const priceElem = cardElem.querySelector('.price');
         let priceText = priceElem ? priceElem.innerText : '';
-        // Extract numeric price (remove $ or ₹ and any text after space or parenthesis)
-        let price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
-        // Try to get image
+        let price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
         const imgElem = cardElem.querySelector('img');
         const image = imgElem ? imgElem.src : '';
-        // Use title as unique id for demo (better: use a real product id)
         const id = title.replace(/\s+/g, '-').toLowerCase();
 
-        // Get cart and check if item exists
         let cart = getCart();
         let existing = cart.find(item => item.id === id);
         if (existing) {
@@ -81,20 +75,23 @@
         }
         setCart(cart);
         alert(`${title} added to cart!`);
+        updateCartCount();
       }
-
-      // Attach event listeners to all .add-to-cart buttons
-      document.querySelectorAll('.add-to-cart').forEach(btn => {
-        btn.addEventListener('click', function() {
-          // Find the parent .card or .ccard element
-          let cardElem = btn.closest('.card, .ccard');
-          if (cardElem) {
-            addToCartFromCard(cardElem);
-          }
-        });
+      // Event delegation for Add to Cart buttons
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-to-cart')) {
+          let cardElem = e.target.closest('.card, .ccard');
+          if (cardElem) addToCartFromCard(cardElem);
+        }
       });
-
-
+      // Cart count badge
+      function updateCartCount() {
+        let cart = getCart();
+        let count = cart.reduce((acc, item) => acc + item.qty, 0);
+        let countElem = document.getElementById('cart-count');
+        if (countElem) countElem.textContent = count;
+      }
+      window.addEventListener('DOMContentLoaded', updateCartCount);
     </script>
     <style>
       #signout-btn {
@@ -105,6 +102,14 @@
         cursor: pointer;
         margin-left: 16px;
         font-size: 1em;
+      }
+      #cart-count {
+        background:#e74c3c;
+        color:#fff;
+        font-size:13px;
+        border-radius:50%;
+        padding:2px 7px;
+        margin-left:3px;
       }
     </style>
 </head>
@@ -147,7 +152,11 @@
                 <a href="#" class="account" id="account-btn"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
                 <button id="signout-btn" onclick="signOutUser()">Sign out</button>
                 <a href="#" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-                <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+                <a href="cart.html" class="cart">
+                  <i class="fa-solid fa-cart-shopping"></i>
+                  <span>Cart</span>
+                  <span id="cart-count">0</span>
+                </a>
             </div>
         </nav>
         <div class="navbar-links">
@@ -440,7 +449,5 @@
             <a href="#">Order Tracking</a>
         </div>
     </footer>
-
-<script src="script.js"></script>
 </body>
 </html>
