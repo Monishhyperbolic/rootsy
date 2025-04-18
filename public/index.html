@@ -1,55 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase Connection Example</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  
-<script>
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // Make sure this is the correct anon key
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    async function fetchData() {
-        console.log("Fetching data...");
-        const { data, error } = await supabase
-            .from('categories') 
-            .select('*');
-        console.log("Fetch finished", { data, error });
-
-        if (error) {
-            console.error('Error fetching data:', error);
-        } else {
-            displayData(data);
-        }
-    }
-
-    function displayData(data) {
-        const container = document.createElement('div');
-        container.style.marginTop = '20px';
-        container.style.fontFamily = 'Arial, sans-serif';
-
-        if (data.length === 0) {
-            container.innerHTML = '<p>No data found.</p>';
-        } else {
-            const list = document.createElement('ul');
-            data.forEach(item => {
-                const listItem = document.createElement('li');
-                listItem.textContent = JSON.stringify(item);
-                list.appendChild(listItem);
-            });
-            container.appendChild(list);
-        }
-
-        document.body.appendChild(container);
-    }
-
-    fetchData();
-</script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supabase Product Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    select { padding: 5px; font-size: 16px; margin-bottom: 20px; }
+    .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 8px; display: flex; gap: 15px; align-items: center; }
+    .product img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; }
+    .product-info { flex: 1; }
+    .product-info h3 { margin: 0 0 5px 0; }
+    .product-info p { margin: 3px 0; }
+  </style>
 </head>
 <body>
-    <h1>Supabase Connection Example</h1>
+  <h1>Product Viewer</h1>
+
+  <label for="categorySelect">Select a Category:</label>
+  <select id="categorySelect">
+    <option value="">-- Select --</option>
+  </select>
+
+  <div id="productList">Please select a category.</div>
+
+  <script>
+    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    const categorySelect = document.getElementById('categorySelect');
+    const productList = document.getElementById('productList');
+
+    // Fetch categories
+    async function loadCategories() {
+      const { data, error } = await supabase.from('categories').select('*');
+      if (error) {
+        console.error('Error loading categories:', error.message);
+        return;
+      }
+      data.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        categorySelect.appendChild(option);
+      });
+    }
+
+    // Fetch products by category ID
+    async function loadProducts(categoryId) {
+      productList.innerHTML = 'Loading products...';
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category_id', categoryId);
+
+      if (error) {
+        productList.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        productList.innerHTML = '<p>No products found for this category.</p>';
+        return;
+      }
+
+      const container = document.createElement('div');
+      data.forEach(prod => {
+        const productDiv = document.createElement('div');
+        productDiv.className = 'product';
+
+        const img = document.createElement('img');
+        img.src = prod.image_url;
+        img.alt = prod.name;
+
+        const info = document.createElement('div');
+        info.className = 'product-info';
+        info.innerHTML = `
+          <h3>${prod.name}</h3>
+          <p>${prod.description}</p>
+          <p><strong>Price:</strong> ₹${prod.price}</p>
+        `;
+
+        productDiv.appendChild(img);
+        productDiv.appendChild(info);
+        container.appendChild(productDiv);
+      });
+
+      productList.innerHTML = '';
+      productList.appendChild(container);
+    }
+
+    // Event listener
+    categorySelect.addEventListener('change', e => {
+      const categoryId = e.target.value;
+      if (categoryId) {
+        loadProducts(categoryId);
+      } else {
+        productList.innerHTML = 'Please select a category.';
+      }
+    });
+
+    // Initial load
+    loadCategories();
+  </script>
 </body>
 </html>
