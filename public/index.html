@@ -47,6 +47,54 @@
           window.location.href = "sign_in.html";
         });
       }
+      
+      // --- CART LOGIC ---
+      // Get cart from localStorage or initialize
+      function getCart() {
+        return JSON.parse(localStorage.getItem('cart') || '[]');
+      }
+      // Save cart to localStorage
+      function setCart(cart) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+      // Add product to cart (by name and price)
+      function addToCartFromCard(cardElem) {
+        // Get product info from card
+        const title = cardElem.querySelector('.title, h3').innerText;
+        const priceElem = cardElem.querySelector('.price');
+        let priceText = priceElem ? priceElem.innerText : '';
+        // Extract numeric price (remove $ or ₹ and any text after space or parenthesis)
+        let price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+        // Try to get image
+        const imgElem = cardElem.querySelector('img');
+        const image = imgElem ? imgElem.src : '';
+        // Use title as unique id for demo (better: use a real product id)
+        const id = title.replace(/\s+/g, '-').toLowerCase();
+
+        // Get cart and check if item exists
+        let cart = getCart();
+        let existing = cart.find(item => item.id === id);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          cart.push({ id, title, price, image, qty: 1 });
+        }
+        setCart(cart);
+        alert(`${title} added to cart!`);
+      }
+
+      // Attach event listeners to all .add-to-cart buttons
+      document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Find the parent .card or .ccard element
+          let cardElem = btn.closest('.card, .ccard');
+          if (cardElem) {
+            addToCartFromCard(cardElem);
+          }
+        });
+      });
+
+
     </script>
     <style>
       #signout-btn {
@@ -76,7 +124,6 @@
             </div>
             <div class="right-section">
               <div class="dropdown">English ▼</div>
-              <div class="dropdown">USD ▼</div>
              <a href="register_seller.html">  <button class="seller-btn">Seller Login</button></a>
               <a href="#">Order Tracking</a>
             </div>
@@ -100,18 +147,18 @@
                 <a href="#" class="account" id="account-btn"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
                 <button id="signout-btn" onclick="signOutUser()">Sign out</button>
                 <a href="#" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-                <a href="checkout.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+                <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
             </div>
         </nav>
         <div class="navbar-links">
-            <a href="#">Home</a>
-            <a href="#">Shop</a>
-            <a href="#">Fruits & Vegetables</a>
-            <a href="#">Beverages</a>
-            <a href="#">Blog</a>
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+            <a href="beverages.html">Beverages</a>
+            <a href="blog.html">Blog</a>
             <a href="contact.html">Contact</a>
-            <a href="#">Trending Products</a>
-            <a href="#" class="sale">Almost Finished SALE</a>
+            <a href="trendingproduct.html">Trending Products</a>
+            <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
         </div>
     </header>
 
