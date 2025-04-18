@@ -39,40 +39,57 @@
           }
         });
 
-        // Geolocation logic for street + city
-        function setLocationText(text) {
-          const locElem = document.getElementById('user-location');
-          if (locElem) locElem.textContent = text;
-        }
-        function fetchLocation(lat, lon) {
-          setLocationText("Locating...");
-          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
-            .then(response => response.json())
-            .then(data => {
-              let address = data.address || {};
-              let street = address.road || address.pedestrian || address.footway || address.cycleway || address.path || "";
-              let city = address.city || address.town || address.village || address.hamlet || address.county || address.state || "";
-              let locationString = "";
-              if (street && city) locationString = `${street}, ${city}`;
-              else if (city) locationString = city;
-              else locationString = "Location unavailable";
-              setLocationText(locationString);
-            })
-            .catch(() => setLocationText("Location unavailable"));
-        }
-        function detectUserLocation() {
-          setLocationText("Locating...");
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              pos => fetchLocation(pos.coords.latitude, pos.coords.longitude),
-              err => setLocationText("Location denied")
-            );
-          } else {
-            setLocationText("Geolocation not supported");
-          }
-        }
-        detectUserLocation();
-      };
+        
+// Geolocation Logic for City + Street
+function showLocation(position) {
+  const latitude = position.coords.latitude;
+  const longitude = position.coords.longitude;
+  
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+    .then(response => response.json())
+    .then(data => {
+      let locationString = "";
+      if(data.address) {
+        const street = data.address.road || data.address.pedestrian || "";
+        const city = data.address.city || data.address.town || data.address.village || "";
+        locationString = `${street ? street + ', ' : ''}${city}`;
+      }
+      document.getElementById('user-location').textContent = locationString || "Location unavailable";
+    })
+    .catch(error => {
+      console.error('Geocoding error:', error);
+      document.getElementById('user-location').textContent = "Location service error";
+    });
+}
+
+function showError(error) {
+  const messages = {
+    1: 'Location access denied',
+    2: 'Location unavailable',
+    3: 'Location request timed out'
+  };
+  document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
+}
+
+function initLocation() {
+  const locElem = document.getElementById('user-location');
+  if (!locElem) return;
+
+  locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
+  
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      showPosition => showLocation(showPosition),
+      showError,
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  } else {
+    locElem.textContent = "Geolocation not supported";
+  }
+}
+
+// Initialize when page loads
+window.addEventListener('DOMContentLoaded', initLocation);
 
       function signOutUser() {
         auth.signOut().then(function() {
