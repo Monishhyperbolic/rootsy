@@ -31,13 +31,16 @@
           if (user) {
             if (accountBtn) {
               accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
-              accountBtn.href = "#";
+              accountBtn.href = "profile.html"; // <-- This enables the redirect
+              accountBtn.style.cursor = "pointer";
+              accountBtn.title = "View Profile";
             }
             if (signoutBtn) signoutBtn.style.display = "inline-block";
           } else {
             window.location.href = "sign_in.html";
           }
         });
+
       };
 
       // Geolocation Logic for City + Street

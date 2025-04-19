@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .field-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ddd;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            cursor: pointer;
+        }
+        .edit-mode {
+            border-color: #666;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <h1>Your Profile</h1>
+        <button id="editBtn">Edit Profile</button>
+        
+        <form id="profileForm">
+            <!-- Personal Info -->
+            <div class="field-group">
+                <label>Full Name</label>
+                <input type="text" id="name" disabled>
+            </div>
+
+            <div class="field-group">
+                <label>Email</label>
+                <input type="email" id="email" disabled>
+            </div>
+
+            <div class="field-group">
+                <label>Mobile Number</label>
+                <input type="tel" id="mobile" disabled>
+            </div>
+
+            <div class="field-group">
+                <label>Date of Birth</label>
+                <input type="date" id="dob" disabled>
+            </div>
+
+            <div class="field-group">
+                <label>Gender</label>
+                <select id="gender" disabled>
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Address Sections -->
+            <div class="field-group">
+                <h3>Shipping Address</h3>
+                <input type="text" id="shipStreet" placeholder="Street" disabled>
+                <input type="text" id="shipCity" placeholder="City" disabled>
+                <input type="text" id="shipState" placeholder="State" disabled>
+                <input type="text" id="shipZip" placeholder="ZIP Code" disabled>
+                <input type="text" id="shipCountry" placeholder="Country" disabled>
+            </div>
+
+            <div class="field-group">
+                <h3>Billing Address</h3>
+                <input type="text" id="billStreet" placeholder="Street" disabled>
+                <input type="text" id="billCity" placeholder="City" disabled>
+                <input type="text" id="billState" placeholder="State" disabled>
+                <input type="text" id="billZip" placeholder="ZIP Code" disabled>
+                <input type="text" id="billCountry" placeholder="Country" disabled>
+            </div>
+
+            <!-- Preferences -->
+            <div class="field-group">
+                <label>
+                    <input type="checkbox" id="newsletter" disabled>
+                    Newsletter Subscription
+                </label>
+                
+                <label>
+                    <input type="checkbox" id="loyalty" disabled>
+                    Loyalty Program
+                </label>
+            </div>
+
+            <button type="submit" id="saveBtn" style="display: none;">Save Changes</button>
+        </form>
+    </div>
+
+<script>
+    // Firebase and Supabase initialization
+    const firebaseConfig = { /* your config */ };
+    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
+    
+    firebase.initializeApp(firebaseConfig);
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    let isEditing = false;
+
+    // Load user data
+    async function loadUserData() {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            window.location.href = 'signin.html';
+            return;
+        }
+
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.uid)
+            .single();
+
+        if (data) {
+            // Populate form fields
+            document.getElementById('name').value = data.name || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('mobile').value = data.mobile || '';
+            document.getElementById('dob').value = data.date_of_birth || '';
+            document.getElementById('gender').value = data.gender || '';
+            document.getElementById('newsletter').checked = data.newsletter_opt_in;
+            document.getElementById('loyalty').checked = data.loyalty_opt_in;
+
+            // Populate addresses
+            const shipAddr = data.shipping_address || {};
+            document.getElementById('shipStreet').value = shipAddr.street || '';
+            document.getElementById('shipCity').value = shipAddr.city || '';
+            document.getElementById('shipState').value = shipAddr.state || '';
+            document.getElementById('shipZip').value = shipAddr.zip || '';
+            document.getElementById('shipCountry').value = shipAddr.country || '';
+
+            const billAddr = data.billing_address || {};
+            document.getElementById('billStreet').value = billAddr.street || '';
+            document.getElementById('billCity').value = billAddr.city || '';
+            document.getElementById('billState').value = billAddr.state || '';
+            document.getElementById('billZip').value = billAddr.zip || '';
+            document.getElementById('billCountry').value = billAddr.country || '';
+        }
+    }
+
+    // Toggle edit mode
+    document.getElementById('editBtn').addEventListener('click', () => {
+        isEditing = !isEditing;
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.disabled = !isEditing;
+            input.classList.toggle('edit-mode', isEditing);
+        });
+        
+        document.getElementById('saveBtn').style.display = isEditing ? 'block' : 'none';
+        document.getElementById('editBtn').textContent = isEditing ? 'Cancel' : 'Edit Profile';
+    });
+
+    // Save changes
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = firebase.auth().currentUser;
+        
+        const updateData = {
+            name: document.getElementById('name').value,
+            mobile: document.getElementById('mobile').value,
+            date_of_birth: document.getElementById('dob').value,
+            gender: document.getElementById('gender').value,
+            newsletter_opt_in: document.getElementById('newsletter').checked,
+            loyalty_opt_in: document.getElementById('loyalty').checked,
+            shipping_address: {
+                street: document.getElementById('shipStreet').value,
+                city: document.getElementById('shipCity').value,
+                state: document.getElementById('shipState').value,
+                zip: document.getElementById('shipZip').value,
+                country: document.getElementById('shipCountry').value
+            },
+            billing_address: {
+                street: document.getElementById('billStreet').value,
+                city: document.getElementById('billCity').value,
+                state: document.getElementById('billState').value,
+                zip: document.getElementById('billZip').value,
+                country: document.getElementById('billCountry').value
+            }
+        };
+
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update(updateData)
+                .eq('id', user.uid);
+
+            if (error) throw error;
+            alert('Profile updated successfully!');
+            location.reload();
+        } catch (error) {
+            alert('Error updating profile: ' + error.message);
+        }
+    });
+
+    // Initial load
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) loadUserData();
+        else window.location.href = 'signin.html';
+    });
+</script>
+</body>
+</html>
