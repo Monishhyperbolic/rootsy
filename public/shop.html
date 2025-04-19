@@ -13,40 +13,54 @@
     .product-info { flex: 1; }
     .product-info h3 { margin: 0 0 5px 0; }
     .product-info p { margin: 3px 0; }
-    .add-cart-btn { padding: 6px 16px; font-size: 15px; background: #27ae60; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .add-cart-btn, .wishlist-btn {
+      padding: 6px 16px; font-size: 15px; background: #27ae60; color: #fff;
+      border: none; border-radius: 4px; cursor: pointer;
+    }
+    .wishlist-btn {
+      background: #e67e22;
+    }
     .add-cart-btn:active { background: #219150; }
-    .cart-icon { position: fixed; top: 18px; right: 24px; font-size: 28px; cursor: pointer; }
-    .cart-count { background: #e74c3c; color: #fff; border-radius: 50%; padding: 2px 8px; font-size: 13px; vertical-align: super; margin-left: 2px; }
-    /* Cart modal styles */
-    #cartModal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); }
-    #cartModal .modal-content { background: #fff; margin: 60px auto; padding: 24px 20px; border-radius: 10px; width: 95%; max-width: 420px; position: relative; }
-    #cartModal h2 { margin-top: 0; }
-    #cartModal .close { position: absolute; right: 18px; top: 12px; font-size: 22px; cursor: pointer; color: #888; }
-    #cartModal ul { list-style: none; padding: 0; }
-    #cartModal li { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 7px; }
-    #cartModal .cart-total { font-weight: bold; margin-top: 18px; }
-    #cartModal .cart-actions { margin-top: 18px; text-align: right; }
-    #cartModal .cart-actions button { margin-left: 8px; }
+    .wishlist-btn:active { background: #d35400; }
+    .icon-container {
+      position: fixed; top: 18px; right: 24px; display: flex; gap: 12px; font-size: 26px;
+    }
+    .icon-container span { cursor: pointer; position: relative; }
+    .cart-count, .wishlist-count {
+      background: #e74c3c; color: #fff; border-radius: 50%; padding: 2px 8px;
+      font-size: 13px; vertical-align: super; position: absolute; top: -10px; right: -10px;
+    }
+
+    /* Modal styles */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.3); }
+    .modal-content { background: #fff; margin: 60px auto; padding: 24px 20px; border-radius: 10px; width: 95%; max-width: 420px; position: relative; }
+    .modal h2 { margin-top: 0; }
+    .modal .close { position: absolute; right: 18px; top: 12px; font-size: 22px; cursor: pointer; color: #888; }
+    .modal ul { list-style: none; padding: 0; }
+    .modal li { margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 7px; }
+    .cart-total { font-weight: bold; margin-top: 18px; }
+    .cart-actions { margin-top: 18px; text-align: right; }
+    .cart-actions button { margin-left: 8px; }
     .qty-btn { padding: 2px 8px; margin: 0 3px; font-size: 15px; }
   </style>
 </head>
 <body>
   <h1>Product Viewer</h1>
 
-  <!-- Cart Icon -->
-  <span class="cart-icon" onclick="showCartModal()">
-    🛒<span class="cart-count" id="cartCount">0</span>
-  </span>
+  <div class="icon-container">
+    <span onclick="showCartModal()">🛒<span class="cart-count" id="cartCount">0</span></span>
+    <span onclick="showWishlistModal()">❤️<span class="wishlist-count" id="wishlistCount">0</span></span>
+  </div>
 
   <label for="categorySelect">Select a Category:</label>
   <select id="categorySelect">
-    <option value="">-- Select --</option>
+    <option value="all">All</option>
   </select>
 
   <div id="productList">Please select a category.</div>
 
   <!-- Cart Modal -->
-  <div id="cartModal">
+  <div class="modal" id="cartModal">
     <div class="modal-content">
       <span class="close" onclick="hideCartModal()">&times;</span>
       <h2>Your Cart</h2>
@@ -59,6 +73,19 @@
     </div>
   </div>
 
+  <!-- Wishlist Modal -->
+  <div class="modal" id="wishlistModal">
+    <div class="modal-content">
+      <span class="close" onclick="hideWishlistModal()">&times;</span>
+      <h2>Your Wishlist</h2>
+      <ul id="wishlistItems"></ul>
+      <div class="cart-actions">
+        <button onclick="clearWishlist()">Clear Wishlist</button>
+        <button onclick="hideWishlistModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
@@ -67,24 +94,20 @@
     const categorySelect = document.getElementById('categorySelect');
     const productList = document.getElementById('productList');
     const cartCount = document.getElementById('cartCount');
+    const wishlistCount = document.getElementById('wishlistCount');
     const cartModal = document.getElementById('cartModal');
+    const wishlistModal = document.getElementById('wishlistModal');
     const cartItems = document.getElementById('cartItems');
+    const wishlistItems = document.getElementById('wishlistItems');
     const cartTotal = document.getElementById('cartTotal');
 
     // --- CART LOGIC ---
-    function getCart() {
-      return JSON.parse(localStorage.getItem('cart') || '[]');
-    }
-    function setCart(cart) {
-      localStorage.setItem('cart', JSON.stringify(cart));
-      updateCartCount();
-    }
-    function updateCartCount() {
+    const getCart = () => JSON.parse(localStorage.getItem('cart') || '[]');
+    const setCart = (cart) => { localStorage.setItem('cart', JSON.stringify(cart)); updateCartCount(); };
+    const updateCartCount = () => {
       const cart = getCart();
-      let count = 0;
-      cart.forEach(item => count += item.qty);
-      cartCount.textContent = count;
-    }
+      cartCount.textContent = cart.reduce((total, item) => total + item.qty, 0);
+    };
     function addToCart(product) {
       const cart = getCart();
       const existing = cart.find(item => item.id === product.id);
@@ -130,8 +153,8 @@
           total += item.price * item.qty;
           const li = document.createElement('li');
           li.innerHTML = `
-            <strong>${item.name}</strong> <br>
-            <span>₹${item.price} x ${item.qty}</span>
+            <strong>${item.name}</strong><br>
+            ₹${item.price} x ${item.qty}
             <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
             <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
           `;
@@ -141,9 +164,55 @@
       cartTotal.innerHTML = `Total: ₹${total.toFixed(2)}`;
       updateCartCount();
     }
-    // --- END CART LOGIC ---
 
-    // Fetch categories
+    // --- WISHLIST LOGIC ---
+    const getWishlist = () => JSON.parse(localStorage.getItem('wishlist') || '[]');
+    const setWishlist = (wishlist) => {
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+      updateWishlistCount();
+    };
+    const updateWishlistCount = () => {
+      wishlistCount.textContent = getWishlist().length;
+    };
+    const addToWishlist = (product) => {
+      const wishlist = getWishlist();
+      if (!wishlist.some(item => item.id === product.id)) {
+        wishlist.push(product);
+        setWishlist(wishlist);
+        alert(`${product.name} added to wishlist!`);
+      } else {
+        alert(`${product.name} is already in wishlist.`);
+      }
+    };
+    function showWishlistModal() {
+      renderWishlist();
+      wishlistModal.style.display = 'block';
+    }
+    function hideWishlistModal() {
+      wishlistModal.style.display = 'none';
+    }
+    function clearWishlist() {
+      if (confirm("Clear wishlist?")) {
+        setWishlist([]);
+        renderWishlist();
+      }
+    }
+    function renderWishlist() {
+      const wishlist = getWishlist();
+      wishlistItems.innerHTML = '';
+      if (wishlist.length === 0) {
+        wishlistItems.innerHTML = '<li>Your wishlist is empty.</li>';
+      } else {
+        wishlist.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${item.name}</strong> - ₹${item.price}`;
+          wishlistItems.appendChild(li);
+        });
+      }
+      updateWishlistCount();
+    }
+
+    // Load categories
     async function loadCategories() {
       const { data, error } = await supabase.from('categories').select('*');
       if (error) {
@@ -158,29 +227,26 @@
       });
     }
 
-    // Fetch products by category ID
+    // Load products
     async function loadProducts(categoryId) {
       productList.innerHTML = 'Loading products...';
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category_id', categoryId);
-
+      let query = supabase.from('products').select('*');
+      if (categoryId !== 'all') {
+        query = query.eq('category_id', categoryId);
+      }
+      const { data, error } = await query;
       if (error) {
-        productList.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        productList.innerHTML = `<p style="color:red;">${error.message}</p>`;
         return;
       }
-
       if (!data || data.length === 0) {
-        productList.innerHTML = '<p>No products found for this category.</p>';
+        productList.innerHTML = '<p>No products found.</p>';
         return;
       }
-
       const container = document.createElement('div');
       data.forEach(prod => {
         const productDiv = document.createElement('div');
         productDiv.className = 'product';
-
         const img = document.createElement('img');
         img.src = prod.image_url;
         img.alt = prod.name;
@@ -196,42 +262,38 @@
         const addBtn = document.createElement('button');
         addBtn.className = 'add-cart-btn';
         addBtn.textContent = 'Add to Cart';
-        addBtn.onclick = () => addToCart({
-          id: prod.id,
-          name: prod.name,
-          price: prod.price
-        });
+        addBtn.onclick = () => addToCart({ id: prod.id, name: prod.name, price: prod.price });
+
+        const wishlistBtn = document.createElement('button');
+        wishlistBtn.className = 'wishlist-btn';
+        wishlistBtn.textContent = '❤️ Wishlist';
+        wishlistBtn.onclick = () => addToWishlist({ id: prod.id, name: prod.name, price: prod.price });
 
         productDiv.appendChild(img);
         productDiv.appendChild(info);
         productDiv.appendChild(addBtn);
+        productDiv.appendChild(wishlistBtn);
         container.appendChild(productDiv);
       });
-
       productList.innerHTML = '';
       productList.appendChild(container);
     }
 
-    // Event listener
     categorySelect.addEventListener('change', e => {
       const categoryId = e.target.value;
-      if (categoryId) {
-        loadProducts(categoryId);
-      } else {
-        productList.innerHTML = 'Please select a category.';
-      }
+      loadProducts(categoryId);
     });
 
-    // Initial load
+    // Init
     loadCategories();
     updateCartCount();
+    updateWishlistCount();
 
-    // For closing modal when clicking outside of it
+    // Close modals when clicking outside
     window.onclick = function(event) {
-      if (event.target === cartModal) {
-        hideCartModal();
-      }
-    }
+      if (event.target === cartModal) hideCartModal();
+      if (event.target === wishlistModal) hideWishlistModal();
+    };
   </script>
 </body>
 </html>
