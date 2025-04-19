@@ -20,6 +20,7 @@
   <div class="profile-container">
     <h1>Your Profile</h1>
     <button id="editBtn">Edit Profile</button>
+    <button id="resetPassBtn" type="button">Reset Password</button>
 
     <form id="profileForm">
       <div class="field-group">
@@ -113,6 +114,10 @@
 
       loadUserData(user.email);
     });
+    document.getElementById('resetPassBtn').addEventListener('click', () => {
+        window.location.href = 'resetpass.html';
+        });
+
 
     async function loadUserData(email) {
       try {
