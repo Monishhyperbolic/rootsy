@@ -1,84 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login Page</title>
-  <link rel="stylesheet" href="sign_in.css" />
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <!-- Firebase Auth SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
-      authDomain: "rootsy-ec110.firebaseapp.com",
-      projectId: "rootsy-ec110",
-      storageBucket: "rootsy-ec110.appspot.com",
-      messagingSenderId: "120254624474",
-      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
-      measurementId: "G-0Y636N5BPV"
-    };
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase to Supabase Example</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+            authDomain: "rootsy-ec110.firebaseapp.com",
+            projectId: "rootsy-ec110",
+            storageBucket: "rootsy-ec110.appspot.com",
+            messagingSenderId: "120254624474",
+            appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+            measurementId: "G-0Y636N5BPV"
+            
+        };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-    // Email/password sign-in
-    async function handleSignIn(event) {
-      event.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        window.location.href = "index.html";
-      } catch (error) {
-        alert(error.message);
-      }
-    }
+        // Supabase configuration
+        const { createClient } = supabase;
+        const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co'; // Replace with your Supabase project URL
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // Replace with your anon key
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Google sign-in
-    async function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        await auth.signInWithPopup(provider);
-        window.location.href = "index.html";
-      } catch (error) {
-        alert(error.message);
-      }
-    }
-  </script>
+        async function signInWithFirebase() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // Add user to Supabase
+                const { data, error } = await supabase
+                    .from('profiles') // Replace with your profiles table
+                    .insert([
+                        { id: user.uid, email: user.email } // Adjust fields as necessary
+                    ]);
+
+                if (error) {
+                    console.error('Error adding user to Supabase:', error);
+                } else {
+                    console.log('User added to Supabase:', data);
+                    alert('User signed in and added to Supabase!');
+                }
+            } catch (error) {
+                console.error('Error signing in with Firebase:', error);
+                alert(error.message);
+            }
+        }
+    </script>
 </head>
 <body>
-  <div class="container">
-    <div class="login-section">
-      <h2>Welcome Back 👋</h2>
-      <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
-
-      <form onsubmit="handleSignIn(event)">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="Example@email.com" required />
-
-        <label>Password</label>
-        <input type="password" id="password" placeholder="at least 8 characters" required />
-        <div class="forgot"><a href="#">Forgot Password?</a></div>
-
-        <button type="submit">Sign in</button>
-      </form>
-
-      <div class="divider">Or</div>
-
-      <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
-      
-      <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
-
-      <footer>© 2023 ALL RIGHTS RESERVED</footer>
-    </div>
-
-    <div class="image-section">
-      <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
-    </div>
-  </div>
+    <h1>Firebase to Supabase Example</h1>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="signInWithFirebase()">Sign In with Firebase</button>
 </body>
 </html>
