@@ -7,7 +7,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
-    select { padding: 5px; font-size: 16px; margin-bottom: 20px; }
+    select, input[type="text"] {
+      padding: 5px;
+      font-size: 16px;
+      margin: 0 10px 20px 0;
+    }
 
     .top-icons {
       display: flex;
@@ -60,35 +64,34 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .add-cart-btn {
-      background-color: #27ae60;
-      color: white;
-    }
-    .add-wishlist-btn {
-      background-color: #3498db;
-      color: white;
-    }
+    .add-cart-btn { background-color: #27ae60; color: white; }
+    .add-wishlist-btn { background-color: #3498db; color: white; }
   </style>
 </head>
 <body>
 
   <div class="top-icons">
-    <a href="wishlist.html">
-      ❤️ <span class="icon-count" id="wishlistCount">0</span>
-    </a>
-    <a href="cart.html">
-      🛒 <span class="icon-count" id="cartCount">0</span>
-    </a>
+    <a href="wishlist.html">❤️ <span class="icon-count" id="wishlistCount">0</span></a>
+    <a href="cart.html">🛒 <span class="icon-count" id="cartCount">0</span></a>
   </div>
 
   <h1>Product Viewer</h1>
 
-  <label for="categorySelect">Select a Category:</label>
+  <label for="categorySelect">Category:</label>
   <select id="categorySelect">
-    <option value="">-- Select --</option>
+    <option value="all">All</option>
   </select>
 
-  <div id="productList">Please select a category.</div>
+  <label for="sortSelect">Sort By:</label>
+  <select id="sortSelect">
+    <option value="default">Default</option>
+    <option value="priceLowHigh">Price: Low to High</option>
+    <option value="priceHighLow">Price: High to Low</option>
+  </select>
+
+  <input type="text" id="searchInput" placeholder="Search products..." />
+
+  <div id="productList">Loading products...</div>
 
   <script>
     const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
@@ -96,14 +99,16 @@
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     const categorySelect = document.getElementById('categorySelect');
+    const sortSelect = document.getElementById('sortSelect');
+    const searchInput = document.getElementById('searchInput');
     const productList = document.getElementById('productList');
     const cartCount = document.getElementById('cartCount');
     const wishlistCount = document.getElementById('wishlistCount');
 
-    // --- LocalStorage Helpers ---
     function getFromStorage(key) {
       return JSON.parse(localStorage.getItem(key) || '[]');
     }
+
     function setToStorage(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
       updateCounts();
@@ -153,25 +158,40 @@
       });
     }
 
-    async function loadProducts(categoryId) {
-      productList.innerHTML = 'Loading products...';
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category_id', categoryId);
+    async function fetchProducts(categoryId) {
+      let query = supabase.from('products').select('*');
+      if (categoryId && categoryId !== 'all') {
+        query = query.eq('category_id', categoryId);
+      }
+      const { data, error } = await query;
+      return { data, error };
+    }
 
-      if (error) {
-        productList.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-        return;
+    function filterAndSortProducts(products) {
+      const searchTerm = searchInput.value.toLowerCase();
+      let filtered = products.filter(prod =>
+        prod.name.toLowerCase().includes(searchTerm) ||
+        prod.description.toLowerCase().includes(searchTerm)
+      );
+
+      const sortBy = sortSelect.value;
+      if (sortBy === 'priceLowHigh') {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sortBy === 'priceHighLow') {
+        filtered.sort((a, b) => b.price - a.price);
       }
 
-      if (!data || data.length === 0) {
-        productList.innerHTML = '<p>No products found for this category.</p>';
+      return filtered;
+    }
+
+    function displayProducts(products) {
+      if (!products || products.length === 0) {
+        productList.innerHTML = '<p>No products found.</p>';
         return;
       }
 
       const container = document.createElement('div');
-      data.forEach(prod => {
+      products.forEach(prod => {
         const productDiv = document.createElement('div');
         productDiv.className = 'product';
 
@@ -190,22 +210,12 @@
         const addCartBtn = document.createElement('button');
         addCartBtn.className = 'btn add-cart-btn';
         addCartBtn.textContent = 'Add to Cart';
-        addCartBtn.onclick = () => addToCart({
-          id: prod.id,
-          name: prod.name,
-          price: prod.price
-        });
+        addCartBtn.onclick = () => addToCart(prod);
 
         const addWishBtn = document.createElement('button');
         addWishBtn.className = 'btn add-wishlist-btn';
         addWishBtn.textContent = 'Add to Wishlist';
-        addWishBtn.onclick = () => addToWishlist({
-          id: prod.id,
-          name: prod.name,
-          price: prod.price,
-          image_url: prod.image_url,
-          description: prod.description
-        });
+        addWishBtn.onclick = () => addToWishlist(prod);
 
         productDiv.appendChild(img);
         productDiv.appendChild(info);
@@ -218,17 +228,31 @@
       productList.appendChild(container);
     }
 
-    categorySelect.addEventListener('change', e => {
-      const categoryId = e.target.value;
-      if (categoryId) {
-        loadProducts(categoryId);
-      } else {
-        productList.innerHTML = 'Please select a category.';
-      }
-    });
+    async function loadAndRenderProducts() {
+      productList.innerHTML = 'Loading products...';
+      const categoryId = categorySelect.value;
+      const { data, error } = await fetchProducts(categoryId);
 
-    loadCategories();
-    updateCounts();
+      if (error) {
+        productList.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        return;
+      }
+
+      const filtered = filterAndSortProducts(data);
+      displayProducts(filtered);
+    }
+
+    categorySelect.addEventListener('change', loadAndRenderProducts);
+    sortSelect.addEventListener('change', loadAndRenderProducts);
+    searchInput.addEventListener('input', loadAndRenderProducts);
+
+    async function init() {
+      await loadCategories();
+      updateCounts();
+      loadAndRenderProducts(); // Load all by default
+    }
+
+    init();
   </script>
 </body>
 </html>
