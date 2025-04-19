@@ -9,8 +9,22 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <!-- Firebase Auth SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    .profile-fields fieldset {
+      margin-bottom: 1em;
+      border: 1px solid #eee;
+      padding: 1em;
+      border-radius: 6px;
+    }
+    .profile-fields legend {
+      font-weight: bold;
+      font-size: 1em;
+    }
+  </style>
   <script>
-    // Firebase config (replace with your own)
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
       authDomain: "rootsy-ec110.firebaseapp.com",
@@ -23,17 +37,69 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Email/password sign-up
+    // Supabase config
+    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
     async function handleSignUp(event) {
       event.preventDefault();
-      const fullName = document.getElementById('fullname').value;
-      const email = document.getElementById('email').value;
+      // Basic auth fields
+      const fullName = document.getElementById('fullname').value.trim();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+
+      // Profile fields
+      const mobile = document.getElementById('mobile').value.trim();
+      const date_of_birth = document.getElementById('dob').value;
+      const phone_number = document.getElementById('phone').value.trim();
+      const gender = document.getElementById('gender').value;
+      const newsletter_opt_in = document.getElementById('newsletter').checked;
+      const loyalty_opt_in = document.getElementById('loyalty').checked;
+
+      // Shipping address
+      const shipping_address = {
+        street: document.getElementById('ship-street').value.trim(),
+        city: document.getElementById('ship-city').value.trim(),
+        state: document.getElementById('ship-state').value.trim(),
+        zip: document.getElementById('ship-zip').value.trim(),
+        country: document.getElementById('ship-country').value.trim()
+      };
+      // Billing address
+      const billing_address = {
+        street: document.getElementById('bill-street').value.trim(),
+        city: document.getElementById('bill-city').value.trim(),
+        state: document.getElementById('bill-state').value.trim(),
+        zip: document.getElementById('bill-zip').value.trim(),
+        country: document.getElementById('bill-country').value.trim()
+      };
+
       try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        // Optionally, you can update the user's display name:
-        if (auth.currentUser && fullName) {
-          await auth.currentUser.updateProfile({ displayName: fullName });
+        // Create Firebase user
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        if (user && fullName) {
+          await user.updateProfile({ displayName: fullName });
+        }
+        // Insert into Supabase users table
+        const { data, error } = await supabase
+          .from('users')
+          .insert([{
+            id: user.uid,
+            email,
+            name: fullName,
+            mobile,
+            date_of_birth,
+            phone_number,
+            gender,
+            newsletter_opt_in,
+            loyalty_opt_in,
+            shipping_address,
+            billing_address
+          }]);
+        if (error) {
+          alert('Failed to save user info: ' + error.message);
+          return;
         }
         window.location.href = "index.html";
       } catch (error) {
@@ -41,11 +107,12 @@
       }
     }
 
-    // Google sign-up
     async function signUpWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
-        await auth.signInWithPopup(provider);
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        // Optionally, check if user exists in Supabase and show a modal for profile completion if not
         window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
@@ -58,7 +125,6 @@
     <div class="signup-section">
       <h2>Create Account 👋</h2>
       <p class="subtitle">Welcome! Enter your details to start your journey with us.</p>
-
       <form onsubmit="handleSignUp(event)">
         <label>Full Name</label>
         <input type="text" id="fullname" placeholder="Your name" required />
@@ -69,18 +135,59 @@
         <label>Password</label>
         <input type="password" id="password" placeholder="at least 8 characters" required />
 
+        <div class="profile-fields">
+          <label>Mobile Number</label>
+          <input type="tel" id="mobile" placeholder="Your Mobile Number" maxlength="15" required />
+
+          <label>Date of Birth</label>
+          <input type="date" id="dob" />
+
+          <label>Phone Number</label>
+          <input type="tel" id="phone" placeholder="Alternate Phone Number" maxlength="15" />
+
+          <label>Gender</label>
+          <select id="gender">
+            <option value="">Select</option>
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+            <option value="other">Other</option>
+          </select>
+
+          <fieldset>
+            <legend>Shipping Address</legend>
+            <input type="text" id="ship-street" placeholder="Street Address" />
+            <input type="text" id="ship-city" placeholder="City" />
+            <input type="text" id="ship-state" placeholder="State" />
+            <input type="text" id="ship-zip" placeholder="ZIP Code" />
+            <input type="text" id="ship-country" placeholder="Country" />
+          </fieldset>
+
+          <fieldset>
+            <legend>Billing Address</legend>
+            <input type="text" id="bill-street" placeholder="Street Address" />
+            <input type="text" id="bill-city" placeholder="City" />
+            <input type="text" id="bill-state" placeholder="State" />
+            <input type="text" id="bill-zip" placeholder="ZIP Code" />
+            <input type="text" id="bill-country" placeholder="Country" />
+          </fieldset>
+
+          <label>
+            <input type="checkbox" id="newsletter" />
+            Subscribe to our newsletter
+          </label>
+
+          <label>
+            <input type="checkbox" id="loyalty" />
+            Join our loyalty program
+          </label>
+        </div>
         <button type="submit">Sign up</button>
       </form>
-
       <div class="divider">Or</div>
-
       <button class="google-btn" type="button" onclick="signUpWithGoogle()">Sign up with Google</button>
-      
       <p class="login">Already have an account? <a href="index.html">Sign in</a></p>
-
       <footer>© 2023 ALL RIGHTS RESERVED</footer>
     </div>
-
     <div class="image-section">
       <img src="https://i.postimg.cc/tJtr8cJR/signup-visual.avif" alt="Artistic Poster" />
     </div>
