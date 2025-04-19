@@ -6,40 +6,11 @@
   <title>Login Page</title>
   <link rel="stylesheet" href="sign_in.css" />
 
-  <!-- Firebase App (the core Firebase SDK) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <!-- Firebase Auth SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-  <style>
-    #extra-info-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-    }
-    #extra-info-modal .modal-content {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 8px;
-      max-width: 350px;
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    #extra-info-modal label {
-      font-weight: bold;
-    }
-  </style>
 
   <script>
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
       authDomain: "rootsy-ec110.firebaseapp.com",
@@ -53,36 +24,13 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    async function checkAndHandleSupabaseUser(email) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        alert('Error checking user in database: ' + error.message);
-        return;
-      }
-
-      if (!data) {
-        showExtraInfoModal(email);
-      } else {
-        window.location.href = "index.html";
-      }
-    }
-
     async function handleSignIn(event) {
       event.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       try {
         await auth.signInWithEmailAndPassword(email, password);
-        checkAndHandleSupabaseUser(email);
+        window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
       }
@@ -92,71 +40,9 @@
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
         const result = await auth.signInWithPopup(provider);
-        const email = result.user.email;
-        checkAndHandleSupabaseUser(email);
+        window.location.href = "index.html";
       } catch (error) {
         alert(error.message);
-      }
-    }
-
-    function showExtraInfoModal(email) {
-      document.getElementById('extra-info-modal').style.display = 'flex';
-      document.getElementById('modal-email').value = email;
-    }
-
-    async function submitExtraInfo() {
-      const email = document.getElementById('modal-email').value;
-      const name = document.getElementById('modal-name').value.trim();
-      const mobile = document.getElementById('modal-mobile').value.trim();
-      const date_of_birth = document.getElementById('modal-dob').value;
-      const phone_number = document.getElementById('modal-phone').value.trim();
-      const gender = document.getElementById('modal-gender').value;
-      const newsletter_opt_in = document.getElementById('modal-newsletter').checked;
-      const loyalty_opt_in = document.getElementById('modal-loyalty').checked;
-
-      // Shipping address
-      const shipping_address = {
-        street: document.getElementById('modal-ship-street').value.trim(),
-        city: document.getElementById('modal-ship-city').value.trim(),
-        state: document.getElementById('modal-ship-state').value.trim(),
-        zip: document.getElementById('modal-ship-zip').value.trim(),
-        country: document.getElementById('modal-ship-country').value.trim()
-      };
-
-      // Billing address
-      const billing_address = {
-        street: document.getElementById('modal-bill-street').value.trim(),
-        city: document.getElementById('modal-bill-city').value.trim(),
-        state: document.getElementById('modal-bill-state').value.trim(),
-        zip: document.getElementById('modal-bill-zip').value.trim(),
-        country: document.getElementById('modal-bill-country').value.trim()
-      };
-
-      if (!name || !mobile) {
-        alert('Please fill in all required fields.');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('users')
-        .insert([{
-          email,
-          name,
-          mobile,
-          date_of_birth,
-          phone_number,
-          gender,
-          newsletter_opt_in,
-          loyalty_opt_in,
-          shipping_address,
-          billing_address
-        }]);
-
-      if (error) {
-        alert('Failed to save user info: ' + error.message);
-      } else {
-        document.getElementById('extra-info-modal').style.display = 'none';
-        window.location.href = "index.html";
       }
     }
   </script>
@@ -189,64 +75,6 @@
 
     <div class="image-section">
       <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
-    </div>
-  </div>
-
-  <!-- Modal for extra info -->
-  <div id="extra-info-modal">
-    <div class="modal-content">
-      <h3>Complete Your Profile</h3>
-      <input type="hidden" id="modal-email" />
-
-      <label for="modal-name">Full Name</label>
-      <input type="text" id="modal-name" placeholder="Your Name" required />
-
-      <label for="modal-mobile">Mobile Number</label>
-      <input type="tel" id="modal-mobile" placeholder="Your Mobile Number" required maxlength="15" />
-
-      <label for="modal-dob">Date of Birth</label>
-      <input type="date" id="modal-dob" />
-
-      <label for="modal-phone">Phone Number</label>
-      <input type="tel" id="modal-phone" placeholder="Alternate Phone Number" maxlength="15" />
-
-      <label for="modal-gender">Gender</label>
-      <select id="modal-gender">
-        <option value="">Select</option>
-        <option value="female">Female</option>
-        <option value="male">Male</option>
-        <option value="other">Other</option>
-      </select>
-
-      <fieldset>
-        <legend>Shipping Address</legend>
-        <input type="text" id="modal-ship-street" placeholder="Street Address" />
-        <input type="text" id="modal-ship-city" placeholder="City" />
-        <input type="text" id="modal-ship-state" placeholder="State" />
-        <input type="text" id="modal-ship-zip" placeholder="ZIP Code" />
-        <input type="text" id="modal-ship-country" placeholder="Country" />
-      </fieldset>
-
-      <fieldset>
-        <legend>Billing Address</legend>
-        <input type="text" id="modal-bill-street" placeholder="Street Address" />
-        <input type="text" id="modal-bill-city" placeholder="City" />
-        <input type="text" id="modal-bill-state" placeholder="State" />
-        <input type="text" id="modal-bill-zip" placeholder="ZIP Code" />
-        <input type="text" id="modal-bill-country" placeholder="Country" />
-      </fieldset>
-
-      <label>
-        <input type="checkbox" id="modal-newsletter" />
-        Subscribe to our newsletter
-      </label>
-
-      <label>
-        <input type="checkbox" id="modal-loyalty" />
-        Join our loyalty program
-      </label>
-
-      <button onclick="submitExtraInfo()">Submit</button>
     </div>
   </div>
 </body>
