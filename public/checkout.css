@@ -1,0 +1,391 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #fafafa;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+
+  .top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 40px;
+    background-color: #ffffff;
+    font-size: 14px;
+    color: #555;
+    border-bottom: 1px solid #dfe4ea;
+  }
+  
+  .left-section a,
+  .right-section a {
+    color: #555;
+    text-decoration: none;
+    margin-right: 15px;
+  }
+  
+  .left-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .divider {
+    width: 1px;
+    height: 14px;
+    background-color: #ccc;
+    margin: 0 10px;
+  }
+  
+  .delivery-text {
+    color: #333;
+  }
+  
+  .highlight {
+    color: #d35400;
+  }
+  
+  .right-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .dropdown {
+    cursor: pointer;
+  }
+  
+  .seller-btn {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  
+  .seller-btn:hover {
+    background-color: #f1f1f1;
+    border-color: #aaa;
+  }
+  
+
+
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Left Section */
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+}
+
+.logo img {
+    height: 40px;
+    margin-right: 5px;
+}
+
+#brand {
+    font-weight: 700;
+    font-size: large;
+}
+
+/* Delivery */
+.delivery {
+    margin-left: 20px;
+    font-size: 14px;
+}
+
+/* Search Bar */
+.navbar-center {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 30vw;
+}
+
+#searchbox {
+    width: 100%;
+    height: 4vh;
+    padding: 10px 40px 10px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.navbar-center button {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.navbar-center button i {
+    font-size: 18px;
+    color: gray;
+}
+
+/* Right Section */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.navbar-right a {
+    font-size: 17px;
+    text-decoration: none;
+    color: black;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-right a i {
+    font-size: 22px;
+}
+
+/* Navbar Links */
+.navbar-links {
+    display: flex;
+    justify-content: center;
+    background-color: #f8f8f8;
+    padding: 10px 0;
+}
+
+.navbar-links a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: black;
+}
+
+.sale {
+    color: red;
+    font-weight: bold;
+}
+  
+  .container {
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .notice {
+    background: #ffecec;
+    border: 1px solid #e57373;
+    color: #d32f2f;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+  }
+  
+  .notice .highlight {
+    font-weight: bold;
+    color: #c62828;
+  }
+  
+  .checkout-grid {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  
+  .billing-form, .order-summary {
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    flex: 1;
+    min-width: 320px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  
+  h2 {
+    margin-top: 0;
+  }
+  
+  .form-group.double {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .billing-form input,
+  .billing-form select,
+  .billing-form textarea {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .billing-form label {
+    display: block;
+    margin: 10px 0;
+  }
+  
+  textarea {
+    resize: vertical;
+    height: 80px;
+  }
+  
+  .order-item, .order-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+  
+  .order-total {
+    border-top: 1px solid #ddd;
+  }
+  
+  .grand-total {
+    font-weight: bold;
+  }
+  
+  .payment-note {
+    font-size: 0.9em;
+    color: #666;
+    margin: 8px 0;
+  }
+  
+  .terms {
+    margin: 15px 0;
+    font-size: 0.9em;
+  }
+  .order-summary{
+    max-width: 50px;
+    height: auto;
+  }
+
+  
+  .place-order {
+    background: #6a4fc4;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    width: 100%;
+    font-size: 1em;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .place-order:hover {
+    background: #5a3db3;
+  }
+  
+  /* Apply block layout ONLY to labels that are not inside .checkbox-group */
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+  }
+
+  .checkbox-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #000; /* Optional for modern browsers */
+    cursor: pointer;
+  }
+
+  .checkbox-group label {
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .checkbox-group.bold label {
+    font-weight: 700;
+  }
+
+
+
+  footer {
+    margin-top: 10px;
+    background-color: #f4f4f4;
+    color: #000000;
+    padding: 20px;
+    text-align: center;
+}
+.newsletter {
+    padding: 20px;
+    background-color: #e2e2e2;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+.newsletter p {
+    margin: 5px 0;
+}
+.newsletter input {
+    padding: 10px;
+    width: 70%;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+}
+.newsletter button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #ff6600;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    border-radius: 10px;
+}
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-bottom: 20px;
+}
+.column {
+    flex: 1;
+    padding: 10px;
+    min-width: 150px;
+}
+.column h3 {
+    color: #ff6600;
+    margin-bottom: 10px;
+}
+.column ul {
+    list-style: none;
+    padding: 0;
+}
+.column ul li {
+    margin: 5px 0;
+}
+.column ul li a {
+    color: #000000;
+    text-decoration: none;
+}
+.social-media img,
+.payment-methods img {
+    width: 30px;
+    margin: 5px;
+}
+.copyright {
+    font-size: 14px;
+    color: #000000;
+    margin-top: 20px;
+}
+.links {
+    margin-top: 10px;
+}
+.links a {
+    color: #ff6600;
+    text-decoration: none;
+    margin: 0 10px;
+}
