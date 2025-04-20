@@ -26,22 +26,29 @@
 
       window.onload = function() {
         auth.onAuthStateChanged(function(user) {
-          const accountBtn = document.getElementById('account-btn');
-          const signoutBtn = document.getElementById('signout-btn');
-          if (user) {
-            if (accountBtn) {
-              accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
-              accountBtn.style.cursor = "pointer";
-              accountBtn.title = "View Profile";
-            }
-            if (signoutBtn) signoutBtn.style.display = "inline-block";
-          } else {
-            window.location.href = "sign_in.html";
-          }
-        });
+  const accountBtn = document.getElementById('account-btn');
+  const signoutBtn = document.getElementById('signout-btn');
+  if (user) {
+    if (accountBtn) {
+      accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
+      accountBtn.style.cursor = "pointer";
+      accountBtn.title = "View Profile";
+    }
+    if (signoutBtn) signoutBtn.style.display = "inline-block";
+  } else {
+    // No redirect! Just update UI for guests
+    if (accountBtn) {
+      accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
+      accountBtn.style.cursor = "pointer";
+      accountBtn.title = "Sign in to your account";
+    }
+    if (signoutBtn) signoutBtn.style.display = "none";
+  }
+});
 
       };
-      function showLocation(position) {
+      // --- LOCATION LOGIC ---
+function showLocation(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
 
@@ -58,15 +65,14 @@
                 // Get city, town, village, or hamlet
                 const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
 
-                // Build the location string: street, locality, city
-                locationString = [
-                    street,
-                    locality,
-                    city
-                ].filter(Boolean).join(', ');
-
-                // Fallback if everything is missing
-                if (!locationString) {
+                // Build the location string: locality, city (street is optional)
+                if (locality && city) {
+                    locationString = `${locality}, ${city}`;
+                } else if (city) {
+                    locationString = city;
+                } else if (locality) {
+                    locationString = locality;
+                } else {
                     locationString = "Location unavailable";
                 }
             } else {
@@ -81,6 +87,38 @@
             document.getElementById('user-location').textContent = "Location service error";
         });
 }
+
+function showError(error) {
+    const messages = {
+        1: 'Location access denied',
+        2: 'Location unavailable',
+        3: 'Location request timed out'
+    };
+    document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
+}
+
+function initLocation() {
+    const locElem = document.getElementById('user-location');
+    if (!locElem) return;
+    locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            showLocation,
+            showError,
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    } else {
+        locElem.textContent = "Geolocation not supported";
+    }
+}
+
+// Call this on DOMContentLoaded
+window.addEventListener('DOMContentLoaded', function() {
+    initLocation();
+    updateCartCount(); // if you want to keep cart count update on load
+});
+
 
 
       function signOutUser() {
