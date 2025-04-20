@@ -42,52 +42,62 @@
         });
 
       };
+        // Geolocation Logic for City + Street
+        function showLocation(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
 
-      // Geolocation Logic for City + Street
-      function showLocation(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
-          .then(response => response.json())
-          .then(data => {
-            let locationString = "";
-            if(data.address) {
-              const street = data.address.road || data.address.pedestrian || data.address.street || "";
-              const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
-              locationString = `${street ? street + ', ' : ''}${city}`;
-            }
-            document.getElementById('user-location').textContent = locationString || "Location unavailable";
-          })
-          .catch(error => {
-            console.error('Geocoding error:', error);
-            document.getElementById('user-location').textContent = "Location service error";
-          });
-      }
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+                .then(response => response.json())
+                .then(data => {
+                    let locationString = "";
+                    
+                    if (data.address) {
+                        // Get street, falling back to alternatives if necessary
+                        const street = data.address.road || data.address.pedestrian || data.address.street || "";
+                        // Get city, town, or any available location
+                        const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
 
-      function showError(error) {
-        const messages = {
-          1: 'Location access denied',
-          2: 'Location unavailable',
-          3: 'Location request timed out'
-        };
-        document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
-      }
-
-      function initLocation() {
-        const locElem = document.getElementById('user-location');
-        if (!locElem) return;
-        locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            showLocation,
-            showError,
-            { enableHighAccuracy: true, timeout: 10000 }
-          );
-        } else {
-          locElem.textContent = "Geolocation not supported";
+                        // Combine street and city into the location string
+                        locationString = `${street ? street + ', ' : ''}${city || 'No city available'}`;
+                    }
+                    
+                    // Display location
+                    document.getElementById('user-location').textContent = locationString || "Location unavailable";
+                })
+                .catch(error => {
+                    console.error('Geocoding error:', error);
+                    document.getElementById('user-location').textContent = "Location service error";
+                });
         }
-      }
-      window.addEventListener('DOMContentLoaded', initLocation);
+
+        function showError(error) {
+            const messages = {
+                1: 'Location access denied',
+                2: 'Location unavailable',
+                3: 'Location request timed out'
+            };
+            document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
+        }
+
+        function initLocation() {
+            const locElem = document.getElementById('user-location');
+            if (!locElem) return;
+            locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    showLocation,
+                    showError,
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                locElem.textContent = "Geolocation not supported";
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', initLocation);
+
 
       function signOutUser() {
         auth.signOut().then(function() {
