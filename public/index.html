@@ -216,7 +216,7 @@ window.addEventListener('DOMContentLoaded', function() {
               <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
             </div>
             <div class="right-section">
-              <div class="dropdown">English ▼</div>
+              <div id="google_translate_element"></div>
              <a href="register_seller.html">  <button class="seller-btn">Seller Login</button></a>
               <a href="#">Order Tracking</a>
             </div>
@@ -536,5 +536,12 @@ window.addEventListener('DOMContentLoaded', function() {
         </div>
     </footer>
 <script src="script.js"></script>
+<script type="text/javascript">
+  function googleTranslateElementInit() {
+    new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+  }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+  
 </body>
 </html>
