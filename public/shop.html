@@ -5,7 +5,201 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Shop | MyStore</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <!-- Firebase Auth SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    window.onload = function() {
+      auth.onAuthStateChanged(function(user) {
+const accountBtn = document.getElementById('account-btn');
+const signoutBtn = document.getElementById('signout-btn');
+if (user) {
+  if (accountBtn) {
+    accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
+    accountBtn.style.cursor = "pointer";
+    accountBtn.title = "View Profile";
+  }
+  if (signoutBtn) signoutBtn.style.display = "inline-block";
+} else {
+  // No redirect! Just update UI for guests
+  if (accountBtn) {
+    accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
+    accountBtn.style.cursor = "pointer";
+    accountBtn.title = "Sign in to your account";
+  }
+  if (signoutBtn) signoutBtn.style.display = "none";
+}
+});
+
+    };
+    // --- LOCATION LOGIC ---
+function showLocation(position) {
+  const latitude = position.coords.latitude;
+  const longitude = position.coords.longitude;
+
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+      .then(response => response.json())
+      .then(data => {
+          let locationString = "";
+
+          if (data.address) {
+              // Get street, falling back to alternatives if necessary
+              const street = data.address.road || data.address.pedestrian || data.address.street || "";
+              // Get locality: suburb, neighbourhood, or city_district
+              const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
+              // Get city, town, village, or hamlet
+              const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
+
+              // Build the location string: locality, city (street is optional)
+              if (locality && city) {
+                  locationString = `${locality}, ${city}`;
+              } else if (city) {
+                  locationString = city;
+              } else if (locality) {
+                  locationString = locality;
+              } else {
+                  locationString = "Location unavailable";
+              }
+          } else {
+              locationString = "Location unavailable";
+          }
+
+          // Display location
+          document.getElementById('user-location').textContent = locationString;
+      })
+      .catch(error => {
+          console.error('Geocoding error:', error);
+          document.getElementById('user-location').textContent = "Location service error";
+      });
+}
+
+function showError(error) {
+  const messages = {
+      1: 'Location access denied',
+      2: 'Location unavailable',
+      3: 'Location request timed out'
+  };
+  document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
+}
+
+function initLocation() {
+  const locElem = document.getElementById('user-location');
+  if (!locElem) return;
+  locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
+
+  if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+          showLocation,
+          showError,
+          { enableHighAccuracy: true, timeout: 10000 }
+      );
+  } else {
+      locElem.textContent = "Geolocation not supported";
+  }
+}
+
+// Call this on DOMContentLoaded
+window.addEventListener('DOMContentLoaded', function() {
+  initLocation();
+  updateCartCount(); // if you want to keep cart count update on load
+});
+
+
+
+    function signOutUser() {
+      auth.signOut().then(function() {
+        window.location.href = "sign_in.html";
+      });
+    }
+
+    // --- CART LOGIC ---
+    function getCart() {
+      return JSON.parse(localStorage.getItem('cart') || '[]');
+    }
+    function setCart(cart) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+    function addToCartFromCard(cardElem) {
+      // Try to get title for both .card and .ccard
+      let titleElem = cardElem.querySelector('.title, h3');
+      const title = titleElem ? titleElem.innerText : 'Product';
+      // Try to get price for both .card and .ccard
+      let priceElem = cardElem.querySelector('.price');
+      let priceText = priceElem ? priceElem.innerText : '';
+      let price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+      // Try to get image for both .card and .ccard
+      const imgElem = cardElem.querySelector('img');
+      const image = imgElem ? imgElem.src : '';
+      // Make id unique using title + price (in case of duplicate titles)
+      const id = (title + '-' + price).replace(/\s+/g, '-').toLowerCase();
+      let cart = getCart();
+      let existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ id, title, price, image, qty: 1 });
+      }
+      setCart(cart);
+      updateCartCount();
+      alert(`${title} added to cart!`);
+    }
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('add-to-cart')) {
+        let cardElem = e.target.closest('.card, .ccard');
+        if (cardElem) addToCartFromCard(cardElem);
+      }
+    });
+    function updateCartCount() {
+      let cart = getCart();
+      let count = cart.reduce((acc, item) => acc + item.qty, 0);
+      let countElem = document.getElementById('cart-count');
+      if (countElem) countElem.textContent = count;
+    }
+    window.addEventListener('DOMContentLoaded', updateCartCount);
+  </script>
   <style>
+    #signout-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #e74c3c;
+      cursor: pointer;
+      margin-left: 16px;
+      font-size: 1em;
+    }
+    #cart-count {
+      background:#e74c3c;
+      color:#fff;
+      font-size:13px;
+      border-radius:50%;
+      padding:2px 7px;
+      margin-left:3px;
+    }
+    #user-location {
+      font-size: 0.95em;
+      color: #27ae60;
+      margin-left: 8px;
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     * {
       box-sizing: border-box;
     }
@@ -158,13 +352,61 @@
 <body>
 
   <header>
-    <h1>MyStore</h1>
-    <nav>
+    <div class="top-banner">
+      <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+      <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+  </div>
+  <div class="top-header">
+      <div class="left-section">
+        <a href="about.html">About Us</a>
+        <a href="profile.html">My account</a>
+        <a href="wishlist.html">Wishlist</a>
+        <span class="divider"></span>
+        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+      </div>
+      <div class="right-section">
+        <div id="google_translate_element"></div>
+       <a href="register_seller.html">  <button class="seller-btn">Seller Login</button></a>
+        <a href="#">Order Tracking</a>
+      </div>
+    </div>
+  <nav class="navbar">
+      <div class="navbar-left">
+          <a href="#" class="logo">
+              <img src="https://i.postimg.cc/SsXbFmbS/G.png" alt="Grobox Logo">
+              <span id="brand">robox</span>
+          </a>
+          <div class="delivery">
+              <span>Deliver to</span>
+              <span>all</span>
+              <span id="user-location">Locating...</span>
+          </div>
+      </div>
+      <div class="navbar-center">
+          <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+          <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </div>
+      <div class="navbar-right">
+          <a href="sign_in.html" class="account" id="account-btn"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
+          <button id="signout-btn" onclick="signOutUser()">Sign out</button>
+          <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+          <a href="cart.html" class="cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+            <span id="cart-count">0</span>
+          </a>
+      </div>
+  </nav>
+  <div class="navbar-links">
       <a href="index.html">Home</a>
       <a href="shop.html">Shop</a>
-      <a href="wishlist.html">❤️ <span class="icon-count" id="wishlistCount">0</span></a>
-      <a href="cart.html">🛒 <span class="icon-count" id="cartCount">0</span></a>
-    </nav>
+      <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+      <a href="beverages.html">Beverages</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+      <a href="trendingproduct.html">Trending Products</a>
+      <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+  </div>
   </header>
 
   <main>
@@ -184,8 +426,61 @@
   </main>
 
   <footer>
-    <p>&copy; 2025 MyStore. All rights reserved.</p>
-  </footer>
+    <div class="newsletter">
+      <p>Join our newsletter for exclusive discounts!</p>
+      <form>
+          <input type="email" placeholder="Enter your email">
+          <button type="submit">Subscribe</button>
+      </form>
+  </div>
+  <div class="footer-content">
+      <div class="column">
+          <h3>Need Help?</h3>
+          <p>Contact our support team: support@rootsy.com</p>
+          <p>Call us: 0800 19019028</p>
+      </div>
+      <div class="column">
+          <h3>Company Info</h3>
+          <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+          </ul>
+      </div>
+      <div class="column">
+          <h3>Follow Us</h3>
+          <div class="social-media">
+              <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+              <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+              <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+          </div>
+      </div>
+      <div class="column">
+          <h3>Payment Methods</h3>
+          <div class="payment-methods">
+              <i class="fa-brands fa-cc-visa"></i>
+              <i class="fa-brands fa-cc-mastercard"></i>
+              <i class="fa-brands fa-cc-paypal"></i>
+          </div>
+      </div>
+  </div>
+  <div class="copyright">
+      Copyright 2025 © Rootsy All rights reserved. Powered by Bewbandits.
+  </div>
+  <div class="links">
+      <a href="#">Terms and Conditions</a> |
+      <a href="#">Privacy Policy</a> |
+      <a href="#">Order Tracking</a>
+  </div>
+</footer>
+<script src="script.js"></script>
+<script type="text/javascript">
+function googleTranslateElementInit() {
+new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+}
+</script>
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+
 
   <script>
     const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
