@@ -47,6 +47,7 @@
 });
 
       };
+
       // --- LOCATION LOGIC ---
 function showLocation(position) {
     const latitude = position.coords.latitude;
@@ -199,6 +200,8 @@ window.addEventListener('DOMContentLoaded', function() {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .goog-logo-link { display: none !important; }
+  .goog-te-gadget { color: transparent !important; }
     </style>
 </head>
 <body>
@@ -537,6 +540,53 @@ window.addEventListener('DOMContentLoaded', function() {
     </footer>
 <script src="script.js"></script>
 <script type="text/javascript">
+  function setLanguagePreference(lang) {
+    localStorage.setItem('preferredLanguage', lang);
+  }
+
+  function getLanguagePreference() {
+    return localStorage.getItem('preferredLanguage');
+  }
+
+  function loadGoogleTranslate() {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'en,es,fr,de,hi,zh-CN',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+      autoDisplay: false
+    }, 'google_translate_element');
+  }
+
+  // Store selected language
+  function handleTranslateChange() {
+    const interval = setInterval(() => {
+      const select = document.querySelector(".goog-te-combo");
+      if (select) {
+        select.addEventListener("change", () => {
+          setLanguagePreference(select.value);
+        });
+
+        // Apply stored preference
+        const savedLang = getLanguagePreference();
+        if (savedLang) {
+          select.value = savedLang;
+          select.dispatchEvent(new Event('change'));
+        }
+
+        clearInterval(interval);
+      }
+    }, 500);
+  }
+
+  function initTranslate() {
+    loadGoogleTranslate();
+    handleTranslateChange();
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    initTranslate();
+  });
+
   function googleTranslateElementInit() {
     new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
   }
