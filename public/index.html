@@ -24,31 +24,36 @@
       firebase.initializeApp(firebaseConfig);
       const auth = firebase.auth();
 
-      window.onload = function() {
-        auth.onAuthStateChanged(function(user) {
-  const accountBtn = document.getElementById('account-btn');
-  const signoutBtn = document.getElementById('signout-btn');
-  if (user) {
-    if (accountBtn) {
-      accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
-      accountBtn.style.cursor = "pointer";
-      accountBtn.title = "View Profile";
+      // Fix for auth state change
+window.onload = function() {
+  auth.onAuthStateChanged(function(user) {
+    const accountBtn = document.getElementById('account-btn');
+    const signoutBtn = document.getElementById('signout-btn');
+    
+    if (user) {
+      // User is signed in - update UI with email
+      console.log("User is signed in:", user.email); // Debug log
+      if (accountBtn) {
+        accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
+        accountBtn.style.cursor = "pointer";
+        accountBtn.title = "View Profile";
+      }
+      if (signoutBtn) signoutBtn.style.display = "inline-block";
+    } else {
+      // No user is signed in
+      console.log("No user signed in"); // Debug log
+      if (accountBtn) {
+        accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
+        accountBtn.style.cursor = "pointer";
+        accountBtn.title = "Sign in to your account";
+      }
+      if (signoutBtn) signoutBtn.style.display = "none";
     }
-    if (signoutBtn) signoutBtn.style.display = "inline-block";
-  } else {
-    // No redirect! Just update UI for guests
-    if (accountBtn) {
-      accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
-      accountBtn.style.cursor = "pointer";
-      accountBtn.title = "Sign in to your account";
-    }
-    if (signoutBtn) signoutBtn.style.display = "none";
-  }
-});
+  });
+};
 
-      };
 
-      // --- LOCATION LOGIC ---
+      // --- LOCATION LOGIC ---// Fix for geolocation display
 function showLocation(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
@@ -56,64 +61,52 @@ function showLocation(position) {
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
         .then(response => response.json())
         .then(data => {
+            console.log("Geolocation data:", data); // Debug log to see what we're getting
             let locationString = "";
 
             if (data.address) {
-                // Get street, falling back to alternatives if necessary
+                // Get street name with proper fallbacks
                 const street = data.address.road || data.address.pedestrian || data.address.street || "";
-                // Get locality: suburb, neighbourhood, or city_district
-                const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-                // Get city, town, village, or hamlet
+                
+                // Get city with proper fallbacks
                 const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
-
-                // Build the location string: locality, city (street is optional)
-                if (locality && city) {
-                    locationString = `${locality}, ${city}`;
+                
+                // Format as "street, city" when both are available
+                if (street && city) {
+                    locationString = `${street}, ${city}`;
+                } else if (street) {
+                    locationString = street;
                 } else if (city) {
                     locationString = city;
-                } else if (locality) {
-                    locationString = locality;
                 } else {
-                    locationString = "Location unavailable";
+                    // Fallback to locality + city if street is not available
+                    const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
+                    if (locality && city) {
+                        locationString = `${locality}, ${city}`;
+                    } else if (locality) {
+                        locationString = locality;
+                    } else {
+                        locationString = "Location unavailable";
+                    }
                 }
             } else {
                 locationString = "Location unavailable";
             }
 
             // Display location
-            document.getElementById('user-location').textContent = locationString;
+            const locationElement = document.getElementById('user-location');
+            if (locationElement) {
+                locationElement.textContent = locationString;
+            }
         })
         .catch(error => {
             console.error('Geocoding error:', error);
-            document.getElementById('user-location').textContent = "Location service error";
+            const locationElement = document.getElementById('user-location');
+            if (locationElement) {
+                locationElement.textContent = "Location service error";
+            }
         });
 }
-
-function showError(error) {
-    const messages = {
-        1: 'Location access denied',
-        2: 'Location unavailable',
-        3: 'Location request timed out'
-    };
-    document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
-}
-
-function initLocation() {
-    const locElem = document.getElementById('user-location');
-    if (!locElem) return;
-    locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            showLocation,
-            showError,
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    } else {
-        locElem.textContent = "Geolocation not supported";
-    }
-}
-
 // Call this on DOMContentLoaded
 window.addEventListener('DOMContentLoaded', function() {
     initLocation();
