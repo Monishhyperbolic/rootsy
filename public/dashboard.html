@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Orders - Rootsy</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Header -->
+<header class="flex items-center justify-between p-4 bg-white shadow">
+  <div class="flex items-center gap-2">
+    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" alt="Logo" class="h-8">
+    <h1 class="text-xl font-bold text-blue-600">Rootsy</h1>
+  </div>
+  <div class="flex items-center gap-4">
+    <input type="text" id="search-orders" placeholder="Search Orders..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
+    <div class="flex items-center gap-2">
+      <img id="user-avatar" src="https://via.placeholder.com/40" alt="User" class="rounded-full w-10 h-10">
+      <span id="seller-name" class="font-semibold">Loading...</span>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar + Main -->
+<div class="flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white p-6 min-h-screen shadow">
+    <nav class="flex flex-col gap-6">
+      <a href="dashboard.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="#" class="flex items-center gap-2 text-blue-600 font-bold">
+        <i class="fas fa-shopping-cart"></i> Orders
+      </a>
+      <a href="products.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-box"></i> Products
+      </a>
+      <a href="analytics.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-chart-bar"></i> Analytics
+      </a>
+      <a href="#" id="logout-button" class="flex items-center gap-2 text-red-600 hover:text-red-700 mt-auto">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold mb-2">Orders</h2>
+      <p class="text-gray-500">Manage your latest orders</p>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-xl shadow p-4">
+      <div class="flex justify-between mb-4">
+        <div class="flex items-center gap-4">
+          <div>
+            <label class="text-gray-700">Filter by Date:</label>
+            <select id="date-filter" class="border rounded px-3 py-2 ml-2">
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-gray-700">Filter by Status:</label>
+            <select id="status-filter" class="border rounded px-3 py-2 ml-2">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <button id="refresh-orders" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Refresh Orders</button>
+      </div>
+
+      <div id="orders-loading" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p class="mt-2 text-gray-600">Loading orders...</p>
+      </div>
+
+      <div id="no-orders" class="text-center py-8 hidden">
+        <div class="text-gray-400 mb-2 text-5xl">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <p class="text-gray-500">No orders found</p>
+      </div>
+
+      <div id="orders-table" class="overflow-x-auto hidden">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="py-3 px-6 text-left">Order ID</th>
+              <th class="py-3 px-6 text-left">Customer</th>
+              <th class="py-3 px-6 text-left">Product</th>
+              <th class="py-3 px-6 text-left">Amount</th>
+              <th class="py-3 px-6 text-left">Date</th>
+              <th class="py-3 px-6 text-left">Status</th>
+              <th class="py-3 px-6 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table-body" class="text-gray-700">
+            <!-- Orders will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Order Details Modal -->
+<div id="order-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold">Order Details</h3>
+      <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div id="order-details-content">
+      <!-- Order details will be inserted here -->
+    </div>
+    
+    <div class="mt-6 flex justify-end">
+      <button id="update-status" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">Update Status</button>
+      <button id="close-modal-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- FontAwesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<script>
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+    authDomain: "rootsy-ec110.firebaseapp.com",
+    projectId: "rootsy-ec110",
+    storageBucket: "rootsy-ec110.appspot.com",
+    messagingSenderId: "120254624474",
+    appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+    measurementId: "G-0Y636N5BPV"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Supabase Configuration
+  const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // Replace with your actual Supabase anon key
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // DOM Elements
+  const searchInput = document.getElementById('search-orders');
+  const dateFilter = document.getElementById('date-filter');
+  const statusFilter = document.getElementById('status-filter');
+  const refreshButton = document.getElementById('refresh-orders');
+  const logoutButton = document.getElementById('logout-button');
+  const ordersTable = document.getElementById('orders-table');
+  const ordersTableBody = document.getElementById('orders-table-body');
+  const ordersLoading = document.getElementById('orders-loading');
+  const noOrders = document.getElementById('no-orders');
+  const orderModal = document.getElementById('order-modal');
+  const closeModal = document.getElementById('close-modal');
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  const updateStatus = document.getElementById('update-status');
+  const orderDetailsContent = document.getElementById('order-details-content');
+  const sellerNameElement = document.getElementById('seller-name');
+  const userAvatarElement = document.getElementById('user-avatar');
+
+  // Global variables
+  let currentSeller = null;
+  let currentOrders = [];
+  let currentOrderDetail = null;
+
+  // Authentication check
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        // Get seller details
+        const { data: seller, error } = await supabaseClient
+          .from('sellers')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+
+        if (error) throw error;
+        
+        if (seller) {
+          currentSeller = seller;
+          sellerNameElement.textContent = seller.name;
+          userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
+          
+          // Load orders
+          fetchOrders();
+        } else {
+          // Redirect to login
+          window.location.href = "/login.html";
+        }
+      } catch (error) {
+        console.error("Error fetching seller details:", error);
+        alert("Error loading seller information. Please try again later.");
+      }
+    } else {
+      // Redirect to login
+      window.location.href = "/login.html";
+    }
+  });
+
+  // Fetch orders based on seller and filters
+  async function fetchOrders() {
+    if (!currentSeller) return;
+    
+    try {
+      ordersLoading.classList.remove('hidden');
+      ordersTable.classList.add('hidden');
+      noOrders.classList.add('hidden');
+      
+      // Build query
+      let query = supabaseClient
+        .from('orders')
+        .select(`
+          id,
+          customer_name,
+          product_name,
+          amount,
+          created_at,
+          status,
+          customer_email,
+          customer_address,
+          payment_method
+        `)
+        .eq('seller_name', currentSeller.name);
+      
+      // Apply date filter
+      const dayFilter = parseInt(dateFilter.value);
+      if (dayFilter && dayFilter !== 'all') {
+        const fromDate = new Date();
+        fromDate.setDate(fromDate.getDate() - dayFilter);
+        query = query.gte('created_at', fromDate.toISOString());
+      }
+      
+      // Apply status filter
+      const statusValue = statusFilter.value;
+      if (statusValue && statusValue !== 'all') {
+        query = query.eq('status', statusValue);
+      }
+      
+      // Apply search filter
+      const searchValue = searchInput.value.trim().toLowerCase();
+      if (searchValue) {
+        query = query.or(`customer_name.ilike.%${searchValue}%,product_name.ilike.%${searchValue}%,id.ilike.%${searchValue}%`);
+      }
+      
+      // Execute query
+      const { data: orders, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      currentOrders = orders;
+      
+      // Update UI
+      ordersLoading.classList.add('hidden');
+      
+      if (orders.length === 0) {
+        noOrders.classList.remove('hidden');
+      } else {
+        ordersTable.classList.remove('hidden');
+        renderOrdersTable(orders);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      ordersLoading.classList.add('hidden');
+      alert("Error loading orders. Please try again later.");
+    }
+  }
+
+  // Render orders table
+  function renderOrdersTable(orders) {
+    ordersTableBody.innerHTML = '';
+    
+    orders.forEach(order => {
+      const row = document.createElement('tr');
+      row.className = 'border-b';
+      
+      // Format date
+      const orderDate = new Date(order.created_at);
+      const formattedDate = orderDate.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      // Determine status color
+      let statusColor = '';
+      switch(order.status.toLowerCase()) {
+        case 'completed':
+          statusColor = 'bg-green-100 text-green-700';
+          break;
+        case 'pending':
+          statusColor = 'bg-yellow-100 text-yellow-700';
+          break;
+        case 'processing':
+          statusColor = 'bg-blue-100 text-blue-700';
+          break;
+        case 'cancelled':
+          statusColor = 'bg-red-100 text-red-700';
+          break;
+        default:
+          statusColor = 'bg-gray-100 text-gray-700';
+      }
+      
+      row.innerHTML = `
+        <td class="py-4 px-6">#${order.id}</td>
+        <td class="py-4 px-6">${order.customer_name}</td>
+        <td class="py-4 px-6">${order.product_name}</td>
+        <td class="py-4 px-6">$${parseFloat(order.amount).toFixed(2)}</td>
+        <td class="py-4 px-6">${formattedDate}</td>
+        <td class="py-4 px-6">
+          <span class="${statusColor} py-1 px-3 rounded-full text-xs capitalize">${order.status}</span>
+        </td>
+        <td class="py-4 px-6 text-right">
+          <button class="text-blue-600 hover:underline view-order" data-order-id="${order.id}">View</button>
+        </td>
+      `;
+      
+      ordersTableBody.appendChild(row);
+    });
+    
+    // Add event listeners to view buttons
+    document.querySelectorAll('.view-order').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const orderId = e.target.getAttribute('data-order-id');
+        showOrderDetails(orderId);
+      });
+    });
+  }
+
+  // Show order details in modal
+  function showOrderDetails(orderId) {
+    const order = currentOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    currentOrderDetail = order;
+    
+    // Format date
+    const orderDate = new Date(order.created_at);
+    const formattedDate = orderDate.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    orderDetailsContent.innerHTML = `
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <h4 class="font-medium text-gray-500">Order ID</h4>
+          <p class="font-semibold">#${order.id}</p>
+        </div>
+        <div>
+          <h4 class="font-medium text-gray-500">Date</h4>
+          <p>${formattedDate}</p>
+        </div>
+        <div>
+          <h4 class="font-medium text-gray-500">Status</h4>
+          <select id="order-status" class="border rounded px-2 py-1 w-full">
+            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+          </select>
+        </div>
+        <div>
+          <h4 class="font-medium text-gray-500">Amount</h4>
+          <p class="font-semibold">$${parseFloat(order.amount).toFixed(2)}</p>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="font-medium text-gray-500 mb-2">Customer Information</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <h5 class="text-sm text-gray-500">Name</h5>
+            <p>${order.customer_name}</p>
+          </div>
+          <div>
+            <h5 class="text-sm text-gray-500">Email</h5>
+            <p>${order.customer_email || 'N/A'}</p>
+          </div>
+          <div class="col-span-2">
+            <h5 class="text-sm text-gray-500">Address</h5>
+            <p>${order.customer_address || 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="font-medium text-gray-500 mb-2">Order Details</h4>
+        <div class="border rounded overflow-hidden">
+          <table class="min-w-full divide-y">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.product_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$${parseFloat(order.amount).toFixed(2)}</td>
+              </tr>
+            </tbody>
+            <tfoot class="bg-gray-50">
+              <tr>
+                <td class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</td>
+                <td class="px-6 py-3 text-right text-xs font-medium text-gray-900 tracking-wider">$${parseFloat(order.amount).toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      
+      <div class="mt-6">
+        <h4 class="font-medium text-gray-500 mb-2">Payment Information</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <h5 class="text-sm text-gray-500">Payment Method</h5>
+            <p>${order.payment_method || 'N/A'}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    orderModal.classList.remove('hidden');
+  }
+
+  // Update order status
+  async function updateOrderStatus() {
+    if (!currentOrderDetail) return;
+    
+    const newStatus = document.getElementById('order-status').value;
+    
+    try {
+      const { data, error } = await supabaseClient
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', currentOrderDetail.id);
+      
+      if (error) throw error;
+      
+      alert('Order status updated successfully!');
+      closeOrderModal();
+      fetchOrders(); // Refresh orders list
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert("Error updating order status. Please try again later.");
+    }
+  }
+
+  // Close order modal
+  function closeOrderModal() {
+    orderModal.classList.add('hidden');
+    currentOrderDetail = null;
+  }
+
+  // Logout functionality
+  async function logout() {
+    try {
+      await auth.signOut();
+      window.location.href = "/login.html";
+    } catch (error) {
+      console.error("Error signing out:", error);
+      alert("Error signing out. Please try again.");
+    }
+  }
+
+  // Add event listeners
+  refreshButton.addEventListener('click', fetchOrders);
+  searchInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      fetchOrders();
+    }
+  });
+  dateFilter.addEventListener('change', fetchOrders);
+  statusFilter.addEventListener('change', fetchOrders);
+  closeModal.addEventListener('click', closeOrderModal);
+  closeModalBtn.addEventListener('click', closeOrderModal);
+  updateStatus.addEventListener('click', updateOrderStatus);
+  logoutButton.addEventListener('click', logout);
+
+  // Initialize page
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth state change will trigger fetchOrders
+  });
+</script>
+
+</body>
+</html>
