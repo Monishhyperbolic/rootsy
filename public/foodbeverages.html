@@ -409,6 +409,12 @@
                 showErrorState();
             }
         }
+        document.addEventListener('DOMContentLoaded', async () => {
+    await loadCategories();
+    await loadProducts();
+    updateCartCounts();
+});
+
 
         async function fetchProducts() {
             const category = elements.categorySelect.value;
