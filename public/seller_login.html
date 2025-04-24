@@ -6,109 +6,72 @@
   <title>Seller Login - Rootsy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/supabase.min.js"></script>
-  <!-- Firebase App (the core Firebase SDK) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <!-- Firebase Auth SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <style>
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      background-color: #f8f8f8;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .navbar-left {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      color: black;
-    }
-
-    .logo img {
-      height: 40px;
-      margin-right: 5px;
-    }
-  </style>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+  
 </head>
-<body class="bg-[#f9f9f9] flex items-center justify-center h-screen font-sans">
-  <div class="navbar">
+<body class="bg-[#f9f9f9] flex flex-col items-center justify-center min-h-screen font-sans">
+  <div class="navbar w-full">
     <a href="index.html" class="logo">
-      <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 420px; height: auto;" alt="Logo" />
+      <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 200px; height: auto;" alt="Logo" />
     </a>
   </div>
 
-  <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md" id="login-section">
-    <div class="text-center mb-6">
-      <h2 class="text-2xl font-bold text-blue-600 mb-1">Welcome Back, Seller!</h2>
-      <p class="text-gray-500 text-sm">Login to manage your orders & products</p>
+  <div class="flex-grow flex items-center justify-center w-full">
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md" id="login-section">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold text-blue-600 mb-1">Welcome Back, Seller!</h2>
+        <p class="text-gray-500 text-sm">Login to manage your orders & products</p>
+      </div>
+
+      <!-- Google Login -->
+      <button id="google-login" class="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 mb-6 hover:bg-gray-100 transition">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+        <span class="text-gray-700 font-medium">Login or Signup with Google</span>
+      </button>
+
+      <div id="login-status" class="text-center text-sm mt-4 hidden">
+        <div class="animate-spin inline-block w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
+        <span>Logging in...</span>
+      </div>
+      
+      <div id="login-error" class="text-center text-sm text-red-500 mt-4 hidden"></div>
     </div>
 
-    <!-- Google Login -->
-    <button id="google-login" class="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 mb-6 hover:bg-gray-100 transition">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-      <span class="text-gray-700 font-medium">Login with Google</span>
-    </button>
+    <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md hidden" id="form-section">
+      <h2 class="text-2xl font-bold text-blue-600 mb-6">Complete Your Profile</h2>
 
-    <div class="text-center text-gray-400 text-sm mb-4">or login with email</div>
+      <!-- Form to collect seller details -->
+      <form id="seller-form" class="space-y-5">
+        <div>
+          <label class="block text-gray-600 mb-1">Name</label>
+          <input type="text" id="name" placeholder="Enter your name"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">PIN Code</label>
+          <input type="text" id="pincode" placeholder="Enter your PIN code"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1">Location</label>
+          <input type="text" id="location" placeholder="Enter your location"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        </div>
 
-    <form id="email-login-form" class="space-y-5">
-      <div>
-        <label class="block text-gray-600 mb-1">Email</label>
-        <input type="email" id="email" placeholder="seller@example.com"
-               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-gray-600 mb-1">Password</label>
-        <input type="password" id="password" placeholder="••••••••"
-               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-      </div>
-
-      <button type="submit"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
-        Login
-      </button>
-    </form>
-  </div>
-
-  <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md hidden" id="form-section">
-    <h2 class="text-2xl font-bold text-blue-600 mb-6">Complete Your Profile</h2>
-
-    <!-- Form to collect seller details -->
-    <form id="seller-form" class="space-y-5">
-      <div>
-        <label class="block text-gray-600 mb-1">Name</label>
-        <input type="text" id="name" placeholder="Enter your name"
-               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-gray-600 mb-1">PIN Code</label>
-        <input type="text" id="pincode" placeholder="Enter your PIN code"
-               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-      </div>
-      <div>
-        <label class="block text-gray-600 mb-1">Location</label>
-        <input type="text" id="location" placeholder="Enter your location"
-               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
-      </div>
-
-      <button type="submit"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
-        Save Profile
-      </button>
-    </form>
+        <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+          Save Profile
+        </button>
+      </form>
+    </div>
   </div>
 
   <script>
-    // Firebase configuration
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
       authDomain: "rootsy-ec110.firebaseapp.com",
@@ -123,22 +86,31 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Google Login functionality
-    document.getElementById('google-login').addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      
-      auth.signInWithPopup(provider)
-        .then(async (result) => {
-          const user = result.user;
-          console.log(`User info: `, user);
+    // Supabase Configuration
+    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Replace with your actual Supabase anon key
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+    // Get status elements
+    const loginStatus = document.getElementById('login-status');
+    const loginError = document.getElementById('login-error');
+
+    // Check if user is already logged in
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
           // Check if the user exists in the 'sellers' table in Supabase
-          const { data, error } = await supabase
+          const { data, error } = await supabaseClient
             .from('sellers')
             .select('*')
-            .eq('email', user.email);
+            .eq('email', user.email)
+            .single();
 
-          if (data.length > 0) {
+          if (error && error.code !== 'PGRST116') {
+            throw error;
+          }
+
+          if (data) {
             // User exists, redirect to dashboard
             window.location.href = "/dashboard.html";
           } else {
@@ -146,12 +118,65 @@
             document.getElementById("login-section").classList.add("hidden");
             document.getElementById("form-section").classList.remove("hidden");
           }
+        } catch (error) {
+          console.error("Error checking user in Supabase:", error);
+          showLoginError("Database error: " + error.message);
+        }
+      }
+    });
+
+    // Google Login functionality
+    document.getElementById('google-login').addEventListener('click', () => {
+      loginStatus.classList.remove('hidden');
+      loginError.classList.add('hidden');
+      
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      auth.signInWithPopup(provider)
+        .then(async (result) => {
+          const user = result.user;
+          console.log(`User logged in successfully:`, user.email);
+
+          try {
+            // Check if the user exists in the 'sellers' table in Supabase
+            const { data, error } = await supabaseClient
+              .from('sellers')
+              .select('*')
+              .eq('email', user.email)
+              .single();
+
+            if (error && error.code !== 'PGRST116') {
+              throw error;
+            }
+
+            if (data) {
+              // User exists, redirect to dashboard
+              window.location.href = "/dashboard.html";
+            } else {
+              // User does not exist, show the profile form
+              document.getElementById("login-section").classList.add("hidden");
+              document.getElementById("form-section").classList.remove("hidden");
+            }
+          } catch (error) {
+            console.error("Error checking user in Supabase:", error);
+            showLoginError("Database error: " + error.message);
+          }
         })
         .catch((error) => {
           console.error("Error during Google login: ", error);
-          alert("Login failed: " + error.message);
+          showLoginError("Login failed: " + error.message);
+        })
+        .finally(() => {
+          loginStatus.classList.add('hidden');
         });
     });
+
+    function showLoginError(message) {
+      loginError.textContent = message;
+      loginError.classList.remove('hidden');
+      loginStatus.classList.add('hidden');
+    }
 
     // Handle form submission for creating a new seller profile
     document.getElementById('seller-form').addEventListener('submit', async (e) => {
@@ -161,18 +186,49 @@
       const pincode = document.getElementById('pincode').value;
       const location = document.getElementById('location').value;
 
-      // Insert data into Supabase
-      const user = firebase.auth().currentUser;
-      const { data, error } = await supabase
-        .from('sellers')
-        .insert([{ name, email: user.email, location }]);
+      if (!name || !pincode || !location) {
+        alert('Please fill in all fields');
+        return;
+      }
 
-      if (error) {
-        console.error('Error inserting data:', error);
-      } else {
+      // Show loading state
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Saving...';
+
+      try {
+        // Insert data into Supabase
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          throw new Error('No authenticated user found');
+        }
+
+        const { data, error } = await supabaseClient
+          .from('sellers')
+          .insert([{ 
+            name, 
+            email: user.email, 
+            pincode,
+            location,
+            uid: user.uid,
+            created_at: new Date().toISOString()
+          }]);
+
+        if (error) {
+          throw error;
+        }
+
         alert('Profile saved successfully!');
         // Redirect to dashboard after successful submission
         window.location.href = "/dashboard.html";
+      } catch (error) {
+        console.error('Error inserting data:', error);
+        alert('Error saving profile: ' + error.message);
+      } finally {
+        // Reset button state
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
       }
     });
   </script>
