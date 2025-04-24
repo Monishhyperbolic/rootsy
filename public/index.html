@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rootsy</title>
-<!--     <link rel="stylesheet" href="style.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -24,101 +23,140 @@
       firebase.initializeApp(firebaseConfig);
       const auth = firebase.auth();
 
-      // Fix for auth state change
-window.onload = function() {
-  auth.onAuthStateChanged(function(user) {
-    const accountBtn = document.getElementById('account-btn');
-    const signoutBtn = document.getElementById('signout-btn');
-    
-    if (user) {
-      // User is signed in - update UI with email
-      console.log("User is signed in:", user.email); // Debug log
-      if (accountBtn) {
-        accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
-        accountBtn.style.cursor = "pointer";
-        accountBtn.title = "View Profile";
+      // Improved auth state change handler
+      window.addEventListener('DOMContentLoaded', function() {
+        auth.onAuthStateChanged(function(user) {
+          const accountBtn = document.getElementById('account-btn');
+          const signoutBtn = document.getElementById('signout-btn');
+          
+          if (user) {
+            // User is signed in - update UI with email
+            console.log("User is signed in:", user.email); // Debug log
+            if (accountBtn) {
+              accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
+              accountBtn.style.cursor = "pointer";
+              accountBtn.title = "View Profile";
+              // Update navbar account link as well
+              const navbarAccount = document.querySelector('.navbar-right .account span');
+              if (navbarAccount) {
+                navbarAccount.textContent = user.email;
+              }
+            }
+            if (signoutBtn) signoutBtn.style.display = "inline-block";
+          } else {
+            // No user is signed in
+            console.log("No user signed in"); // Debug log
+            if (accountBtn) {
+              accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
+              accountBtn.style.cursor = "pointer";
+              accountBtn.title = "Sign in to your account";
+            }
+            if (signoutBtn) signoutBtn.style.display = "none";
+          }
+          
+          // Initialize geolocation after auth check
+          initGeolocation();
+        });
+      });
+
+      // Fixed geolocation functionality
+      function initGeolocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(showLocation, showError);
+        } else {
+          const locationElement = document.getElementById('user-location');
+          if (locationElement) {
+            locationElement.textContent = "Geolocation not supported by this browser";
+          }
+        }
       }
-      if (signoutBtn) signoutBtn.style.display = "inline-block";
-    } else {
-      // No user is signed in
-      console.log("No user signed in"); // Debug log
-      if (accountBtn) {
-        accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
-        accountBtn.style.cursor = "pointer";
-        accountBtn.title = "Sign in to your account";
-      }
-      if (signoutBtn) signoutBtn.style.display = "none";
-    }
-  });
-};
 
+      function showLocation(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-      // --- LOCATION LOGIC ---// Fix for geolocation display
-function showLocation(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
-        .then(response => response.json())
-        .then(data => {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+          .then(response => response.json())
+          .then(data => {
             console.log("Geolocation data:", data); // Debug log to see what we're getting
             let locationString = "";
 
             if (data.address) {
-                // Get street name with proper fallbacks
-                const street = data.address.road || data.address.pedestrian || data.address.street || "";
-                
-                // Get city with proper fallbacks
-                const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
-                
-                // Format as "street, city" when both are available
-                if (street && city) {
-                    locationString = `${street}, ${city}`;
-                } else if (street) {
-                    locationString = street;
-                } else if (city) {
-                    locationString = city;
+              // Get street name with proper fallbacks
+              const street = data.address.road || data.address.pedestrian || data.address.street || "";
+              
+              // Get city with proper fallbacks
+              const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
+              
+              // Format as "street, city" when both are available
+              if (street && city) {
+                locationString = `${street}, ${city}`;
+              } else if (street) {
+                locationString = street;
+              } else if (city) {
+                locationString = city;
+              } else {
+                // Fallback to locality + city if street is not available
+                const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
+                if (locality && city) {
+                  locationString = `${locality}, ${city}`;
+                } else if (locality) {
+                  locationString = locality;
                 } else {
-                    // Fallback to locality + city if street is not available
-                    const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-                    if (locality && city) {
-                        locationString = `${locality}, ${city}`;
-                    } else if (locality) {
-                        locationString = locality;
-                    } else {
-                        locationString = "Location unavailable";
-                    }
+                  locationString = "Location unavailable";
                 }
+              }
             } else {
-                locationString = "Location unavailable";
+              locationString = "Location unavailable";
             }
 
             // Display location
             const locationElement = document.getElementById('user-location');
             if (locationElement) {
-                locationElement.textContent = locationString;
+              locationElement.textContent = locationString;
             }
-        })
-        .catch(error => {
+          })
+          .catch(error => {
             console.error('Geocoding error:', error);
             const locationElement = document.getElementById('user-location');
             if (locationElement) {
-                locationElement.textContent = "Location service error";
+              locationElement.textContent = "Location service error";
             }
-        });
-}
-// Call this on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', function() {
-    initLocation();
-    updateCartCount(); // if you want to keep cart count update on load
-});
+          });
+      }
 
-
+      function showError(error) {
+        const locationElement = document.getElementById('user-location');
+        if (locationElement) {
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              locationElement.textContent = "Location access denied";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              locationElement.textContent = "Location information unavailable";
+              break;
+            case error.TIMEOUT:
+              locationElement.textContent = "Location request timed out";
+              break;
+            case error.UNKNOWN_ERROR:
+              locationElement.textContent = "Unknown location error";
+              break;
+          }
+        }
+      }
 
       function signOutUser() {
         auth.signOut().then(function() {
           window.location.href = "sign_in.html";
         });
+      }
+
+      // Function to scroll categories
+      function scrollCategory(amount) {
+        const container = document.getElementById('categoryContainer');
+        if (container) {
+          container.scrollLeft += amount;
+        }
       }
 
       // --- CART LOGIC ---
@@ -152,19 +190,48 @@ window.addEventListener('DOMContentLoaded', function() {
         updateCartCount();
         alert(`${title} added to cart!`);
       }
-      document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('add-to-cart')) {
-          let cardElem = e.target.closest('.card, .ccard');
-          if (cardElem) addToCartFromCard(cardElem);
-        }
-      });
+      
       function updateCartCount() {
         let cart = getCart();
         let count = cart.reduce((acc, item) => acc + item.qty, 0);
         let countElem = document.getElementById('cart-count');
         if (countElem) countElem.textContent = count;
       }
-      window.addEventListener('DOMContentLoaded', updateCartCount);
+      
+      // Banner slider functionality
+      function startBannerSlider() {
+        const bannerBoxes = document.querySelectorAll('.banner-box');
+        
+        bannerBoxes.forEach(box => {
+          const slides = box.querySelectorAll('.banner-slide');
+          if (slides.length > 1) {
+            let currentSlide = 0;
+            
+            setInterval(() => {
+              slides[currentSlide].classList.remove('active');
+              currentSlide = (currentSlide + 1) % slides.length;
+              slides[currentSlide].classList.add('active');
+            }, 5000);
+          }
+        });
+      }
+      
+      // Event listeners
+      document.addEventListener('DOMContentLoaded', function() {
+        // Init cart count
+        updateCartCount();
+        
+        // Start banner sliders
+        startBannerSlider();
+        
+        // Add to cart click listener
+        document.addEventListener('click', function(e) {
+          if (e.target.classList.contains('add-to-cart')) {
+            let cardElem = e.target.closest('.card, .ccard');
+            if (cardElem) addToCartFromCard(cardElem);
+          }
+        });
+      });
     </script>
     <style>
       #signout-btn {
@@ -194,7 +261,14 @@ window.addEventListener('DOMContentLoaded', function() {
         text-overflow: ellipsis;
       }
       .goog-logo-link { display: none !important; }
-  .goog-te-gadget { color: transparent !important; }
+      .goog-te-gadget { color: transparent !important; }
+      .skiptranslate { font-size: 0 !important; }
+      .goog-te-combo {
+        font-size: 14px !important;
+        padding: 4px !important;
+        border-radius: 4px !important;
+        border: 1px solid #ddd !important;
+      }
 
         body {
     font-family: Arial, sans-serif;
@@ -921,8 +995,7 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
 
-
-.cat-container {
+  .cat-container {
     display: grid;
     grid-template-columns: repeat(6, 1fr); /* Ensures 4 cards per row */
     gap: 0px;
