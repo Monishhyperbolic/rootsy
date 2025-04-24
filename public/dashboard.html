@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Orders - Rootsy</title>
+  <title>Dashboard - Rootsy</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
 
@@ -20,7 +22,7 @@
     <h1 class="text-xl font-bold text-blue-600">Rootsy</h1>
   </div>
   <div class="flex items-center gap-4">
-    <input type="text" id="search-orders" placeholder="Search Orders..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
+    <input type="text" id="search-dashboard" placeholder="Search..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
     <div class="flex items-center gap-2">
       <img id="user-avatar" src="https://via.placeholder.com/40" alt="User" class="rounded-full w-10 h-10">
       <span id="seller-name" class="font-semibold">Loading...</span>
@@ -34,10 +36,10 @@
   <!-- Sidebar -->
   <aside class="w-64 bg-white p-6 min-h-screen shadow">
     <nav class="flex flex-col gap-6">
-      <a href="dashboard.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+      <a href="dashboard.html" class="flex items-center gap-2 text-blue-600 font-bold">
         <i class="fas fa-tachometer-alt"></i> Dashboard
       </a>
-      <a href="#" class="flex items-center gap-2 text-blue-600 font-bold">
+      <a href="orders.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
         <i class="fas fa-shopping-cart"></i> Orders
       </a>
       <a href="products.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
@@ -55,91 +57,140 @@
   <!-- Main Content -->
   <main class="flex-1 p-6">
     <div class="mb-6">
-      <h2 class="text-2xl font-bold mb-2">Orders</h2>
-      <p class="text-gray-500">Manage your latest orders</p>
+      <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
+      <p class="text-gray-500">Welcome back! Here's an overview of your shop</p>
     </div>
 
-    <!-- Orders Table -->
-    <div class="bg-white rounded-xl shadow p-4">
-      <div class="flex justify-between mb-4">
-        <div class="flex items-center gap-4">
-          <div>
-            <label class="text-gray-700">Filter by Date:</label>
-            <select id="date-filter" class="border rounded px-3 py-2 ml-2">
-              <option value="7">Last 7 Days</option>
-              <option value="30">Last 30 Days</option>
-              <option value="90">Last 90 Days</option>
-              <option value="all">All Time</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-gray-700">Filter by Status:</label>
-            <select id="status-filter" class="border rounded px-3 py-2 ml-2">
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-        </div>
-        <button id="refresh-orders" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Refresh Orders</button>
-      </div>
-
-      <div id="orders-loading" class="text-center py-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="mt-2 text-gray-600">Loading orders...</p>
-      </div>
-
-      <div id="no-orders" class="text-center py-8 hidden">
-        <div class="text-gray-400 mb-2 text-5xl">
-          <i class="fas fa-shopping-cart"></i>
-        </div>
-        <p class="text-gray-500">No orders found</p>
-      </div>
-
-      <div id="orders-table" class="overflow-x-auto hidden">
-        <table class="min-w-full text-sm">
-          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
-            <tr>
-              <th class="py-3 px-6 text-left">Order ID</th>
-              <th class="py-3 px-6 text-left">Customer</th>
-              <th class="py-3 px-6 text-left">Product</th>
-              <th class="py-3 px-6 text-left">Amount</th>
-              <th class="py-3 px-6 text-left">Date</th>
-              <th class="py-3 px-6 text-left">Status</th>
-              <th class="py-3 px-6 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody id="orders-table-body" class="text-gray-700">
-            <!-- Orders will be inserted here -->
-          </tbody>
-        </table>
-      </div>
+    <!-- Loading State -->
+    <div id="dashboard-loading" class="text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-600">Loading dashboard data...</p>
     </div>
 
+    <!-- Dashboard Content -->
+    <div id="dashboard-content" class="hidden">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-gray-500 text-sm">Total Sales</h3>
+            <span class="bg-green-100 text-green-700 p-1 rounded text-xs">+12% ↑</span>
+          </div>
+          <p class="text-2xl font-bold" id="total-sales">$0.00</p>
+          <p class="text-gray-500 text-sm mt-2">Last 30 days</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-gray-500 text-sm">Orders</h3>
+            <span class="bg-green-100 text-green-700 p-1 rounded text-xs">+5% ↑</span>
+          </div>
+          <p class="text-2xl font-bold" id="total-orders">0</p>
+          <p class="text-gray-500 text-sm mt-2">Last 30 days</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-gray-500 text-sm">Customers</h3>
+            <span class="bg-green-100 text-green-700 p-1 rounded text-xs">+8% ↑</span>
+          </div>
+          <p class="text-2xl font-bold" id="total-customers">0</p>
+          <p class="text-gray-500 text-sm mt-2">Last 30 days</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-gray-500 text-sm">Products</h3>
+            <span class="bg-blue-100 text-blue-700 p-1 rounded text-xs">No change</span>
+          </div>
+          <p class="text-2xl font-bold" id="total-products">0</p>
+          <p class="text-gray-500 text-sm mt-2">Total products</p>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Sales Chart Card -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">Sales Overview</h3>
+          <div class="h-72">
+            <canvas id="sales-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Products Chart -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">Top Products</h3>
+          <div class="h-72">
+            <canvas id="products-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Recent Orders</h3>
+          <a href="orders.html" class="text-blue-600 hover:underline text-sm">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+              <tr>
+                <th class="py-3 px-6 text-left">Order ID</th>
+                <th class="py-3 px-6 text-left">Customer</th>
+                <th class="py-3 px-6 text-left">Product</th>
+                <th class="py-3 px-6 text-left">Amount</th>
+                <th class="py-3 px-6 text-left">Date</th>
+                <th class="py-3 px-6 text-left">Status</th>
+                <th class="py-3 px-6 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="recent-orders-table-body" class="text-gray-700">
+              <!-- Recent orders will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Row of Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Notifications Card -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Notifications</h3>
+            <button class="text-blue-600 hover:underline text-sm">Mark All Read</button>
+          </div>
+          <ul class="space-y-4" id="notifications-list">
+            <!-- Notifications will be inserted here -->
+          </ul>
+        </div>
+        
+        <!-- Quick Actions Card -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <a href="products.html" class="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 p-4 rounded-lg hover:bg-blue-100">
+              <i class="fas fa-plus"></i>
+              <span>Add Product</span>
+            </a>
+            <a href="orders.html" class="flex items-center justify-center gap-2 bg-green-50 text-green-600 p-4 rounded-lg hover:bg-green-100">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Process Orders</span>
+            </a>
+            <a href="analytics.html" class="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 p-4 rounded-lg hover:bg-purple-100">
+              <i class="fas fa-chart-line"></i>
+              <span>View Analytics</span>
+            </a>
+            <a href="#" class="flex items-center justify-center gap-2 bg-orange-50 text-orange-600 p-4 rounded-lg hover:bg-orange-100">
+              <i class="fas fa-cog"></i>
+              <span>Settings</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
-</div>
-
-<!-- Order Details Modal -->
-<div id="order-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-xl font-bold">Order Details</h3>
-      <button id="close-modal" class="text-gray-500 hover:text-gray-700">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
-    
-    <div id="order-details-content">
-      <!-- Order details will be inserted here -->
-    </div>
-    
-    <div class="mt-6 flex justify-end">
-      <button id="update-status" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">Update Status</button>
-      <button id="close-modal-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Close</button>
-    </div>
-  </div>
 </div>
 
 <!-- FontAwesome -->
@@ -163,31 +214,28 @@
 
   // Supabase Configuration
   const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // Replace with your actual Supabase anon key
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
   const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
   // DOM Elements
-  const searchInput = document.getElementById('search-orders');
-  const dateFilter = document.getElementById('date-filter');
-  const statusFilter = document.getElementById('status-filter');
-  const refreshButton = document.getElementById('refresh-orders');
+  const dashboardLoading = document.getElementById('dashboard-loading');
+  const dashboardContent = document.getElementById('dashboard-content');
   const logoutButton = document.getElementById('logout-button');
-  const ordersTable = document.getElementById('orders-table');
-  const ordersTableBody = document.getElementById('orders-table-body');
-  const ordersLoading = document.getElementById('orders-loading');
-  const noOrders = document.getElementById('no-orders');
-  const orderModal = document.getElementById('order-modal');
-  const closeModal = document.getElementById('close-modal');
-  const closeModalBtn = document.getElementById('close-modal-btn');
-  const updateStatus = document.getElementById('update-status');
-  const orderDetailsContent = document.getElementById('order-details-content');
   const sellerNameElement = document.getElementById('seller-name');
   const userAvatarElement = document.getElementById('user-avatar');
+  const recentOrdersTableBody = document.getElementById('recent-orders-table-body');
+  const notificationsList = document.getElementById('notifications-list');
+  
+  // Stats elements
+  const totalSalesElement = document.getElementById('total-sales');
+  const totalOrdersElement = document.getElementById('total-orders');
+  const totalCustomersElement = document.getElementById('total-customers');
+  const totalProductsElement = document.getElementById('total-products');
 
   // Global variables
   let currentSeller = null;
-  let currentOrders = [];
-  let currentOrderDetail = null;
+  let salesChart = null;
+  let productsChart = null;
 
   // Authentication check
   auth.onAuthStateChanged(async (user) => {
@@ -207,8 +255,8 @@
           sellerNameElement.textContent = seller.name;
           userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
           
-          // Load orders
-          fetchOrders();
+          // Load dashboard data
+          loadDashboardData();
         } else {
           // Redirect to login
           window.location.href = "/login.html";
@@ -223,77 +271,312 @@
     }
   });
 
-  // Fetch orders based on seller and filters
-  async function fetchOrders() {
+  // Load dashboard data
+  async function loadDashboardData() {
     if (!currentSeller) return;
     
     try {
-      ordersLoading.classList.remove('hidden');
-      ordersTable.classList.add('hidden');
-      noOrders.classList.add('hidden');
+      dashboardLoading.classList.remove('hidden');
+      dashboardContent.classList.add('hidden');
       
-      // Build query
-      let query = supabaseClient
-        .from('orders')
-        .select(`
-          id,
-          customer_name,
-          product_name,
-          amount,
-          created_at,
-          status,
-          customer_email,
-          customer_address,
-          payment_method
-        `)
-        .eq('seller_name', currentSeller.name);
+      // Fetch all required data in parallel
+      const [salesData, ordersData, productsData, customersData, recentOrdersData, notificationsData] = 
+        await Promise.all([
+          fetchSalesData(),
+          fetchOrdersData(),
+          fetchProductsData(),
+          fetchCustomersData(),
+          fetchRecentOrders(),
+          fetchNotifications()
+        ]);
       
-      // Apply date filter
-      const dayFilter = parseInt(dateFilter.value);
-      if (dayFilter && dayFilter !== 'all') {
-        const fromDate = new Date();
-        fromDate.setDate(fromDate.getDate() - dayFilter);
-        query = query.gte('created_at', fromDate.toISOString());
-      }
+      // Update UI with fetched data
+      updateDashboardUI(salesData, ordersData, productsData, customersData, recentOrdersData, notificationsData);
       
-      // Apply status filter
-      const statusValue = statusFilter.value;
-      if (statusValue && statusValue !== 'all') {
-        query = query.eq('status', statusValue);
-      }
+      // Hide loading, show content
+      dashboardLoading.classList.add('hidden');
+      dashboardContent.classList.remove('hidden');
       
-      // Apply search filter
-      const searchValue = searchInput.value.trim().toLowerCase();
-      if (searchValue) {
-        query = query.or(`customer_name.ilike.%${searchValue}%,product_name.ilike.%${searchValue}%,id.ilike.%${searchValue}%`);
-      }
-      
-      // Execute query
-      const { data: orders, error } = await query.order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      currentOrders = orders;
-      
-      // Update UI
-      ordersLoading.classList.add('hidden');
-      
-      if (orders.length === 0) {
-        noOrders.classList.remove('hidden');
-      } else {
-        ordersTable.classList.remove('hidden');
-        renderOrdersTable(orders);
-      }
     } catch (error) {
-      console.error("Error fetching orders:", error);
-      ordersLoading.classList.add('hidden');
-      alert("Error loading orders. Please try again later.");
+      console.error("Error loading dashboard data:", error);
+      alert("Error loading dashboard data. Please try again later.");
     }
   }
 
-  // Render orders table
-  function renderOrdersTable(orders) {
-    ordersTableBody.innerHTML = '';
+  // Fetch sales data
+  async function fetchSalesData() {
+    // In a real app, you'd fetch from your database
+    // For demo, using static data
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .select('amount, created_at')
+      .eq('seller_name', currentSeller.name)
+      .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
+    
+    if (error) throw error;
+    
+    return data || [];
+  }
+
+  // Fetch orders data
+  async function fetchOrdersData() {
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .eq('seller_name', currentSeller.name)
+      .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
+    
+    if (error) throw error;
+    
+    return data || [];
+  }
+
+  // Fetch products data
+  async function fetchProductsData() {
+    const { data, error } = await supabaseClient
+      .from('products')
+      .select('*')
+      .eq('seller_name', currentSeller.name);
+    
+    if (error) throw error;
+    
+    return data || [];
+  }
+
+  // Fetch customers data (unique customers from orders)
+  async function fetchCustomersData() {
+    const { data: orders, error } = await supabaseClient
+      .from('orders')
+      .select('customer_name')
+      .eq('seller_name', currentSeller.name)
+      .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
+    
+    if (error) throw error;
+    
+    // Get unique customers
+    const uniqueCustomers = [...new Set(orders.map(order => order.customer_name))];
+    return uniqueCustomers;
+  }
+
+  // Fetch recent orders
+  async function fetchRecentOrders() {
+    const { data, error } = await supabaseClient
+      .from('orders')
+      .select('*')
+      .eq('seller_name', currentSeller.name)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    
+    if (error) throw error;
+    
+    return data || [];
+  }
+
+  // Fetch notifications (mock data for demo)
+  async function fetchNotifications() {
+    // In a real app, you'd fetch from your database
+    // For demo, using static data
+    return [
+      {
+        id: 1,
+        type: 'order',
+        message: 'New order #1234 has been placed',
+        time: '10 minutes ago'
+      },
+      {
+        id: 2,
+        type: 'product',
+        message: 'Your product "Organic Tomato Seeds" is low in stock',
+        time: '1 hour ago'
+      },
+      {
+        id: 3,
+        type: 'review',
+        message: 'You received a new 5-star review',
+        time: '3 hours ago'
+      },
+      {
+        id: 4,
+        type: 'system',
+        message: 'System maintenance scheduled for tonight at 2 AM',
+        time: '5 hours ago'
+      }
+    ];
+  }
+
+  // Update dashboard UI with data
+  function updateDashboardUI(salesData, ordersData, productsData, customersData, recentOrdersData, notificationsData) {
+    // Update stats cards
+    const totalSales = salesData.reduce((sum, sale) => sum + parseFloat(sale.amount), 0);
+    totalSalesElement.textContent = `$${totalSales.toFixed(2)}`;
+    totalOrdersElement.textContent = ordersData.length;
+    totalCustomersElement.textContent = customersData.length;
+    totalProductsElement.textContent = productsData.length;
+    
+    // Render charts
+    renderSalesChart(salesData);
+    renderProductsChart(productsData, ordersData);
+    
+    // Render recent orders
+    renderRecentOrders(recentOrdersData);
+    
+    // Render notifications
+    renderNotifications(notificationsData);
+  }
+
+  // Render sales chart
+  function renderSalesChart(salesData) {
+    // Group sales by date
+    const salesByDate = {};
+    const last7Days = [];
+    
+    // Create array of last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateString = date.toISOString().split('T')[0];
+      salesByDate[dateString] = 0;
+      last7Days.push(dateString);
+    }
+    
+    // Sum sales by date
+    salesData.forEach(sale => {
+      const dateString = new Date(sale.created_at).toISOString().split('T')[0];
+      if (last7Days.includes(dateString)) {
+        salesByDate[dateString] = (salesByDate[dateString] || 0) + parseFloat(sale.amount);
+      }
+    });
+    
+    // Format labels as day names
+    const labels = last7Days.map(date => {
+      const day = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+      return day;
+    });
+    
+    // Get data values in order of dates
+    const values = last7Days.map(date => salesByDate[date]);
+    
+    // Create chart
+    const ctx = document.getElementById('sales-chart').getContext('2d');
+    
+    if (salesChart) {
+      salesChart.destroy();
+    }
+    
+    salesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Sales ($)',
+          data: values,
+          fill: true,
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: 'rgba(59, 130, 246, 1)',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Render products chart
+  function renderProductsChart(productsData, ordersData) {
+    // Count product occurrences in orders
+    const productCounts = {};
+    
+    ordersData.forEach(order => {
+      const productName = order.product_name;
+      productCounts[productName] = (productCounts[productName] || 0) + 1;
+    });
+    
+    // Sort products by count
+    const sortedProducts = Object.entries(productCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5); // Top 5 products
+    
+    // Create chart
+    const ctx = document.getElementById('products-chart').getContext('2d');
+    
+    if (productsChart) {
+      productsChart.destroy();
+    }
+    
+    productsChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sortedProducts.map(item => item[0]),
+        datasets: [{
+          label: 'Orders',
+          data: sortedProducts.map(item => item[1]),
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.7)',
+            'rgba(16, 185, 129, 0.7)',
+            'rgba(245, 158, 11, 0.7)',
+            'rgba(139, 92, 246, 0.7)',
+            'rgba(236, 72, 153, 0.7)'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Render recent orders
+  function renderRecentOrders(orders) {
+    recentOrdersTableBody.innerHTML = '';
+    
+    if (orders.length === 0) {
+      const emptyRow = document.createElement('tr');
+      emptyRow.innerHTML = `<td colspan="7" class="py-4 px-6 text-center text-gray-500">No recent orders found</td>`;
+      recentOrdersTableBody.appendChild(emptyRow);
+      return;
+    }
     
     orders.forEach(order => {
       const row = document.createElement('tr');
@@ -336,149 +619,64 @@
           <span class="${statusColor} py-1 px-3 rounded-full text-xs capitalize">${order.status}</span>
         </td>
         <td class="py-4 px-6 text-right">
-          <button class="text-blue-600 hover:underline view-order" data-order-id="${order.id}">View</button>
+          <a href="orders.html" class="text-blue-600 hover:underline">View</a>
         </td>
       `;
       
-      ordersTableBody.appendChild(row);
-    });
-    
-    // Add event listeners to view buttons
-    document.querySelectorAll('.view-order').forEach(button => {
-      button.addEventListener('click', (e) => {
-        const orderId = e.target.getAttribute('data-order-id');
-        showOrderDetails(orderId);
-      });
+      recentOrdersTableBody.appendChild(row);
     });
   }
 
-  // Show order details in modal
-  function showOrderDetails(orderId) {
-    const order = currentOrders.find(o => o.id === orderId);
-    if (!order) return;
+  // Render notifications
+  function renderNotifications(notifications) {
+    notificationsList.innerHTML = '';
     
-    currentOrderDetail = order;
-    
-    // Format date
-    const orderDate = new Date(order.created_at);
-    const formattedDate = orderDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    orderDetailsContent.innerHTML = `
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <h4 class="font-medium text-gray-500">Order ID</h4>
-          <p class="font-semibold">#${order.id}</p>
-        </div>
-        <div>
-          <h4 class="font-medium text-gray-500">Date</h4>
-          <p>${formattedDate}</p>
-        </div>
-        <div>
-          <h4 class="font-medium text-gray-500">Status</h4>
-          <select id="order-status" class="border rounded px-2 py-1 w-full">
-            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
-        </div>
-        <div>
-          <h4 class="font-medium text-gray-500">Amount</h4>
-          <p class="font-semibold">$${parseFloat(order.amount).toFixed(2)}</p>
-        </div>
-      </div>
-      
-      <div class="mt-6">
-        <h4 class="font-medium text-gray-500 mb-2">Customer Information</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <h5 class="text-sm text-gray-500">Name</h5>
-            <p>${order.customer_name}</p>
-          </div>
-          <div>
-            <h5 class="text-sm text-gray-500">Email</h5>
-            <p>${order.customer_email || 'N/A'}</p>
-          </div>
-          <div class="col-span-2">
-            <h5 class="text-sm text-gray-500">Address</h5>
-            <p>${order.customer_address || 'N/A'}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="mt-6">
-        <h4 class="font-medium text-gray-500 mb-2">Order Details</h4>
-        <div class="border rounded overflow-hidden">
-          <table class="min-w-full divide-y">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.product_name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$${parseFloat(order.amount).toFixed(2)}</td>
-              </tr>
-            </tbody>
-            <tfoot class="bg-gray-50">
-              <tr>
-                <td class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</td>
-                <td class="px-6 py-3 text-right text-xs font-medium text-gray-900 tracking-wider">$${parseFloat(order.amount).toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-      
-      <div class="mt-6">
-        <h4 class="font-medium text-gray-500 mb-2">Payment Information</h4>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <h5 class="text-sm text-gray-500">Payment Method</h5>
-            <p>${order.payment_method || 'N/A'}</p>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    orderModal.classList.remove('hidden');
-  }
-
-  // Update order status
-  async function updateOrderStatus() {
-    if (!currentOrderDetail) return;
-    
-    const newStatus = document.getElementById('order-status').value;
-    
-    try {
-      const { data, error } = await supabaseClient
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', currentOrderDetail.id);
-      
-      if (error) throw error;
-      
-      alert('Order status updated successfully!');
-      closeOrderModal();
-      fetchOrders(); // Refresh orders list
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      alert("Error updating order status. Please try again later.");
+    if (notifications.length === 0) {
+      notificationsList.innerHTML = `<li class="text-center text-gray-500">No notifications found</li>`;
+      return;
     }
-  }
-
-  // Close order modal
-  function closeOrderModal() {
-    orderModal.classList.add('hidden');
-    currentOrderDetail = null;
+    
+    notifications.forEach(notification => {
+      const item = document.createElement('li');
+      item.className = 'p-3 border rounded-lg';
+      
+      // Determine notification icon
+      let icon = 'bell';
+      let iconColor = 'text-blue-600';
+      
+      switch(notification.type) {
+        case 'order':
+          icon = 'shopping-cart';
+          iconColor = 'text-green-600';
+          break;
+        case 'product':
+          icon = 'box';
+          iconColor = 'text-orange-600';
+          break;
+        case 'review':
+          icon = 'star';
+          iconColor = 'text-yellow-600';
+          break;
+        case 'system':
+          icon = 'cog';
+          iconColor = 'text-purple-600';
+          break;
+      }
+      
+      item.innerHTML = `
+        <div class="flex gap-3 items-start">
+          <div class="p-2 rounded-full bg-blue-50 ${iconColor}">
+            <i class="fas fa-${icon}"></i>
+          </div>
+          <div>
+            <p class="text-sm">${notification.message}</p>
+            <p class="text-xs text-gray-500 mt-1">${notification.time}</p>
+          </div>
+        </div>
+      `;
+      
+      notificationsList.appendChild(item);
+    });
   }
 
   // Logout functionality
@@ -493,22 +691,11 @@
   }
 
   // Add event listeners
-  refreshButton.addEventListener('click', fetchOrders);
-  searchInput.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') {
-      fetchOrders();
-    }
-  });
-  dateFilter.addEventListener('change', fetchOrders);
-  statusFilter.addEventListener('change', fetchOrders);
-  closeModal.addEventListener('click', closeOrderModal);
-  closeModalBtn.addEventListener('click', closeOrderModal);
-  updateStatus.addEventListener('click', updateOrderStatus);
   logoutButton.addEventListener('click', logout);
 
   // Initialize page
   document.addEventListener('DOMContentLoaded', () => {
-    // Auth state change will trigger fetchOrders
+    // Auth state change will trigger loadDashboardData
   });
 </script>
 
