@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seller Login - SoftSell</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/supabase.min.js"></script>
+</head>
+<body class="bg-[#f9f9f9] flex items-center justify-center h-screen font-sans">
+    <div class="navbar">
+        <a href="index.html" class="logo">
+          <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 100px; height: auto;" alt="Logo" />
+    
+        </a>
+    </div>
+  <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md" id="login-section">
+    <div class="text-center mb-6">
+      <h2 class="text-2xl font-bold text-blue-600 mb-1">Welcome Back, Seller!</h2>
+      <p class="text-gray-500 text-sm">Login to manage your orders & products</p>
+    </div>
+
+    <!-- Google Login -->
+    <button id="google-login" class="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 mb-6 hover:bg-gray-100 transition">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+      <span class="text-gray-700 font-medium">Login with Google</span>
+    </button>
+    
+    <div class="text-center text-gray-400 text-sm mb-4">or login with email</div>
+
+    <form class="space-y-5">
+      <div>
+        <label class="block text-gray-600 mb-1">Email</label>
+        <input type="email" id="email" placeholder="seller@example.com"
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-gray-600 mb-1">Password</label>
+        <input type="password" id="password" placeholder="••••••••"
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+      </div>
+
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+        Login
+      </button>
+    </form>
+  </div>
+
+  <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md hidden" id="form-section">
+    <h2 class="text-2xl font-bold text-blue-600 mb-6">Complete Your Profile</h2>
+    
+    <!-- Form to collect seller details -->
+    <form id="seller-form" class="space-y-5">
+      <div>
+        <label class="block text-gray-600 mb-1">Name</label>
+        <input type="text" id="name" placeholder="Enter your name"
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-gray-600 mb-1">PIN Code</label>
+        <input type="text" id="pincode" placeholder="Enter your PIN code"
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-gray-600 mb-1">Location</label>
+        <input type="text" id="location" placeholder="Enter your location"
+               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+      </div>
+      
+      <button type="submit"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+        Save Profile
+      </button>
+    </form>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Supabase setup
+    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    // Google Login functionality
+    document.getElementById('google-login').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then(async (result) => {
+          const user = result.user;
+          alert(`Welcome ${user.email}`);
+
+          // Check if user exists in the 'seller' table
+          const { data, error } = await supabase
+            .from('sellers')
+            .select('*')
+            .eq('email', user.email);
+
+          if (data.length > 0) {
+            // User exists, redirect to dashboard
+            window.location.href = "/dashboard.html";
+          } else {
+            // User does not exist, show the form
+            document.getElementById("login-section").classList.add("hidden");
+            document.getElementById("form-section").classList.remove("hidden");
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          alert("Login failed: " + error.message);
+        });
+    });
+
+    // Handle the form submission
+    document.getElementById('seller-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const pincode = document.getElementById('pincode').value;
+      const location = document.getElementById('location').value;
+
+      // Get coordinates for the location
+      const { lat, lon } = await getCoordinates(pincode);
+
+      // Insert data into Supabase
+      const { user } = firebase.auth().currentUser;
+      const { data, error } = await supabase
+        .from('seller')
+        .insert([
+          { name, email: user.email, location, location_latitude: lat, location_longitude: lon }
+        ]);
+
+      if (error) {
+        console.error('Error inserting data:', error);
+      } else {
+        alert('Profile saved successfully!');
+        // Redirect to dashboard after successful submission
+        window.location.href = "/dashboard.html";
+      }
+    });
+
+    // Fetch latitude and longitude for the given PIN code
+    async function getCoordinates(pin) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${pin},India`;
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'PINCodeLookupApp/1.0' }
+      });
+      const data = await response.json();
+
+      if (data.length > 0) {
+        const { lat, lon } = data[0];
+        return { lat, lon };
+      } else {
+        alert('Location not found.');
+        return { lat: 0, lon: 0 };
+      }
+    }
+  </script>
+</body>
+</html>
