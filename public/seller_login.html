@@ -7,17 +7,43 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/supabase.min.js"></script>
- <!-- Firebase App (the core Firebase SDK) -->
- <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
- <!-- Firebase Auth SDK -->
- <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <!-- Firebase Auth SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <style>
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    /* Left Section */
+    .navbar-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: black;
+    }
+    
+    .logo img {
+      height: 40px;
+      margin-right: 5px;
+    }
+  </style>
 </head>
 <body class="bg-[#f9f9f9] flex items-center justify-center h-screen font-sans">
     <div class="navbar">
         <a href="index.html" class="logo">
           <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 100px; height: auto;" alt="Logo" />
-    
         </a>
     </div>
   <div class="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md" id="login-section">
@@ -133,7 +159,7 @@
         });
     });
 
-    // Handle the form submission
+    // Handle the form submission for creating a new seller profile
     document.getElementById('seller-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -141,16 +167,14 @@
       const pincode = document.getElementById('pincode').value;
       const location = document.getElementById('location').value;
 
-      // Get coordinates for the location
+      // Get coordinates for the location using the entered PIN code
       const { lat, lon } = await getCoordinates(pincode);
 
       // Insert data into Supabase
-      const { user } = firebase.auth().currentUser;
+      const user = firebase.auth().currentUser;
       const { data, error } = await supabase
-        .from('seller')
-        .insert([
-          { name, email: user.email, location, location_latitude: lat, location_longitude: lon }
-        ]);
+        .from('sellers')
+        .insert([{ name, email: user.email, location, location_latitude: lat, location_longitude: lon }]);
 
       if (error) {
         console.error('Error inserting data:', error);
@@ -159,24 +183,4 @@
         // Redirect to dashboard after successful submission
         window.location.href = "/dashboard.html";
       }
-    });
-
-    // Fetch latitude and longitude for the given PIN code
-    async function getCoordinates(pin) {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${pin},India`;
-      const response = await fetch(url, {
-        headers: { 'User-Agent': 'PINCodeLookupApp/1.0' }
-      });
-      const data = await response.json();
-
-      if (data.length > 0) {
-        const { lat, lon } = data[0];
-        return { lat, lon };
-      } else {
-        alert('Location not found.');
-        return { lat: 0, lon: 0 };
-      }
-    }
-  </script>
-</body>
-</html>
+   
