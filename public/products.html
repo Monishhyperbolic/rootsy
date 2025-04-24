@@ -157,26 +157,18 @@
 
           <!-- Product Image and 3D Model -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Product Image -->
+            <!-- Product Image URL -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
-              <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div class="space-y-1 text-center">
-                  <div id="image-preview-container" class="hidden mb-3">
-                    <img id="image-preview" src="#" alt="Preview" class="mx-auto h-32 w-auto">
-                  </div>
-                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  <div class="flex text-sm text-gray-600">
-                    <label for="product-image" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                      <span>Upload a file</span>
-                      <input id="product-image" name="product-image" type="file" accept="image/*" class="sr-only" required>
-                    </label>
-                    <p class="pl-1">or drag and drop</p>
-                  </div>
-                  <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                </div>
+              <label for="product-image-url" class="block text-sm font-medium text-gray-700 mb-1">Product Image URL</label>
+              <input type="url" id="product-image-url" name="product-image-url" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
+                placeholder="https://example.com/image.jpg">
+              <p class="mt-1 text-sm text-gray-500">Enter the URL of your product image</p>
+              
+              <!-- Image Preview -->
+              <div id="image-preview-container" class="mt-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Image Preview</label>
+                <img id="image-preview" src="#" alt="Preview" class="max-w-full h-auto rounded-md border border-gray-200">
               </div>
             </div>
 
@@ -199,15 +191,7 @@
                 class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
             </div>
             
-            <!-- Weight (Optional) -->
-            <div>
-              <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Weight (kg) (Optional)</label>
-              <input type="number" id="weight" name="weight" min="0.01" step="0.01"
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
-                placeholder="e.g., 1.5">
-            </div>
-          </div>
-
+     
           <!-- Status Alert -->
           <div id="status-alert" class="hidden rounded-md p-4 mb-4">
             <div class="flex">
@@ -268,7 +252,7 @@
   const logoutButton = document.getElementById('logout-button');
   const sellerNameElement = document.getElementById('seller-name');
   const userAvatarElement = document.getElementById('user-avatar');
-  const productImageInput = document.getElementById('product-image');
+  const productImageUrlInput = document.getElementById('product-image-url');
   const imagePreviewContainer = document.getElementById('image-preview-container');
   const imagePreview = document.getElementById('image-preview');
   const statusAlert = document.getElementById('status-alert');
@@ -280,7 +264,6 @@
 
   // Global variables
   let currentSeller = null;
-  let selectedImageFile = null;
 
   // Authentication check
   auth.onAuthStateChanged(async (user) => {
@@ -317,17 +300,22 @@
     }
   });
 
-  // Handle image preview
-  productImageInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      selectedImageFile = file;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        imagePreview.src = e.target.result;
+  // Handle image URL input and preview
+  productImageUrlInput.addEventListener('input', (event) => {
+    const imageUrl = event.target.value;
+    if (imageUrl) {
+      try {
+        // Basic URL validation
+        new URL(imageUrl);
+        imagePreview.src = imageUrl;
         imagePreviewContainer.classList.remove('hidden');
+      } catch (e) {
+        // Invalid URL, hide preview
+        imagePreviewContainer.classList.add('hidden');
       }
-      reader.readAsDataURL(file);
+    } else {
+      // Empty input, hide preview
+      imagePreviewContainer.classList.add('hidden');
     }
   });
 
@@ -340,52 +328,40 @@
       return;
     }
 
-    // Check if image is selected
-    if (!selectedImageFile) {
-      showAlert("error", "Please select a product image");
+    // Get form values
+    const productName = document.getElementById('product-name').value;
+    const productPrice = parseFloat(document.getElementById('product-price').value);
+    const productCategory = document.getElementById('product-category').value;
+    const productDescription = document.getElementById('product-description').value;
+    const imageUrl = document.getElementById('product-image-url').value;
+    const modelUrl = document.getElementById('model-url').value || null;
+    const stockQuantity = parseInt(document.getElementById('stock-quantity').value);
+    const weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
+    
+    // Validate price
+    if (isNaN(productPrice) || productPrice <= 0) {
+      showAlert("error", "Please enter a valid price.");
+      return;
+    }
+    
+    // Validate image URL
+    if (!imageUrl) {
+      showAlert("error", "Please enter a product image URL");
+      return;
+    }
+    
+    try {
+      // Validate URL format
+      new URL(imageUrl);
+    } catch (e) {
+      showAlert("error", "Please enter a valid image URL");
       return;
     }
 
     try {
       // Set button to loading state
       setButtonLoading(true);
-      
-      // Get form values
-      const productName = document.getElementById('product-name').value;
-      const productPrice = parseFloat(document.getElementById('product-price').value);
-      const productCategory = document.getElementById('product-category').value;
-      const productDescription = document.getElementById('product-description').value;
-      const modelUrl = document.getElementById('model-url').value || null;
-      const stockQuantity = parseInt(document.getElementById('stock-quantity').value);
-      const weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
-      
-      // Validate price
-      if (isNaN(productPrice) || productPrice <= 0) {
-        showAlert("error", "Please enter a valid price.");
-        setButtonLoading(false);
-        return;
-      }
-
-      // Upload image to Firebase Storage
-      showAlert("info", "Uploading image...");
-      
-      // Create a reference to the storage location
-      const storageRef = storage.ref(`product-images/${currentSeller.name}/${Date.now()}_${selectedImageFile.name}`);
-      
-      // Upload the file
-      const uploadTask = storageRef.put(selectedImageFile);
-      
-      // Wait for upload to complete
-      await uploadTask;
-      
-      // Get download URL
-      const imageUrl = await storageRef.getDownloadURL();
-      
-      if (!imageUrl) {
-        throw new Error("Failed to get image URL after upload");
-      }
-      
-      showAlert("info", "Image uploaded successfully. Saving product data...");
+      showAlert("info", "Saving product data...");
       
       // Create product object
       const productData = {
@@ -395,10 +371,9 @@
         category_name: productCategory,
         seller_name: currentSeller.name,
         model_url: modelUrl,
-        image_url: imageUrl, // Store the URL from Firebase Storage
-        stock_quantity: stockQuantity,
-        weight: weight,
-        created_at: new Date().toISOString()
+        image_url: imageUrl, // Store the URL directly
+        stock: stockQuantity,
+  
       };
       
       // Insert product into database
@@ -414,7 +389,6 @@
       // Reset form
       addProductForm.reset();
       imagePreviewContainer.classList.add('hidden');
-      selectedImageFile = null;
       
       // Reset button state
       setButtonLoading(false);
