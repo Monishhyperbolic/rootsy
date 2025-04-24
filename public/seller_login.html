@@ -30,7 +30,7 @@
       <!-- Google Login -->
       <button id="google-login" class="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-2 mb-6 hover:bg-gray-100 transition">
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-        <span class="text-gray-700 font-medium">Login or Signup with Google</span>
+        <span class="text-gray-700 font-medium">Login with Google</span>
       </button>
 
       <div id="login-status" class="text-center text-sm mt-4 hidden">
@@ -53,13 +53,28 @@
         </div>
         <div>
           <label class="block text-gray-600 mb-1">PIN Code</label>
-          <input type="text" id="pincode" placeholder="Enter your PIN code"
+          <div class="flex items-center gap-2">
+            <input type="text" id="pincode" placeholder="Enter your PIN code"
                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+            <button type="button" id="fetch-location" class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded text-sm">
+              Verify
+            </button>
+          </div>
+          <p id="pincode-status" class="text-xs mt-1 hidden"></p>
         </div>
         <div>
           <label class="block text-gray-600 mb-1">Location</label>
           <input type="text" id="location" placeholder="Enter your location"
                  class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        </div>
+
+        <!-- Hidden fields for coordinates -->
+        <input type="hidden" id="location-latitude">
+        <input type="hidden" id="location-longitude">
+
+        <div id="coordinates-display" class="text-xs text-gray-500 hidden">
+          <div>Location coordinates detected:</div>
+          <div>Latitude: <span id="lat-display"></span>, Longitude: <span id="lng-display"></span></div>
         </div>
 
         <button type="submit"
@@ -178,16 +193,104 @@
       loginStatus.classList.add('hidden');
     }
 
+    // Function to fetch location coordinates from pincode
+    document.getElementById('fetch-location').addEventListener('click', async function() {
+      const pincode = document.getElementById('pincode').value.trim();
+      const pincodeStatus = document.getElementById('pincode-status');
+      
+      if (!pincode || pincode.length !== 6 || !/^\d+$/.test(pincode)) {
+        pincodeStatus.textContent = 'Please enter a valid 6-digit PIN code';
+        pincodeStatus.classList.remove('hidden', 'text-green-500');
+        pincodeStatus.classList.add('text-red-500');
+        return;
+      }
+
+      // Show loading state
+      this.disabled = true;
+      this.textContent = 'Fetching...';
+      pincodeStatus.textContent = 'Fetching location data...';
+      pincodeStatus.classList.remove('hidden', 'text-red-500', 'text-green-500');
+      pincodeStatus.classList.add('text-blue-500');
+
+      try {
+        // Using India Post API (you may need to replace with a more reliable API)
+        const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+        const data = await response.json();
+
+        if (data && data[0].Status === 'Success' && data[0].PostOffice && data[0].PostOffice.length > 0) {
+          const postOffice = data[0].PostOffice[0];
+          document.getElementById('location').value = `${postOffice.Block || postOffice.Name}, ${postOffice.District}, ${postOffice.State}`;
+          
+          // Now fetch coordinates based on the address
+          await fetchCoordinates(postOffice);
+          
+          pincodeStatus.textContent = 'Location found successfully';
+          pincodeStatus.classList.remove('text-blue-500', 'text-red-500');
+          pincodeStatus.classList.add('text-green-500');
+        } else {
+          throw new Error('PIN code not found');
+        }
+      } catch (error) {
+        console.error('Error fetching location:', error);
+        pincodeStatus.textContent = 'Error: Could not find location for this PIN code';
+        pincodeStatus.classList.remove('text-blue-500', 'text-green-500');
+        pincodeStatus.classList.add('text-red-500');
+        
+        // Clear the hidden coordinate fields
+        document.getElementById('location-latitude').value = '';
+        document.getElementById('location-longitude').value = '';
+        document.getElementById('coordinates-display').classList.add('hidden');
+      } finally {
+        // Reset button state
+        this.disabled = false;
+        this.textContent = 'Verify';
+      }
+    });
+
+    // Function to fetch coordinates based on address
+    async function fetchCoordinates(postOffice) {
+      const address = `${postOffice.Name}, ${postOffice.District}, ${postOffice.State}, India`;
+      
+      try {
+        // Using Nominatim OpenStreetMap API (free, but has usage limits)
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          const lat = data[0].lat;
+          const lng = data[0].lon;
+          
+          // Set the hidden field values
+          document.getElementById('location-latitude').value = lat;
+          document.getElementById('location-longitude').value = lng;
+          
+          // Display coordinates
+          document.getElementById('lat-display').textContent = lat;
+          document.getElementById('lng-display').textContent = lng;
+          document.getElementById('coordinates-display').classList.remove('hidden');
+          
+          return { lat, lng };
+        } else {
+          throw new Error('Could not find coordinates for this address');
+        }
+      } catch (error) {
+        console.error('Error fetching coordinates:', error);
+        throw error;
+      }
+    }
+
     // Handle form submission for creating a new seller profile
     document.getElementById('seller-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById('name').value;
-      const pincode = document.getElementById('pincode').value;
-      const location = document.getElementById('location').value;
+      const name = document.getElementById('name').value.trim();
+      const pincode = document.getElementById('pincode').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const latitude = document.getElementById('location-latitude').value;
+      const longitude = document.getElementById('location-longitude').value;
 
       if (!name || !pincode || !location) {
-        alert('Please fill in all fields');
+        alert('Please fill in all required fields');
         return;
       }
 
@@ -204,16 +307,19 @@
           throw new Error('No authenticated user found');
         }
 
+        const sellerData = { 
+          name, 
+          email: user.email, 
+          location,
+          location_latitude: parseFloat(latitude) || null,
+          location_longitude: parseFloat(longitude) || null
+        };
+
+  
+
         const { data, error } = await supabaseClient
           .from('sellers')
-          .insert([{ 
-            name, 
-            email: user.email, 
-            pincode,
-            location,
-            uid: user.uid,
-            created_at: new Date().toISOString()
-          }]);
+          .insert([sellerData]);
 
         if (error) {
           throw error;
