@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add Product - Rootsy</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<!-- Header -->
+<header class="flex items-center justify-between p-4 bg-white shadow">
+  <div class="flex items-center gap-2">
+    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;" alt="Logo" class="h-8">
+  </div>
+  <div class="flex items-center gap-4">
+    <input type="text" id="search-dashboard" placeholder="Search..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
+    <div class="flex items-center gap-2">
+      <img id="user-avatar" src="https://via.placeholder.com/40" alt="User" class="rounded-full w-10 h-10">
+      <span id="seller-name" class="font-semibold">Loading...</span>
+    </div>
+  </div>
+</header>
+
+<!-- Sidebar + Main -->
+<div class="flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-white p-6 min-h-screen shadow">
+    <nav class="flex flex-col gap-6">
+      <a href="dashboard.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="orders.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+        <i class="fas fa-shopping-cart"></i> Orders
+      </a>
+      <a href="products.html" class="flex items-center gap-2 text-blue-600 font-bold">
+        <i class="fas fa-box"></i> Products
+      </a>
+      
+      <a href="#" id="logout-button" class="flex items-center gap-2 text-red-600 hover:text-red-700 mt-auto">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold mb-2">Add New Product</h2>
+      <p class="text-gray-500">Create a new product listing for your shop</p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="page-loading" class="text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="mt-2 text-gray-600">Loading...</p>
+    </div>
+
+    <!-- Upload Form -->
+    <div id="product-form" class="hidden">
+      <div class="bg-white rounded-xl shadow p-6">
+        <form id="add-product-form" class="space-y-6">
+          <!-- Product Name -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="col-span-3">
+              <label for="product-name" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <input type="text" id="product-name" name="product-name" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+            </div>
+          </div>
+
+          <!-- Price and Category -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Price -->
+            <div>
+              <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+              <input type="number" id="product-price" name="product-price" min="0.01" step="0.01" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+            </div>
+            
+            <!-- Category Dropdown -->
+            <div class="col-span-2">
+              <label for="product-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select id="product-category" name="product-category" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+                <option value="" disabled selected>Select a category</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Handicrafts & Artisanal Goods">Handicrafts & Artisanal Goods</option>
+                <option value="Textiles">Textiles</option>
+                <option value="Pottery & Ceramics">Pottery & Ceramics</option>
+                <option value="Woodcrafts">Woodcrafts</option>
+                <option value="Jewelry">Jewelry</option>
+                <option value="Paintings & Wall Art">Paintings & Wall Art</option>
+                <option value="Basketry & Weaving">Basketry & Weaving</option>
+                <option value="Agricultural Products">Agricultural Products</option>
+                <option value="Fresh Fruits & Vegetables">Fresh Fruits & Vegetables</option>
+                <option value="Grains & Pulses">Grains & Pulses</option>
+                <option value="Spices & Herbs">Spices & Herbs</option>
+                <option value="Organic Produce">Organic Produce</option>
+                <option value="Dairy & Animal Products">Dairy & Animal Products</option>
+                <option value="Honey & Natural Sweeteners">Honey & Natural Sweeteners</option>
+                <option value="Homemade & Processed Foods">Homemade & Processed Foods</option>
+                <option value="Pickles & Chutneys">Pickles & Chutneys</option>
+                <option value="Snacks & Sweets">Snacks & Sweets</option>
+                <option value="Traditional Beverages">Traditional Beverages</option>
+                <option value="Bakery Items">Bakery Items</option>
+                <option value="Preserves & Jams">Preserves & Jams</option>
+                <option value="Tools & Equipment">Tools & Equipment</option>
+                <option value="Farming Tools">Farming Tools</option>
+                <option value="Handcrafted Tools">Handcrafted Tools</option>
+                <option value="Eco-friendly Household Tools">Eco-friendly Household Tools</option>
+                <option value="Clothing & Apparel">Clothing & Apparel</option>
+                <option value="Traditional Wear">Traditional Wear</option>
+                <option value="Handmade Accessories">Handmade Accessories</option>
+                <option value="Embroidered Items">Embroidered Items</option>
+                <option value="Local Fabrics">Local Fabrics</option>
+                <option value="Personal Care & Wellness">Personal Care & Wellness</option>
+                <option value="Herbal Soaps">Herbal Soaps</option>
+                <option value="Natural Oils & Balms">Natural Oils & Balms</option>
+                <option value="Handmade Cosmetics">Handmade Cosmetics</option>
+                <option value="Ayurvedic Products">Ayurvedic Products</option>
+                <option value="Home Decor & Utilities">Home Decor & Utilities</option>
+                <option value="Rugs & Carpets">Rugs & Carpets</option>
+                <option value="Lamps & Lighting">Lamps & Lighting</option>
+                <option value="Eco-friendly Furniture">Eco-friendly Furniture</option>
+                <option value="Kitchenware">Kitchenware</option>
+                <option value="Animal Husbandry Products">Animal Husbandry Products</option>
+                <option value="Livestock Feed">Livestock Feed</option>
+                <option value="Handmade Leather Goods">Handmade Leather Goods</option>
+                <option value="Organic Fertilizers">Organic Fertilizers</option>
+                <option value="Education & Services">Education & Services</option>
+                <option value="Local Tutoring Services">Local Tutoring Services</option>
+                <option value="Language Translation">Language Translation</option>
+                <option value="Technical Repair">Technical Repair</option>
+                <option value="Miscellaneous">Miscellaneous</option>
+                <option value="Recycled/Upcycled Products">Recycled/Upcycled Products</option>
+                <option value="Seasonal Offers">Seasonal Offers</option>
+                <option value="Combo Packs & Gift Hampers">Combo Packs & Gift Hampers</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea id="product-description" name="product-description" rows="6" required
+              class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"></textarea>
+          </div>
+
+          <!-- Product Image and 3D Model -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Product Image -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Product Image</label>
+              <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div class="space-y-1 text-center">
+                  <div id="image-preview-container" class="hidden mb-3">
+                    <img id="image-preview" src="#" alt="Preview" class="mx-auto h-32 w-auto">
+                  </div>
+                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <div class="flex text-sm text-gray-600">
+                    <label for="product-image" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                      <span>Upload a file</span>
+                      <input id="product-image" name="product-image" type="file" accept="image/*" class="sr-only">
+                    </label>
+                    <p class="pl-1">or drag and drop</p>
+                  </div>
+                  <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3D Model URL (Optional) -->
+            <div>
+              <label for="model-url" class="block text-sm font-medium text-gray-700 mb-1">3D Model URL (Optional)</label>
+              <input type="url" id="model-url" name="model-url" 
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
+                placeholder="https://example.com/model.glb">
+              <p class="mt-1 text-sm text-gray-500">Enter a URL to a 3D model file (GLB, GLTF) if available</p>
+            </div>
+          </div>
+
+          <!-- Inventory -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Stock Quantity -->
+            <div>
+              <label for="stock-quantity" class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+              <input type="number" id="stock-quantity" name="stock-quantity" min="1" value="1" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+            </div>
+            
+            <!-- SKU (Optional) -->
+            <div>
+              <label for="sku" class="block text-sm font-medium text-gray-700 mb-1">SKU (Optional)</label>
+              <input type="text" id="sku" name="sku"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
+                placeholder="e.g., PROD-12345">
+            </div>
+            
+            <!-- Weight (Optional) -->
+            <div>
+              <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Weight (kg) (Optional)</label>
+              <input type="number" id="weight" name="weight" min="0.01" step="0.01"
+                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
+                placeholder="e.g., 1.5">
+            </div>
+          </div>
+
+          <!-- Status Alert -->
+          <div id="status-alert" class="hidden rounded-md p-4 mb-4">
+            <div class="flex">
+              <div id="status-icon" class="flex-shrink-0"></div>
+              <div class="ml-3">
+                <p id="status-message" class="text-sm font-medium"></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end">
+            <button type="submit" id="submit-button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <span id="button-text">Add Product</span>
+              <span id="button-spinner" class="ml-2 hidden">
+                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- FontAwesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+<script>
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+    authDomain: "rootsy-ec110.firebaseapp.com",
+    projectId: "rootsy-ec110",
+    storageBucket: "rootsy-ec110.appspot.com",
+    messagingSenderId: "120254624474",
+    appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+    measurementId: "G-0Y636N5BPV"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const storage = firebase.storage();
+
+  // Supabase Configuration
+  const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // DOM Elements
+  const pageLoading = document.getElementById('page-loading');
+  const productForm = document.getElementById('product-form');
+  const addProductForm = document.getElementById('add-product-form');
+  const logoutButton = document.getElementById('logout-button');
+  const sellerNameElement = document.getElementById('seller-name');
+  const userAvatarElement = document.getElementById('user-avatar');
+  const productImageInput = document.getElementById('product-image');
+  const imagePreviewContainer = document.getElementById('image-preview-container');
+  const imagePreview = document.getElementById('image-preview');
+  const statusAlert = document.getElementById('status-alert');
+  const statusIcon = document.getElementById('status-icon');
+  const statusMessage = document.getElementById('status-message');
+  const submitButton = document.getElementById('submit-button');
+  const buttonText = document.getElementById('button-text');
+  const buttonSpinner = document.getElementById('button-spinner');
+
+  // Global variables
+  let currentSeller = null;
+  let selectedImageFile = null;
+
+  // Authentication check
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      try {
+        // Get seller details
+        const { data: seller, error } = await supabaseClient
+          .from('sellers')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+
+        if (error) throw error;
+        
+        if (seller) {
+          currentSeller = seller;
+          sellerNameElement.textContent = seller.name;
+          userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
+          
+          // Show product form
+          pageLoading.classList.add('hidden');
+          productForm.classList.remove('hidden');
+        } else {
+          // Redirect to login
+          window.location.href = "/login.html";
+        }
+      } catch (error) {
+        console.error("Error fetching seller details:", error);
+        showAlert("error", "Error loading seller information. Please try again later.");
+      }
+    } else {
+      // Redirect to login
+      window.location.href = "/login.html";
+    }
+  });
+
+  // Handle image preview
+  productImageInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        imagePreviewContainer.classList.remove('hidden');
+      }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Handle form submission
+  addProductForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    if (!currentSeller) {
+      showAlert("error", "Please log in to add products.");
+      return;
+    }
+
+    try {
+      // Set button to loading state
+      setButtonLoading(true);
+      
+      // Get form values
+      const productName = document.getElementById('product-name').value;
+      const productPrice = parseFloat(document.getElementById('product-price').value);
+      const productCategory = document.getElementById('product-category').value;
+      const productDescription = document.getElementById('product-description').value;
+      const modelUrl = document.getElementById('model-url').value || null;
+      const stockQuantity = parseInt(document.getElementById('stock-quantity').value);
+      const sku = document.getElementById('sku').value || null;
+      const weight = document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null;
+      
+      // Validate price
+      if (isNaN(productPrice) || productPrice <= 0) {
+        showAlert("error", "Please enter a valid price.");
+        setButtonLoading(false);
+        return;
+      }
+
+      let imageUrl = null;
+      
+      // Upload image if selected
+      if (selectedImageFile) {
+        // Create a reference to the storage location
+        const storageRef = storage.ref(`product-images/${currentSeller.name}/${Date.now()}_${selectedImageFile.name}`);
+        
+        // Upload the file
+        const uploadTask = storageRef.put(selectedImageFile);
+        
+        // Wait for upload to complete
+        await uploadTask;
+        
+        // Get download URL
+        imageUrl = await storageRef.getDownloadURL();
+      }
+      
+      // Create product object
+      const productData = {
+        name: productName,
+        price: productPrice,
+        description: productDescription,
+        category_name: productCategory,
+        seller_name: currentSeller.name,
+        model_url: modelUrl,
+        image_url: imageUrl,
+        stock_quantity: stockQuantity,
+        sku: sku,
+        weight: weight,
+        created_at: new Date().toISOString()
+      };
+      
+      // Insert product into database
+      const { data, error } = await supabaseClient
+        .from('products')
+        .insert([productData]);
+      
+      if (error) throw error;
+      
+      // Show success message
+      showAlert("success", "Product added successfully!");
+      
+      // Reset form
+      addProductForm.reset();
+      imagePreviewContainer.classList.add('hidden');
+      selectedImageFile = null;
+      
+      // Reset button state
+      setButtonLoading(false);
+      
+    } catch (error) {
+      console.error("Error adding product:", error);
+      showAlert("error", "Error adding product. Please try again.");
+      setButtonLoading(false);
+    }
+  });
+
+  // Show alert message
+  function showAlert(type, message) {
+    statusAlert.classList.remove('hidden', 'bg-green-50', 'bg-red-50');
+    statusIcon.innerHTML = '';
+    
+    if (type === "success") {
+      statusAlert.classList.add('bg-green-50');
+      statusMessage.className = 'text-sm font-medium text-green-800';
+      statusIcon.innerHTML = `
+        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      `;
+    } else {
+      statusAlert.classList.add('bg-red-50');
+      statusMessage.className = 'text-sm font-medium text-red-800';
+      statusIcon.innerHTML = `
+        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+      `;
+    }
+    
+    statusMessage.textContent = message;
+    
+    // Hide alert after 5 seconds
+    setTimeout(() => {
+      statusAlert.classList.add('hidden');
+    }, 5000);
+  }
+
+  // Set button loading state
+  function setButtonLoading(isLoading) {
+    if (isLoading) {
+      buttonText.textContent = 'Adding Product...';
+      buttonSpinner.classList.remove('hidden');
+      submitButton.disabled = true;
+    } else {
+      buttonText.textContent = 'Add Product';
+      buttonSpinner.classList.add('hidden');
+      submitButton.disabled = false;
+    }
+  }
+
+  // Logout functionality
+  async function logout() {
+    try {
+      await auth.signOut();
+      window.location.href = "/login.html";
+    } catch (error) {
+      console.error("Error signing out:", error);
+      showAlert("error", "Error signing out. Please try again.");
+    }
+  }
+
+  // Add event listeners
+  logoutButton.addEventListener('click', logout);
+
+  // Initialize page
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth state change will trigger page loading
+  });
+</script>
+
+</body>
+</html>
