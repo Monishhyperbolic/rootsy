@@ -559,7 +559,7 @@
 
             let query = supabase
                 .from('products')
-                .select('id, name, image_url, price, description, category_name, seller_name, stock')
+                .select('name, image_url, price, description, category_name, seller_name, stock')
                 .order('created_at', { ascending: false })
                 .limit(50); // Limit results for better performance
 
