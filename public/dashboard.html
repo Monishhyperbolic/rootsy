@@ -36,7 +36,7 @@
   <!-- Sidebar -->
   <aside class="w-64 bg-white p-6 min-h-screen shadow">
     <nav class="flex flex-col gap-6">
-      <a href="dashboard.html" class="flex items-center gap-2 text-blue-600 font-bold">
+      <a href="#" class="flex items-center gap-2 text-blue-600 font-bold">
         <i class="fas fa-tachometer-alt"></i> Dashboard
       </a>
       <a href="orders.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
@@ -69,124 +69,79 @@
 
     <!-- Dashboard Content -->
     <div id="dashboard-content" class="hidden">
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-xl shadow p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-gray-500 text-sm">Total Sales</h3>
-            <span class="bg-green-100 text-green-700 p-1 rounded text-xs">+12% ↑</span>
+      <!-- Time Period Filter Card -->
+      <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <h3 class="text-lg font-semibold">Sales Overview</h3>
+          <div class="flex items-center gap-3">
+            <label class="text-gray-700">Time Period:</label>
+            <select id="time-period" class="border rounded px-3 py-2">
+              <option value="7">Last 7 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="180">Last 6 Months</option>
+              <option value="365">Last Year</option>
+              <option value="all">All Time</option>
+            </select>
+            <button id="refresh-stats" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
           </div>
-          <p class="text-2xl font-bold" id="total-sales">$0.00</p>
-          <p class="text-gray-500 text-sm mt-2">Last 30 days</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-gray-500 text-sm">Orders</h3>
-            <span class="bg-green-100 text-green-700 p-1 rounded text-xs">+5% ↑</span>
-          </div>
-          <p class="text-2xl font-bold" id="total-orders">0</p>
-          <p class="text-gray-500 text-sm mt-2">Last 30 days</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-gray-500 text-sm">Customers</h3>
-            <span class="bg-green-100 text-green-700 p-1 rounded text-xs">+8% ↑</span>
-          </div>
-          <p class="text-2xl font-bold" id="total-customers">0</p>
-          <p class="text-gray-500 text-sm mt-2">Last 30 days</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-gray-500 text-sm">Products</h3>
-            <span class="bg-blue-100 text-blue-700 p-1 rounded text-xs">No change</span>
-          </div>
-          <p class="text-2xl font-bold" id="total-products">0</p>
-          <p class="text-gray-500 text-sm mt-2">Total products</p>
         </div>
       </div>
 
-      <!-- Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <!-- Sales Chart Card -->
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div class="bg-white rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">Sales Overview</h3>
-          <div class="h-72">
-            <canvas id="sales-chart"></canvas>
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">Total Products Sold</h3>
+            <div id="products-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+5% ↑</div>
           </div>
-        </div>
-
-        <!-- Top Products Chart -->
-        <div class="bg-white rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">Top Products</h3>
-          <div class="h-72">
+          <div class="flex items-end gap-2">
+            <span id="total-products-sold" class="text-4xl font-bold">0</span>
+            <span class="text-gray-500 text-sm mb-1">units</span>
+          </div>
+          <p class="text-gray-500 text-sm mt-2" id="time-period-label">In the last 30 days</p>
+          
+          <!-- Products Sold Chart -->
+          <div class="h-48 mt-4">
             <canvas id="products-chart"></canvas>
           </div>
         </div>
+
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">Total Revenue</h3>
+            <div id="revenue-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+12% ↑</div>
+          </div>
+          <div class="flex items-end gap-2">
+            <span id="total-revenue" class="text-4xl font-bold">$0.00</span>
+          </div>
+          <p class="text-gray-500 text-sm mt-2" id="revenue-time-period-label">In the last 30 days</p>
+          
+          <!-- Revenue Chart -->
+          <div class="h-48 mt-4">
+            <canvas id="revenue-chart"></canvas>
+          </div>
+        </div>
       </div>
 
-      <!-- Recent Orders -->
-      <div class="bg-white rounded-xl shadow p-6 mb-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">Recent Orders</h3>
-          <a href="orders.html" class="text-blue-600 hover:underline text-sm">View All</a>
-        </div>
+      <!-- Top Selling Products -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Top Selling Products</h3>
         <div class="overflow-x-auto">
           <table class="min-w-full text-sm">
             <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
               <tr>
-                <th class="py-3 px-6 text-left">Order ID</th>
-                <th class="py-3 px-6 text-left">Customer</th>
                 <th class="py-3 px-6 text-left">Product</th>
-                <th class="py-3 px-6 text-left">Amount</th>
-                <th class="py-3 px-6 text-left">Date</th>
-                <th class="py-3 px-6 text-left">Status</th>
-                <th class="py-3 px-6 text-right">Action</th>
+                <th class="py-3 px-6 text-center">Units Sold</th>
+                <th class="py-3 px-6 text-right">Revenue</th>
               </tr>
             </thead>
-            <tbody id="recent-orders-table-body" class="text-gray-700">
-              <!-- Recent orders will be inserted here -->
+            <tbody id="top-products-table-body" class="text-gray-700">
+              <!-- Top products will be inserted here -->
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <!-- Row of Cards -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Notifications Card -->
-        <div class="bg-white rounded-xl shadow p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">Notifications</h3>
-            <button class="text-blue-600 hover:underline text-sm">Mark All Read</button>
-          </div>
-          <ul class="space-y-4" id="notifications-list">
-            <!-- Notifications will be inserted here -->
-          </ul>
-        </div>
-        
-        <!-- Quick Actions Card -->
-        <div class="bg-white rounded-xl shadow p-6">
-          <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
-          <div class="grid grid-cols-2 gap-4">
-            <a href="products.html" class="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 p-4 rounded-lg hover:bg-blue-100">
-              <i class="fas fa-plus"></i>
-              <span>Add Product</span>
-            </a>
-            <a href="orders.html" class="flex items-center justify-center gap-2 bg-green-50 text-green-600 p-4 rounded-lg hover:bg-green-100">
-              <i class="fas fa-clipboard-list"></i>
-              <span>Process Orders</span>
-            </a>
-            <a href="analytics.html" class="flex items-center justify-center gap-2 bg-purple-50 text-purple-600 p-4 rounded-lg hover:bg-purple-100">
-              <i class="fas fa-chart-line"></i>
-              <span>View Analytics</span>
-            </a>
-            <a href="#" class="flex items-center justify-center gap-2 bg-orange-50 text-orange-600 p-4 rounded-lg hover:bg-orange-100">
-              <i class="fas fa-cog"></i>
-              <span>Settings</span>
-            </a>
-          </div>
         </div>
       </div>
     </div>
@@ -223,19 +178,22 @@
   const logoutButton = document.getElementById('logout-button');
   const sellerNameElement = document.getElementById('seller-name');
   const userAvatarElement = document.getElementById('user-avatar');
-  const recentOrdersTableBody = document.getElementById('recent-orders-table-body');
-  const notificationsList = document.getElementById('notifications-list');
+  const timePeriodSelect = document.getElementById('time-period');
+  const refreshStatsButton = document.getElementById('refresh-stats');
+  const totalProductsSoldElement = document.getElementById('total-products-sold');
+  const totalRevenueElement = document.getElementById('total-revenue');
+  const timePeriodLabel = document.getElementById('time-period-label');
+  const revenueTimePeriodLabel = document.getElementById('revenue-time-period-label');
+  const topProductsTableBody = document.getElementById('top-products-table-body');
+  const productsTrendElement = document.getElementById('products-trend');
+  const revenueTrendElement = document.getElementById('revenue-trend');
   
-  // Stats elements
-  const totalSalesElement = document.getElementById('total-sales');
-  const totalOrdersElement = document.getElementById('total-orders');
-  const totalCustomersElement = document.getElementById('total-customers');
-  const totalProductsElement = document.getElementById('total-products');
-
   // Global variables
   let currentSeller = null;
-  let salesChart = null;
   let productsChart = null;
+  let revenueChart = null;
+  let previousProductsSold = 0;
+  let previousRevenue = 0;
 
   // Authentication check
   auth.onAuthStateChanged(async (user) => {
@@ -255,8 +213,8 @@
           sellerNameElement.textContent = seller.name;
           userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
           
-          // Load dashboard data
-          loadDashboardData();
+          // Load stats data
+          loadStatsData();
         } else {
           // Redirect to login
           window.location.href = "/login.html";
@@ -271,208 +229,269 @@
     }
   });
 
-  // Load dashboard data
-  async function loadDashboardData() {
+  // Load stats data based on selected time period
+  async function loadStatsData() {
     if (!currentSeller) return;
     
     try {
       dashboardLoading.classList.remove('hidden');
       dashboardContent.classList.add('hidden');
       
-      // Fetch all required data in parallel
-      const [salesData, ordersData, productsData, customersData, recentOrdersData, notificationsData] = 
-        await Promise.all([
-          fetchSalesData(),
-          fetchOrdersData(),
-          fetchProductsData(),
-          fetchCustomersData(),
-          fetchRecentOrders(),
-          fetchNotifications()
-        ]);
+      const timePeriod = parseInt(timePeriodSelect.value);
+      const isAllTime = timePeriodSelect.value === 'all';
       
-      // Update UI with fetched data
-      updateDashboardUI(salesData, ordersData, productsData, customersData, recentOrdersData, notificationsData);
+      // Update time period labels
+      const timeLabel = isAllTime ? 'All time' : `In the last ${timePeriod} days`;
+      timePeriodLabel.textContent = timeLabel;
+      revenueTimePeriodLabel.textContent = timeLabel;
+      
+      // Fetch previous period data for comparison
+      let previousPeriodStart, previousPeriodEnd;
+      let currentPeriodStart, currentPeriodEnd;
+      
+      currentPeriodEnd = new Date();
+      if (isAllTime) {
+        currentPeriodStart = new Date(0); // Beginning of time
+      } else {
+        currentPeriodStart = new Date();
+        currentPeriodStart.setDate(currentPeriodStart.getDate() - timePeriod);
+        
+        // Calculate previous period for comparison
+        previousPeriodEnd = new Date(currentPeriodStart);
+        previousPeriodStart = new Date(previousPeriodEnd);
+        previousPeriodStart.setDate(previousPeriodStart.getDate() - timePeriod);
+      }
+      
+      // Fetch orders for current period
+      const { data: currentOrders, error: currentError } = await supabaseClient
+        .from('orders')
+        .select('*')
+        .eq('seller_name', currentSeller.name)
+        .gte('created_at', currentPeriodStart.toISOString())
+        .lte('created_at', currentPeriodEnd.toISOString());
+      
+      if (currentError) throw currentError;
+      
+      // Fetch previous period data if not all time
+      let previousOrders = [];
+      if (!isAllTime) {
+        const { data: prevOrders, error: prevError } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .eq('seller_name', currentSeller.name)
+          .gte('created_at', previousPeriodStart.toISOString())
+          .lte('created_at', previousPeriodEnd.toISOString());
+        
+        if (prevError) throw prevError;
+        previousOrders = prevOrders || [];
+      }
+      
+      // Calculate stats
+      const totalProductsSold = currentOrders.length;
+      const totalRevenue = currentOrders.reduce((sum, order) => sum + parseFloat(order.amount), 0);
+      
+      previousProductsSold = previousOrders.length;
+      previousRevenue = previousOrders.reduce((sum, order) => sum + parseFloat(order.amount), 0);
+      
+      // Calculate trends
+      let productsTrend = 0;
+      let revenueTrend = 0;
+      
+      if (previousProductsSold > 0) {
+        productsTrend = ((totalProductsSold - previousProductsSold) / previousProductsSold) * 100;
+      }
+      
+      if (previousRevenue > 0) {
+        revenueTrend = ((totalRevenue - previousRevenue) / previousRevenue) * 100;
+      }
+      
+      // Update UI with trends
+      updateTrendDisplay(productsTrendElement, productsTrend);
+      updateTrendDisplay(revenueTrendElement, revenueTrend);
+      
+      // Process data for charts and top products
+      const salesByDate = processSalesByDate(currentOrders, timePeriod);
+      const topProducts = processTopProducts(currentOrders);
+      
+      // Update UI with data
+      totalProductsSoldElement.textContent = totalProductsSold;
+      totalRevenueElement.textContent = `$${totalRevenue.toFixed(2)}`;
+      
+      // Render charts and tables
+      renderProductsChart(salesByDate.dates, salesByDate.counts);
+      renderRevenueChart(salesByDate.dates, salesByDate.amounts);
+      renderTopProductsTable(topProducts);
       
       // Hide loading, show content
       dashboardLoading.classList.add('hidden');
       dashboardContent.classList.remove('hidden');
       
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
-      alert("Error loading dashboard data. Please try again later.");
+      console.error("Error loading stats data:", error);
+      alert("Error loading stats data. Please try again later.");
     }
   }
-
-  // Fetch sales data
-  async function fetchSalesData() {
-    // In a real app, you'd fetch from your database
-    // For demo, using static data
-    const { data, error } = await supabaseClient
-      .from('orders')
-      .select('amount, created_at')
-      .eq('seller_name', currentSeller.name)
-      .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
-    
-    if (error) throw error;
-    
-    return data || [];
-  }
-
-  // Fetch orders data
-  async function fetchOrdersData() {
-    const { data, error } = await supabaseClient
-      .from('orders')
-      .select('*')
-      .eq('seller_name', currentSeller.name)
-      .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
-    
-    if (error) throw error;
-    
-    return data || [];
-  }
-
-  // Fetch products data
-  async function fetchProductsData() {
-    const { data, error } = await supabaseClient
-      .from('products')
-      .select('*')
-      .eq('seller_name', currentSeller.name);
-    
-    if (error) throw error;
-    
-    return data || [];
-  }
-
-  // Fetch customers data (unique customers from orders)
-  async function fetchCustomersData() {
-    const { data: orders, error } = await supabaseClient
-      .from('orders')
-      .select('customer_name')
-      .eq('seller_name', currentSeller.name)
-      .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
-    
-    if (error) throw error;
-    
-    // Get unique customers
-    const uniqueCustomers = [...new Set(orders.map(order => order.customer_name))];
-    return uniqueCustomers;
-  }
-
-  // Fetch recent orders
-  async function fetchRecentOrders() {
-    const { data, error } = await supabaseClient
-      .from('orders')
-      .select('*')
-      .eq('seller_name', currentSeller.name)
-      .order('created_at', { ascending: false })
-      .limit(5);
-    
-    if (error) throw error;
-    
-    return data || [];
-  }
-
-  // Fetch notifications (mock data for demo)
-  async function fetchNotifications() {
-    // In a real app, you'd fetch from your database
-    // For demo, using static data
-    return [
-      {
-        id: 1,
-        type: 'order',
-        message: 'New order #1234 has been placed',
-        time: '10 minutes ago'
-      },
-      {
-        id: 2,
-        type: 'product',
-        message: 'Your product "Organic Tomato Seeds" is low in stock',
-        time: '1 hour ago'
-      },
-      {
-        id: 3,
-        type: 'review',
-        message: 'You received a new 5-star review',
-        time: '3 hours ago'
-      },
-      {
-        id: 4,
-        type: 'system',
-        message: 'System maintenance scheduled for tonight at 2 AM',
-        time: '5 hours ago'
-      }
-    ];
-  }
-
-  // Update dashboard UI with data
-  function updateDashboardUI(salesData, ordersData, productsData, customersData, recentOrdersData, notificationsData) {
-    // Update stats cards
-    const totalSales = salesData.reduce((sum, sale) => sum + parseFloat(sale.amount), 0);
-    totalSalesElement.textContent = `$${totalSales.toFixed(2)}`;
-    totalOrdersElement.textContent = ordersData.length;
-    totalCustomersElement.textContent = customersData.length;
-    totalProductsElement.textContent = productsData.length;
-    
-    // Render charts
-    renderSalesChart(salesData);
-    renderProductsChart(productsData, ordersData);
-    
-    // Render recent orders
-    renderRecentOrders(recentOrdersData);
-    
-    // Render notifications
-    renderNotifications(notificationsData);
-  }
-
-  // Render sales chart
-  function renderSalesChart(salesData) {
-    // Group sales by date
+  
+  // Process sales data by date
+  function processSalesByDate(orders, timePeriod) {
     const salesByDate = {};
-    const last7Days = [];
+    const dates = [];
+    const counts = [];
+    const amounts = [];
     
-    // Create array of last 7 days
-    for (let i = 6; i >= 0; i--) {
+    // Create empty data points for all dates in the range
+    const isAllTime = timePeriod === 'all';
+    const numDays = isAllTime ? Math.min(30, Math.ceil((new Date() - new Date(orders[0]?.created_at || new Date())) / (1000 * 60 * 60 * 24))) : timePeriod;
+    
+    for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateString = date.toISOString().split('T')[0];
-      salesByDate[dateString] = 0;
-      last7Days.push(dateString);
+      salesByDate[dateString] = { count: 0, amount: 0 };
+      dates.push(dateString);
     }
     
-    // Sum sales by date
-    salesData.forEach(sale => {
-      const dateString = new Date(sale.created_at).toISOString().split('T')[0];
-      if (last7Days.includes(dateString)) {
-        salesByDate[dateString] = (salesByDate[dateString] || 0) + parseFloat(sale.amount);
+    // Fill in actual data
+    orders.forEach(order => {
+      const dateString = new Date(order.created_at).toISOString().split('T')[0];
+      if (salesByDate[dateString]) {
+        salesByDate[dateString].count += 1;
+        salesByDate[dateString].amount += parseFloat(order.amount);
       }
     });
     
-    // Format labels as day names
-    const labels = last7Days.map(date => {
-      const day = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
-      return day;
+    // Convert to arrays for charts
+    dates.forEach(date => {
+      counts.push(salesByDate[date].count);
+      amounts.push(salesByDate[date].amount);
     });
     
-    // Get data values in order of dates
-    const values = last7Days.map(date => salesByDate[date]);
+    // Format dates for display
+    const formattedDates = dates.map(date => {
+      const d = new Date(date);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
     
-    // Create chart
-    const ctx = document.getElementById('sales-chart').getContext('2d');
+    return {
+      dates: formattedDates,
+      counts: counts,
+      amounts: amounts
+    };
+  }
+  
+  // Process top products data
+  function processTopProducts(orders) {
+    const productMap = {};
     
-    if (salesChart) {
-      salesChart.destroy();
+    orders.forEach(order => {
+      const productName = order.product_name;
+      if (!productMap[productName]) {
+        productMap[productName] = {
+          name: productName,
+          count: 0,
+          revenue: 0
+        };
+      }
+      
+      productMap[productName].count += 1;
+      productMap[productName].revenue += parseFloat(order.amount);
+    });
+    
+    // Convert to array and sort by count
+    return Object.values(productMap)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // Top 5 products
+  }
+  
+  // Update trend display
+  function updateTrendDisplay(element, trendValue) {
+    const formattedTrend = trendValue.toFixed(1);
+    const isPositive = trendValue > 0;
+    const isNeutral = trendValue === 0;
+    
+    if (isNeutral) {
+      element.className = 'bg-gray-100 text-gray-700 p-1 px-2 rounded text-xs';
+      element.innerHTML = 'No change';
+    } else {
+      element.className = isPositive 
+        ? 'bg-green-100 text-green-700 p-1 px-2 rounded text-xs'
+        : 'bg-red-100 text-red-700 p-1 px-2 rounded text-xs';
+        
+      element.innerHTML = `${isPositive ? '+' : ''}${formattedTrend}% ${isPositive ? '↑' : '↓'}`;
+    }
+  }
+
+  // Render products chart
+  function renderProductsChart(labels, data) {
+    const ctx = document.getElementById('products-chart').getContext('2d');
+    
+    if (productsChart) {
+      productsChart.destroy();
     }
     
-    salesChart = new Chart(ctx, {
+    productsChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Products Sold',
+          data: data,
+          backgroundColor: 'rgba(59, 130, 246, 0.7)',
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              precision: 0
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              autoSkip: true,
+              maxRotation: 0,
+              maxTicksLimit: 10
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Render revenue chart
+  function renderRevenueChart(labels, data) {
+    const ctx = document.getElementById('revenue-chart').getContext('2d');
+    
+    if (revenueChart) {
+      revenueChart.destroy();
+    }
+    
+    revenueChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
         datasets: [{
-          label: 'Sales ($)',
-          data: values,
+          label: 'Revenue ($)',
+          data: data,
           fill: true,
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderColor: 'rgba(59, 130, 246, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderColor: 'rgba(16, 185, 129, 1)',
           tension: 0.4
         }]
       },
@@ -495,6 +514,11 @@
           x: {
             grid: {
               display: false
+            },
+            ticks: {
+              autoSkip: true,
+              maxRotation: 0,
+              maxTicksLimit: 10
             }
           }
         }
@@ -502,180 +526,28 @@
     });
   }
 
-  // Render products chart
-  function renderProductsChart(productsData, ordersData) {
-    // Count product occurrences in orders
-    const productCounts = {};
+  // Render top products table
+  function renderTopProductsTable(products) {
+    topProductsTableBody.innerHTML = '';
     
-    ordersData.forEach(order => {
-      const productName = order.product_name;
-      productCounts[productName] = (productCounts[productName] || 0) + 1;
-    });
-    
-    // Sort products by count
-    const sortedProducts = Object.entries(productCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5); // Top 5 products
-    
-    // Create chart
-    const ctx = document.getElementById('products-chart').getContext('2d');
-    
-    if (productsChart) {
-      productsChart.destroy();
-    }
-    
-    productsChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: sortedProducts.map(item => item[0]),
-        datasets: [{
-          label: 'Orders',
-          data: sortedProducts.map(item => item[1]),
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.7)',
-            'rgba(16, 185, 129, 0.7)',
-            'rgba(245, 158, 11, 0.7)',
-            'rgba(139, 92, 246, 0.7)',
-            'rgba(236, 72, 153, 0.7)'
-          ],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              display: true,
-              color: 'rgba(0, 0, 0, 0.05)'
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        }
-      }
-    });
-  }
-
-  // Render recent orders
-  function renderRecentOrders(orders) {
-    recentOrdersTableBody.innerHTML = '';
-    
-    if (orders.length === 0) {
+    if (products.length === 0) {
       const emptyRow = document.createElement('tr');
-      emptyRow.innerHTML = `<td colspan="7" class="py-4 px-6 text-center text-gray-500">No recent orders found</td>`;
-      recentOrdersTableBody.appendChild(emptyRow);
+      emptyRow.innerHTML = `<td colspan="3" class="py-4 px-6 text-center text-gray-500">No products sold in this period</td>`;
+      topProductsTableBody.appendChild(emptyRow);
       return;
     }
     
-    orders.forEach(order => {
+    products.forEach(product => {
       const row = document.createElement('tr');
       row.className = 'border-b';
       
-      // Format date
-      const orderDate = new Date(order.created_at);
-      const formattedDate = orderDate.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      
-      // Determine status color
-      let statusColor = '';
-      switch(order.status.toLowerCase()) {
-        case 'completed':
-          statusColor = 'bg-green-100 text-green-700';
-          break;
-        case 'pending':
-          statusColor = 'bg-yellow-100 text-yellow-700';
-          break;
-        case 'processing':
-          statusColor = 'bg-blue-100 text-blue-700';
-          break;
-        case 'cancelled':
-          statusColor = 'bg-red-100 text-red-700';
-          break;
-        default:
-          statusColor = 'bg-gray-100 text-gray-700';
-      }
-      
       row.innerHTML = `
-        <td class="py-4 px-6">#${order.id}</td>
-        <td class="py-4 px-6">${order.customer_name}</td>
-        <td class="py-4 px-6">${order.product_name}</td>
-        <td class="py-4 px-6">$${parseFloat(order.amount).toFixed(2)}</td>
-        <td class="py-4 px-6">${formattedDate}</td>
-        <td class="py-4 px-6">
-          <span class="${statusColor} py-1 px-3 rounded-full text-xs capitalize">${order.status}</span>
-        </td>
-        <td class="py-4 px-6 text-right">
-          <a href="orders.html" class="text-blue-600 hover:underline">View</a>
-        </td>
+        <td class="py-4 px-6">${product.name}</td>
+        <td class="py-4 px-6 text-center">${product.count}</td>
+        <td class="py-4 px-6 text-right">$${product.revenue.toFixed(2)}</td>
       `;
       
-      recentOrdersTableBody.appendChild(row);
-    });
-  }
-
-  // Render notifications
-  function renderNotifications(notifications) {
-    notificationsList.innerHTML = '';
-    
-    if (notifications.length === 0) {
-      notificationsList.innerHTML = `<li class="text-center text-gray-500">No notifications found</li>`;
-      return;
-    }
-    
-    notifications.forEach(notification => {
-      const item = document.createElement('li');
-      item.className = 'p-3 border rounded-lg';
-      
-      // Determine notification icon
-      let icon = 'bell';
-      let iconColor = 'text-blue-600';
-      
-      switch(notification.type) {
-        case 'order':
-          icon = 'shopping-cart';
-          iconColor = 'text-green-600';
-          break;
-        case 'product':
-          icon = 'box';
-          iconColor = 'text-orange-600';
-          break;
-        case 'review':
-          icon = 'star';
-          iconColor = 'text-yellow-600';
-          break;
-        case 'system':
-          icon = 'cog';
-          iconColor = 'text-purple-600';
-          break;
-      }
-      
-      item.innerHTML = `
-        <div class="flex gap-3 items-start">
-          <div class="p-2 rounded-full bg-blue-50 ${iconColor}">
-            <i class="fas fa-${icon}"></i>
-          </div>
-          <div>
-            <p class="text-sm">${notification.message}</p>
-            <p class="text-xs text-gray-500 mt-1">${notification.time}</p>
-          </div>
-        </div>
-      `;
-      
-      notificationsList.appendChild(item);
+      topProductsTableBody.appendChild(row);
     });
   }
 
@@ -691,11 +563,13 @@
   }
 
   // Add event listeners
+  timePeriodSelect.addEventListener('change', loadStatsData);
+  refreshStatsButton.addEventListener('click', loadStatsData);
   logoutButton.addEventListener('click', logout);
 
   // Initialize page
   document.addEventListener('DOMContentLoaded', () => {
-    // Auth state change will trigger loadDashboardData
+    // Auth state change will trigger loadStatsData
   });
 </script>
 
