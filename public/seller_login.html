@@ -154,6 +154,7 @@
           console.log(`User logged in successfully:`, user.email);
 
           try {
+           
             // Check if the user exists in the 'sellers' table in Supabase
             const { data, error } = await supabaseClient
               .from('sellers')
@@ -316,10 +317,11 @@
         };
 
   
-
         const { data, error } = await supabaseClient
-          .from('sellers')
-          .insert([sellerData]);
+        .from('sellers')
+        .upsert(sellerData)
+        .select();
+
 
         if (error) {
           throw error;
