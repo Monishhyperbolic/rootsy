@@ -12,17 +12,6 @@
       background-color: #f5f5f5;
     }
 
-/* Promo Banner */
-.promo-banner {
-  background-image: url(https://i.postimg.cc/cChB5GYg/main-banner.avif);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-size: cover;
-    padding: 60px;
-    border-radius: 10px;
-}
-
 /* Adjust Promo Content */
 .promo-content {
     
@@ -423,25 +412,27 @@
 
     // Cart Functions
     function addToCart(product) {
-        const cart = getFromStorage('cart') || [];
+        function addToCart(product) {
+  const cart = getFromStorage('cart') || [];
 
-// Check if the product already exists in the cart
-const alreadyInCart = cart.some(item => item.id === product.id);
+  // Check if a product with the same name already exists
+  const alreadyInCart = cart.some(item => item.name === product.name);
 
-if (!alreadyInCart) {
-  cart.push({
-    ...product,
-    qty: 1,
-    addedAt: Date.now()
-  });
-  alert(`${product.name} added to cart!`);
-} else {
-  alert(`${product.name} is already in the cart!`);
+  if (!alreadyInCart) {
+    cart.push({
+      ...product,
+      qty: 1,
+      addedAt: Date.now()
+    });
+    alert(`${product.name} added to cart!`);
+  } else {
+    alert(`${product.name} is already in the cart!`);
+  }
+
+  setToStorage('cart', cart);
+  updateCounts(); // Update the UI count
 }
 
-setToStorage('cart', cart);
-
-}
 
 
       
@@ -463,15 +454,15 @@ setToStorage('cart', cart);
 
     // Update UI counters
     function updateCounts() {
-      const cart = getFromStorage('cart');
-      const wishlist = getFromStorage('wishlist');
-      
-      // Calculate total quantity
-      let cartQty = cart.reduce((total, item) => total + (item.qty || 0), 0);
-      
-      cartCount.textContent = cartQty;
-      wishlistCount.textContent = wishlist.length;
-    }
+  const cart = getFromStorage('cart') || [];
+  const wishlist = getFromStorage('wishlist') || [];
+
+  const cartQty = cart.reduce((total, item) => total + (item.qty || 0), 0);
+
+  document.getElementById('cartCount').textContent = cartQty;
+  document.getElementById('wishlistCount').textContent = wishlist.length;
+}
+
 
     // Load categories from Supabase
     async function loadCategories() {
