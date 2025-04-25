@@ -423,24 +423,21 @@
 
     // Cart Functions
     function addToCart(product) {
-      const cart = getFromStorage('cart');
-      // First check if item already exists in cart
-      const existingIndex = cart.findIndex(item => item.id === product.id);
+  const cart = getFromStorage('cart');
+
+  // Always add a new entry, regardless of duplicates
+  cart.push({
+    ...product,
+    qty: 1,
+    addedAt: Date.now() // optional: helps distinguish items
+  });
+
+  setToStorage('cart', cart);
+  alert(`${product.name} added to cart!`);
+}
+
+
       
-      if (existingIndex >= 0) {
-        // Update quantity only if product exists
-        cart[existingIndex].qty += 1;
-      } else {
-        // Store complete product object plus qty
-        cart.push({
-          ...product, // This spreads all product properties
-          qty: 1
-        });
-      }
-      
-      setToStorage('cart', cart);
-      alert(`${product.name} added to cart!`);
-    }
 
     // Wishlist Functions
     function addToWishlist(product) {
