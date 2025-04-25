@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Section</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #fff;
+      color: #111;
+    }
+
+
+    .top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background-color: #ffffff;
+  font-size: 14px;
+  color: #555;
+  border-bottom: 1px solid #dfe4ea;
+}
+
+.left-section a,
+.right-section a {
+  color: #555;
+  text-decoration: none;
+  margin-right: 15px;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  background-color: #ccc;
+  margin: 0 10px;
+}
+
+.delivery-text {
+  color: #333;
+}
+
+.highlight {
+  color: #d35400;
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.dropdown {
+  cursor: pointer;
+}
+
+.seller-btn {
+  color: black;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.seller-btn:hover {
+  background-color: #f1f1f1;
+  border-color: #aaa;
+}
+
+
+.navbar {
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 10px; /* 🔽 Reduced vertical padding */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: auto; /* optional, but just in case */
+}
+
+
+/* Left Section */
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+}
+
+.logo img {
+    height: auto;
+    width: 80px;
+    max-height: 60px; /* Optional: prevents it from stretching too tall */
+}
+
+
+
+
+#brand {
+    font-weight: 700;
+    font-size: large;
+}
+
+/* Delivery */
+.delivery {
+  position: absolute;
+    margin-left: 90px;
+    font-size: 14px;
+}
+
+/* Search Bar */
+.navbar-center {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 30vw;
+}
+
+#searchbox {
+    margin: 0;
+    width: 100%;
+    height: 4vh;
+    padding: 2px 4px 2px 4px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    align-items: center;
+    justify-content: center;
+}
+
+.navbar-center button {
+    position: relative;
+    right: 30px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 0px;
+}
+
+.navbar-center button i {
+    font-size: 18px;
+    color: gray;
+}
+
+/* Right Section */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.navbar-right a {
+    font-size: 16px;
+    text-decoration: none;
+    color: black;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-right a i {
+    font-size: 16px;
+}
+
+/* Navbar Links */
+.navbar-links {
+    display: flex;
+    justify-content: center;
+    background-color: #f8f8f8;
+    padding: 10px 0;
+}
+
+.navbar-links a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: black;
+}
+
+.sale {
+    color: red;
+    font-weight: bold;
+}
+  
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+  }
+  
+  .notice {
+    background: #ffecec;
+    border: 1px solid #e57373;
+    color: #d32f2f;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+  }
+  
+  .notice .highlight {
+    font-weight: bold;
+    color: #c62828;
+  }
+  
+
+    .contact-header {
+      text-align: center;
+      padding: 80px 20px 60px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .contact-header h5 {
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      color: #444;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .contact-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #000;
+      margin-bottom: 20px;
+    }
+
+    .contact-header p {
+      font-size: 1rem;
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .contact-section {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 60px 10%;
+      gap: 40px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .office-info {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .office-info h2 {
+      margin-bottom: 10px;
+    }
+
+    .office-info p {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .office {
+      margin-bottom: 30px;
+    }
+
+    .office h4 {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .office small {
+      display: block;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .office a {
+      color: #3366cc;
+      text-decoration: none;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .social-icons span {
+      font-weight: 500;
+      display: block;
+    }
+
+    
+
+    .contact-form {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .contact-form p {
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .form-row input {
+      flex: 1;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    button {
+      align-self: center;
+      justify-self: center;
+      background-color: #6c5ce7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .social-icons img {
+  width: 30px;
+ /* Ensures uniform height */
+  object-fit: cover; /* Keeps aspect ratio while fitting in the box */
+  margin: 1px;
+  border-radius: 5px;
+}
+
+
+    
+
+   
+  
+  .features {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    padding: 60px 10%;
+    text-align: left;
+  }
+  
+  .feature {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .feature img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+  
+  .feature h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .feature p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+    line-height: 1.4;
+  }
+  
+  @media (max-width: 1024px) {
+    .features {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .features {
+      grid-template-columns: 1fr;
+    }
+  }
+    
+
+
+    footer {
+    margin-top: 10px;
+    background-color: #f4f4f4;
+    color: #000000;
+    padding: 20px;
+    text-align: center;
+}
+.newsletter {
+    padding: 20px;
+    background-color: #e2e2e2;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+.newsletter p {
+    margin: 5px 0;
+}
+.newsletter input {
+    padding: 10px;
+    width: 70%;
+    margin-right: 10px;
+    border: none;
+    border-radius: 5px;
+}
+.newsletter button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #ff6600;
+    color: rgb(0, 0, 0);
+    cursor: pointer;
+    border-radius: 10px;
+}
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding-bottom: 20px;
+}
+.column {
+    flex: 1;
+    padding: 10px;
+    min-width: 150px;
+}
+.column h3 {
+    color: #ff6600;
+    margin-bottom: 10px;
+}
+.column ul {
+    list-style: none;
+    padding: 0;
+}
+.column ul li {
+    margin: 5px 0;
+}
+.column ul li a {
+    color: #000000;
+    text-decoration: none;
+}
+.social-media img,
+.payment-methods img {
+    width: 30px;
+    margin: 5px;
+}
+.copyright {
+    font-size: 14px;
+    color: #000000;
+    margin-top: 20px;
+}
+.links {
+    margin-top: 10px;
+}
+.links a {
+    color: #ff6600;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+    @media (max-width: 768px) {
+      .contact-section {
+        flex-direction: column;
+        padding: 40px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    
+    <div class="top-header">
+      <div class="left-section">
+        <a href="#">About Us</a>
+        <a href="#">My account</a>
+        <a href="#">Wishlist</a>
+        <span class="divider"></span>
+        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+      </div>
+      <div class="right-section">
+        <div class="dropdown">English ▼</div>
+        <div class="dropdown">USD ▼</div>
+        <button class="seller-btn">Seller Login</button>
+        <a href="#">Order Tracking</a>
+      </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="images/RRootsy.png" alt="Rootsy Logo">
+                
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
+            <a href="#" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="checkout.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="#">Shop</a>
+        <a href="#">Fruits & Vegetables</a>
+        <a href="#">Beverages</a>
+        <a href="#">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="#">Trending Products</a>
+        <a href="#" class="sale">Almost Finished SALE</a>
+    </div>
+</header>
+
+  <!-- HEADER -->
+  <section class="contact-header">
+    <h5>Contact With Us</h5>
+    <h1>You can ask us questions</h1>
+    <p>Contact us for all your questions and opinions, or you can solve your problems in a shorter time with our contact offices.</p>
+  </section>
+
+  <!-- OFFICES + FORM -->
+  <section class="contact-section">
+    <!-- Left Column -->
+    <div class="office-info">
+      <h2>Our Offices</h2>
+      <p>On dekande mydurtad mora även om skurkstat. Semirade timaheten rena. Radiogen pasam inte loba även om prerade i garanterad traditionell specialitet till bebel.</p>
+
+      <div class="office">
+        <small>🇺🇸 United States</small>
+        <h4>United States Office</h4>
+        <p>205 Middle Road, 2nd Floor, New York</p>
+        <p><strong>+02 1234 567 88</strong><br><a href="#">info@example.com</a></p>
+      </div>
+
+      <div class="office">
+        <small>🇩🇪 Munich</small>
+        <h4>Munich States Office</h4>
+        <p>205 Middle Road, 2nd Floor, New York</p>
+        <p><strong>+5 456 123 22</strong><br><a href="#">contact@example.com</a></p>
+      </div>
+
+      <div class="social-icons">
+        <span>Follow us:</span>
+        <a href="#"><img src="images/facebook.webp" alt="Facebook"></a>
+        <a href="#"><img src="images/twitter.webp" alt="Twitter"></a>
+        <a href="#"><img src="images/instagram.webp" alt="Instagram"></a>
+        <a href="#"><img src="images/linkedin.png" alt="Instagram"></a>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="contact-form">
+      <p>On dekande mydurtad mora även om skurkstat. Semirade timaheten rena. Radiogen pasam inte loba även om prerade i garanterad traditionell specialitet till bebel.</p>
+
+      <form>
+        <div class="form-row">
+          <input type="text" placeholder="Your name *" required>
+          <input type="email" placeholder="Your email *" required>
+        </div>
+        <input type="text" placeholder="Subject *" required>
+        <textarea placeholder="Your message" required></textarea>
+        <button type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <img src="images/payonlyonline.webp" alt="Payment only online">
+      <h3>Payment only online</h3>
+      <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
+    </div>
+    <div class="feature">
+      <img src="images/stocks&sales.webp" alt="New stocks and sales">
+      <h3>New stocks and sales</h3>
+      <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
+    </div>
+    <div class="feature">
+      <img src="images/quality&assurance.png" alt="Quality assurance">
+      <h3>Quality assurance</h3>
+      <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
+    </div>
+    <div class="feature">
+      <img src="images/delivery.png" alt="Delivery from 1 hour">
+      <h3>Delivery from 1 hour</h3>
+      <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
+    </div>
+  </section>
+
+
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: info@example.com</p>
+            <p>Call us: 0 800 300-353</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="images/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="images/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="images/instagram.webp" alt="Instagram"></a>
+                <a href="#"><img src="images/linkedin.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2024 © Jinstore WooCommerce WordPress Theme. All rights reserved. Powered by BlackRise Themes.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+</footer>
+
+</body>
+</html>
