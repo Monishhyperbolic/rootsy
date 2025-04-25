@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="index.css">
+  <script src="index.js"></script>
+
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,251 +14,9 @@
     <!-- Firebase Auth SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script>
-      // Your Firebase config
-      const firebaseConfig = {
-        apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
-        authDomain: "rootsy-ec110.firebaseapp.com",
-        projectId: "rootsy-ec110",
-        storageBucket: "rootsy-ec110.appspot.com",
-        messagingSenderId: "120254624474",
-        appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
-        measurementId: "G-0Y636N5BPV"
-      };
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-
-      // Improved auth state change handler
-      window.addEventListener('DOMContentLoaded', function() {
-        auth.onAuthStateChanged(function(user) {
-          const accountBtn = document.getElementById('account-btn');
-          const signoutBtn = document.getElementById('signout-btn');
-          
-          if (user) {
-            // User is signed in - update UI with email
-            console.log("User is signed in:", user.email); // Debug log
-            if (accountBtn) {
-              accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>${user.email}</span>`;
-              accountBtn.style.cursor = "pointer";
-              accountBtn.title = "View Profile";
-              // Update navbar account link as well
-              const navbarAccount = document.querySelector('.navbar-right .account span');
-              if (navbarAccount) {
-                navbarAccount.textContent = user.email;
-              }
-            }
-            if (signoutBtn) signoutBtn.style.display = "inline-block";
-          } else {
-            // No user is signed in
-            console.log("No user signed in"); // Debug log
-            if (accountBtn) {
-              accountBtn.innerHTML = `<i class="fa-solid fa-user"></i><span>Sign in account</span>`;
-              accountBtn.style.cursor = "pointer";
-              accountBtn.title = "Sign in to your account";
-            }
-            if (signoutBtn) signoutBtn.style.display = "none";
-          }
-          
-          // Initialize geolocation after auth check
-          initGeolocation();
-        });
+      window.addEventListener('DOMContentLoaded', function () {
+        initGeolocation();
       });
-
-      // Fixed geolocation functionality
-      function initGeolocation() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(showLocation, showError);
-        } else {
-          const locationElement = document.getElementById('user-location');
-          if (locationElement) {
-            locationElement.textContent = "Geolocation not supported by this browser";
-          }
-        }
-      }
-
-      function showLocation(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
-          .then(response => response.json())
-          .then(data => {
-            console.log("Geolocation data:", data); // Debug log to see what we're getting
-            let locationString = "";
-
-            if (data.address) {
-              // Get street name with proper fallbacks
-              const street = data.address.road || data.address.pedestrian || data.address.street || "";
-              
-              // Get city with proper fallbacks
-              const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
-              
-              // Format as "street, city" when both are available
-              if (street && city) {
-                locationString = `${street}, ${city}`;
-              } else if (street) {
-                locationString = street;
-              } else if (city) {
-                locationString = city;
-              } else {
-                // Fallback to locality + city if street is not available
-                const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-                if (locality && city) {
-                  locationString = `${locality}, ${city}`;
-                } else if (locality) {
-                  locationString = locality;
-                } else {
-                  locationString = "Location unavailable";
-                }
-              }
-            } else {
-              locationString = "Location unavailable";
-            }
-
-            // Display location
-            const locationElement = document.getElementById('user-location');
-            if (locationElement) {
-              locationElement.textContent = locationString;
-            }
-          })
-          .catch(error => {
-            console.error('Geocoding error:', error);
-            const locationElement = document.getElementById('user-location');
-            if (locationElement) {
-              locationElement.textContent = "Location service error";
-            }
-          });
-      }
-
-      function showError(error) {
-        const locationElement = document.getElementById('user-location');
-        if (locationElement) {
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              locationElement.textContent = "Location access denied";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              locationElement.textContent = "Location information unavailable";
-              break;
-            case error.TIMEOUT:
-              locationElement.textContent = "Location request timed out";
-              break;
-            case error.UNKNOWN_ERROR:
-              locationElement.textContent = "Unknown location error";
-              break;
-          }
-        }
-      }
-
-      function signOutUser() {
-        auth.signOut().then(function() {
-          window.location.href = "sign_in.html";
-        });
-      }
-
-      // Function to scroll categories
-      function scrollCategory(amount) {
-        const container = document.getElementById('categoryContainer');
-        if (container) {
-          container.scrollLeft += amount;
-        }
-      }
-
-      // --- CART LOGIC ---
-      function getCart() {
-        return JSON.parse(localStorage.getItem('cart') || '[]');
-      }
-      function setCart(cart) {
-        localStorage.setItem('cart', JSON.stringify(cart));
-      }
-      function addToCartFromCard(cardElem) {
-        // Try to get title for both .card and .ccard
-        let titleElem = cardElem.querySelector('.title, h3');
-        const title = titleElem ? titleElem.innerText : 'Product';
-        // Try to get price for both .card and .ccard
-        let priceElem = cardElem.querySelector('.price');
-        let priceText = priceElem ? priceElem.innerText : '';
-        let price = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
-        // Try to get image for both .card and .ccard
-        const imgElem = cardElem.querySelector('img');
-        const image = imgElem ? imgElem.src : '';
-        // Make id unique using title + price (in case of duplicate titles)
-        const id = (title + '-' + price).replace(/\s+/g, '-').toLowerCase();
-        let cart = getCart();
-        let existing = cart.find(item => item.id === id);
-        if (existing) {
-          existing.qty += 1;
-        } else {
-          cart.push({ id, title, price, image, qty: 1 });
-        }
-        setCart(cart);
-        updateCartCount();
-        alert(`${title} added to cart!`);
-      }
-      
-      function updateCartCount() {
-        let cart = getCart();
-        let count = cart.reduce((acc, item) => acc + item.qty, 0);
-        let countElem = document.getElementById('cart-count');
-        if (countElem) countElem.textContent = count;
-      }
-      
-      // Banner slider functionality
-      function startBannerSlider() {
-        const bannerBoxes = document.querySelectorAll('.banner-box');
-        
-        bannerBoxes.forEach(box => {
-          const slides = box.querySelectorAll('.banner-slide');
-          if (slides.length > 1) {
-            let currentSlide = 0;
-            
-            setInterval(() => {
-              slides[currentSlide].classList.remove('active');
-              currentSlide = (currentSlide + 1) % slides.length;
-              slides[currentSlide].classList.add('active');
-            }, 5000);
-          }
-        });
-      }
-      
-      // Event listeners
-      document.addEventListener('DOMContentLoaded', function() {
-        // Init cart count
-        updateCartCount();
-        
-        // Start banner sliders
-        startBannerSlider();
-        
-        // Add to cart click listener
-        document.addEventListener('click', function(e) {
-          if (e.target.classList.contains('add-to-cart')) {
-            let cardElem = e.target.closest('.card, .ccard');
-            if (cardElem) addToCartFromCard(cardElem);
-          }
-        });
-      });
-
-      
-function rotateSlides(bannerId) {
-    const slides = document.querySelectorAll(`#${bannerId} .banner-slide`);
-    let current = 0;
-    setInterval(() => {
-      slides[current].classList.remove('active');
-      current = (current + 1) % slides.length;
-      slides[current].classList.add('active');
-    }, 4000);
-  }
-
-  rotateSlides('banner1');
-  rotateSlides('banner2');
-
-// category-scroll button
-
-
-function scrollcategory(amount) {
-    const container = document.getElementById('categoryContainer');
-    container.scrollLeft += amount;
-}
-
     </script>
  
 </head>
@@ -289,7 +49,9 @@ function scrollcategory(amount) {
                 </a>
                 <div class="delivery">
                     <span>Deliver to</span>
-                    <span>all</span>
+                    <div id="user-location">Detecting your location...</div>
+
+                    
                 </div>
             </div>
             <div class="navbar-center">
@@ -298,8 +60,7 @@ function scrollcategory(amount) {
             </div>
             <div class="navbar-right">
                 <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
-                <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-                <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+              
             </div>
         </nav>
         <div class="navbar-links">
@@ -386,206 +147,185 @@ function scrollcategory(amount) {
       <div class="view-all-wrapper">
           <button class="view-all-btn">View All <span class="arrow">→</span></button>
         </div>
-    <div class="dashboard">
-      <div class="card">
-        <div class="discount-badge">25%</div>
-        <img src="https://i.postimg.cc/DZHzxPKs/apple-juice.png" class="product-image" alt="Apple Juice">
-        <div class="tag">ORGANIC</div>
-        <div class="product-info">
-        <div class="title">100 Percent Apple Juice </div>
-        <div class="quantity">500ml</div>
-        <div class="price">₹49 <span class="original-price">₹65</span></div>
-        <button class="add-to-cart">Add to cart</button>
-        </div>
-      </div>
-
-      <!-- Repeat this structure for other products -->
-
-      <div class="card">
-        <div class="discount-badge">20%</div>
-        <img src="https://i.postimg.cc/26ZYSpPb/fried-chicken.png" class="product-image" alt="Rising Pizza">
-        <div class="product-info">
-        <div class="title"> Flamingo Southern crispy chicken</div>
-        <div class="quantity">1 pack of 250gm</div>
-        <div class="price">₹128 <span class="original-price">₹160</span></div>
-        <button class="add-to-cart">Add to cart</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="discount-badge">30%</div>
-        <img src="https://i.postimg.cc/xjGrxPY2/orange-pulp.png" class="product-image" alt="Orange Juice">
-        <div class="product-info">
-        <div class="title">Simply Orange Pulp Free Juice - 1L</div>
-        <div class="quantity">1L</div>
-        <div class="price">₹112 <span class="original-price">₹160</span></div>
-        <button class="add-to-cart">Add to cart</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="discount-badge">20%</div>
-        <img src="https://i.postimg.cc/RhSgbKQS/brown-bread.png" class="product-image" alt="California Pizza">
-        <div class="tag">ORGANIC</div>
-        <div class="product-info">
-        <div class="title">Freshly baked brown bread-250gm</div>
-        <div class="quantity">1 pack of 250gm</div>
-        <div class="price">₹40<span class="original-price">₹50</span></div>
-        <button class="add-to-cart">Add to cart</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="discount-badge">30%</div>
-        <img src="https://i.postimg.cc/tCmB211b/melon.png" class="product-image" alt="Melon">
-        <div class="tag">ORGANIC</div>
-        <div class="product-info">
-        <div class="title">Cantaloupe Fresh Organic Melon</div>
-        <div class="quantity">1 - 1.5kg</div>
-        <div class="price">₹49<span class="original-price">	₹70</span></div>
-        <button class="add-to-cart">Add to cart</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="discount-badge">	20%</div>
-        <img src="https://i.postimg.cc/023C7L32/cornflakes.png" class="product-image" alt="cornflakes">
-        <div class="product-info">
-        <div class="title">Always Organic- fruit juice corn flakes- 500gm</div>
-        <div class="quantity">1 pack of 500gm</div>
-        <div class="price">₹200 <span class="original-price">₹250</span></div>
-        <button class="add-to-cart">Add to cart</button>
-        </div>
-      </div>
-
-      <div class="card">
-          <div class="discount-badge">40%</div>
-          <img src="https://i.postimg.cc/j5CgMX8C/berries.webp" class="product-image" alt="Melon">
-          <div class="tag">ORGANIC</div>
-          <div class="product-info">
-          <div class="title">Grandeur- Berrries Mix</div>
-          <div class="quantity">1 pack of 250gm</div>
-          <div class="price">₹132<span class="original-price">₹220</span></div>
-          <button class="add-to-cart">Add to cart</button>
-          </div>
-        </div>
-    
-        <div class="card">
-          <div class="discount-badge">25%</div>
-          <img src="https://i.postimg.cc/TwCV1Sgx/pancake-mix.webp" class="product-image" alt="Toilet Paper">
-          <div class="product-info">
-          <div class="title">Better Batter waffle & pancake mix</div>
-          <div class="quantity">1 pack of 250gm</div>
-          <div class="price">₹225 <span class="original-price">	₹300</span></div>
-          <button class="add-to-cart">Add to cart</button>
-          </div>
-        </div>
-
-    </div>   
-
-  
-
-      <div class="header">Category Products</div>
-      <div class="view-all-wrapper">
-        <button class="view-all-btn">View All <span class="arrow">→</span></button>
-      </div>
-      
-
-      <div class="banner-container">
-        <div class="banner-box" id="banner1">
-          <div class="banner-slide active">
-            <img src="https://i.postimg.cc/26YybRZt/banner-1.jpg" width="100%" height="100%" style="object-fit: cover;">
-            <div class="banner-content">
-              <div class="banner-tag">Only This Week</div>
-              <div class="banner-title">Make your grocery shopping easy with us</div>
-              <div class="banner-subtitle">Feed your family the best</div>
-              <div class="shop-btn">Shop Now →</div>
+        <div class="dashboard">
+          <div class="card">
+            <div class="discount-badge">25%</div>
+            <img src="https://i.postimg.cc/DZHzxPKs/apple-juice.png" class="product-image" alt="Apple Juice">
+            <div class="tag">ORGANIC</div>
+            <div class="product-info">
+              <div class="title">100 Percent Apple Juice </div>
+              <div class="quantity">500ml</div>
+              <div class="price">₹49 <span class="original-price">₹65</span></div>
             </div>
           </div>
-          <div class="banner-slide">
-            <img src="https://i.postimg.cc/MKHTjYnz/banner-2.png " width="100%" height="100%" style="object-fit: cover;">
-            <div class="banner-content">
-              <div class="banner-tag">Only This Week</div>
-              <div class="banner-title">Fresh picks at great prices</div>
-              <div class="banner-subtitle">Your weekly essentials sorted</div>
-              <div class="shop-btn">Shop Now →</div>
+        
+          <div class="card">
+            <div class="discount-badge">20%</div>
+            <img src="https://i.postimg.cc/26ZYSpPb/fried-chicken.png" class="product-image" alt="Rising Pizza">
+            <div class="product-info">
+              <div class="title"> Flamingo Southern crispy chicken</div>
+              <div class="quantity">1 pack of 250gm</div>
+              <div class="price">₹128 <span class="original-price">₹160</span></div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="discount-badge">30%</div>
+            <img src="https://i.postimg.cc/xjGrxPY2/orange-pulp.png" class="product-image" alt="Orange Juice">
+            <div class="product-info">
+              <div class="title">Simply Orange Pulp Free Juice - 1L</div>
+              <div class="quantity">1L</div>
+              <div class="price">₹112 <span class="original-price">₹160</span></div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="discount-badge">20%</div>
+            <img src="https://i.postimg.cc/RhSgbKQS/brown-bread.png" class="product-image" alt="California Pizza">
+            <div class="tag">ORGANIC</div>
+            <div class="product-info">
+              <div class="title">Freshly baked brown bread-250gm</div>
+              <div class="quantity">1 pack of 250gm</div>
+              <div class="price">₹40<span class="original-price">₹50</span></div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="discount-badge">30%</div>
+            <img src="https://i.postimg.cc/tCmB211b/melon.png" class="product-image" alt="Melon">
+            <div class="tag">ORGANIC</div>
+            <div class="product-info">
+              <div class="title">Cantaloupe Fresh Organic Melon</div>
+              <div class="quantity">1 - 1.5kg</div>
+              <div class="price">₹49<span class="original-price">	₹70</span></div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="discount-badge">	20%</div>
+            <img src="https://i.postimg.cc/023C7L32/cornflakes.png" class="product-image" alt="cornflakes">
+            <div class="product-info">
+              <div class="title">Always Organic- fruit juice corn flakes- 500gm</div>
+              <div class="quantity">1 pack of 500gm</div>
+              <div class="price">₹200 <span class="original-price">₹250</span></div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="discount-badge">40%</div>
+            <img src="https://i.postimg.cc/j5CgMX8C/berries.webp" class="product-image" alt="Melon">
+            <div class="tag">ORGANIC</div>
+            <div class="product-info">
+              <div class="title">Grandeur- Berrries Mix</div>
+              <div class="quantity">1 pack of 250gm</div>
+              <div class="price">₹132<span class="original-price">₹220</span></div>
+            </div>
+          </div>
+        
+          <div class="card">
+            <div class="discount-badge">25%</div>
+            <img src="https://i.postimg.cc/TwCV1Sgx/pancake-mix.webp" class="product-image" alt="Toilet Paper">
+            <div class="product-info">
+              <div class="title">Better Batter waffle & pancake mix</div>
+              <div class="quantity">1 pack of 250gm</div>
+              <div class="price">₹225 <span class="original-price">	₹300</span></div>
             </div>
           </div>
         </div>
-        <div class="banner-box" id="banner2">
-          <div class="banner-slide active">
-            <img src="https://i.postimg.cc/q7sMdb5x/banner-4.jpg" width="100%" height="100%" style="object-fit: cover;">
-            <div class="banner-content">
-              <div class="banner-tag">Only This Week</div>
-              <div class="banner-title">Get your everyday needs here with us</div>
-              <div class="banner-subtitle">A different kind of grocery store</div>
-              <div class="shop-btn">Shop Now →</div>
+        
+        <div class="header">Category Products</div>
+        <div class="view-all-wrapper">
+          <button class="view-all-btn">View All <span class="arrow">→</span></button>
+        </div>
+        
+        <div class="banner-container">
+          <div class="banner-box" id="banner1">
+            <div class="banner-slide active">
+              <img src="https://i.postimg.cc/26YybRZt/banner-1.jpg" width="100%" height="100%" style="object-fit: cover;">
+              <div class="banner-content">
+                <div class="banner-tag">Only This Week</div>
+                <div class="banner-title">Make your grocery shopping easy with us</div>
+                <div class="banner-subtitle">Feed your family the best</div>
+                <div class="shop-btn">Shop Now →</div>
+              </div>
+            </div>
+            <div class="banner-slide">
+              <img src="https://i.postimg.cc/MKHTjYnz/banner-2.png " width="100%" height="100%" style="object-fit: cover;">
+              <div class="banner-content">
+                <div class="banner-tag">Only This Week</div>
+                <div class="banner-title">Fresh picks at great prices</div>
+                <div class="banner-subtitle">Your weekly essentials sorted</div>
+                <div class="shop-btn">Shop Now →</div>
+              </div>
             </div>
           </div>
-          <div class="banner-slide">
-            <img src="https://i.postimg.cc/FzBhx2YN/banner4.webp" width="100%" height="100%" style="object-fit: cover;">
-            <div class="banner-content"></div>
-              <div class="banner-tag">Only This Week</div>
-              <div class="banner-title">Tasty treats & sweets picks</div>
-              <div class="banner-subtitle">Discover and save big</div>
-              <div class="shop-btn">Shop Now →</div>
+          <div class="banner-box" id="banner2">
+            <div class="banner-slide active">
+              <img src="https://i.postimg.cc/q7sMdb5x/banner-4.jpg" width="100%" height="100%" style="object-fit: cover;">
+              <div class="banner-content">
+                <div class="banner-tag">Only This Week</div>
+                <div class="banner-title">Get your everyday needs here with us</div>
+                <div class="banner-subtitle">A different kind of grocery store</div>
+                <div class="shop-btn">Shop Now →</div>
+              </div>
+            </div>
+            <div class="banner-slide">
+              <img src="https://i.postimg.cc/FzBhx2YN/banner4.webp" width="100%" height="100%" style="object-fit: cover;">
+              <div class="banner-content">
+                <div class="banner-tag">Only This Week</div>
+                <div class="banner-title">Tasty treats & sweets picks</div>
+                <div class="banner-subtitle">Discover and save big</div>
+                <div class="shop-btn">Shop Now →</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-
-      <div class="cat-container">
-        <div class="ccard">
+        
+        <div class="cat-container">
+          <div class="ccard">
             <img src="https://i.postimg.cc/BbrpM4Rc/kitchen-set.png" alt="Product 1">
             <h3>mud utensils set of 3</h3>
             <p class="quantity">set of 3</p>
             <p class="price">₹299 <span class="original-price">₹399</span></p>
             <p class="discount">25% Off</p>
-            <button class="add-to-cart">Add to Cart</button>
-        </div>
-        <div class="ccard">
+          </div>
+          <div class="ccard">
             <img src="https://i.postimg.cc/L5TMLQJT/lays.png" alt="Product 2">
             <h3>barbecue flavour lays</h3>
             <p class="quantity">pack of 1 - 28gm</p>
             <p class="price">₹20 <span class="original-price">₹25</span></p>
             <p class="discount">20% Off</p>
-            <button class="add-to-cart">Add to Cart</button>
-        </div>
-        <div class="ccard">
+          </div>
+          <div class="ccard">
             <img src="https://i.postimg.cc/ZKWbqKQR/brown-eggs.webp" alt="Product 3">
             <h3>Organic Brown Eggs</h3>
             <p class="quantity">Pack of 6</p>
             <p class="price">₹90 <span class="original-price">₹120</span></p>
             <p class="discount">25% Off</p>
-            <button class="add-to-cart">Add to Cart</button>
-        </div>
-        <div class="ccard">
+          </div>
+          <div class="ccard">
             <img src="https://i.postimg.cc/GpnJ5vdW/strawberries.webp" alt="Product 4">
             <h3>Fresh Strawberries</h3>
             <p class="quantity">200g</p>
             <p class="price">₹110 <span class="original-price">₹150</span></p>
             <p class="discount">27% Off</p>
-            <button class="add-to-cart">Add to Cart</button>
-        </div>
-        <div class="ccard">
+          </div>
+          <div class="ccard">
             <img src="https://i.postimg.cc/7YSxzQx8/rice.png" alt="Product 5">
             <h3>Shiaya Basmati rice</h3>
             <p class="quantity">2kg</p>
             <p class="price">₹180 <span class="original-price">₹240</span></p>
             <p class="discount">25% Off</p>
-            <button class="add-to-cart">Add to Cart</button>
-        </div>
-        <div class="ccard">
+          </div>
+          <div class="ccard">
             <img src="https://i.postimg.cc/TYDSDYsP/shaul.png" alt="Product 6">
             <h3>Mens solid wool shawl</h3>
             <p class="quantity">1 piece</p>
             <p class="price">₹799 <span class="original-price">₹999</span></p>
             <p class="discount">20% Off</p>
-            <button class="add-to-cart">Add to Cart</button>
+          </div>
         </div>
-    </div>
-    
+        
     
 
     <div class="banner2">
