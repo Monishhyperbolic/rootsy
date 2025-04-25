@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart & Wishlist</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .cart-item, .wishlist-item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    button { margin: 0 5px; padding: 5px 10px; }
+    .out-of-stock { color: red; font-weight: bold; }
+    #counts span { margin-right: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>My Store</h1>
+  <div id="counts">
+    <span>Cart: <span id="cartCount">0</span></span>
+    <span>Wishlist: <span id="wishlistCount">0</span></span>
+  </div>
+
+  <hr />
+
+  <h2>Products</h2>
+  <div id="products"></div>
+
+  <h2>Cart</h2>
+  <div id="cartItems"></div>
+
+  <h2>Wishlist</h2>
+  <div id="wishlistItems"></div>
+
+  <script>
+    // ----- Storage Helpers -----
+    function getFromStorage(key) {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function setToStorage(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    // ----- Sample Products -----
+    const sampleProducts = [
+      { id: 1, name: "T-shirt", price: 25, stock: 10 },
+      { id: 2, name: "Jeans", price: 40, stock: 5 },
+      { id: 3, name: "Sneakers", price: 60, stock: 0 }, // out of stock
+    ];
+
+    // ----- Render Products -----
+    function renderProducts() {
+      const container = document.getElementById('products');
+      container.innerHTML = '';
+
+      sampleProducts.forEach(product => {
+        const item = document.createElement('div');
+        item.className = "product-item";
+        item.innerHTML = `
+          <p><strong>${product.name}</strong> - $${product.price}</p>
+          <p>Stock: ${product.stock > 0 ? product.stock : '<span class="out-of-stock">Out of stock</span>'}</p>
+          <button onclick="addToCart(${product.id})" ${product.stock === 0 ? 'disabled' : ''}>Add to Cart</button>
+          <button onclick="addToWishlist(${product.id})">Add to Wishlist</button>
+          <hr/>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // ----- Add to Cart -----
+    function addToCart(productId) {
+      const product = sampleProducts.find(p => p.id === productId);
+      if (!product || product.stock === 0) {
+        alert(`${product.name} is out of stock!`);
+        return;
+      }
+
+      const cart = getFromStorage('cart');
+      const index = cart.findIndex(item => item.name === product.name);
+
+      if (index === -1) {
+        cart.push({ ...product, qty: 1, addedAt: Date.now() });
+        alert(`${product.name} added to cart!`);
+      } else {
+        if (cart[index].qty < product.stock) {
+          cart[index].qty += 1;
+          alert(`Increased quantity of ${product.name}`);
+        } else {
+          alert(`Max stock reached for ${product.name}`);
+        }
+      }
+
+      setToStorage('cart', cart);
+      updateCounts();
+      renderCart();
+    }
+
+    // ----- Add to Wishlist -----
+    function addToWishlist(productId) {
+      const product = sampleProducts.find(p => p.id === productId);
+      const wishlist = getFromStorage('wishlist');
+      const exists = wishlist.some(item => item.name === product.name);
+
+      if (!exists) {
+        wishlist.push(product);
+        setToStorage('wishlist', wishlist);
+        alert(`${product.name} added to wishlist!`);
+      } else {
+        alert(`${product.name} is already in the wishlist.`);
+      }
+
+      updateCounts();
+      renderWishlist();
+    }
+
+    // ----- Render Cart -----
+    function renderCart() {
+      const cart = getFromStorage('cart');
+      const container = document.getElementById('cartItems');
+      container.innerHTML = '';
+
+      if (cart.length === 0) {
+        container.innerHTML = '<p>Your cart is empty.</p>';
+        return;
+      }
+
+      cart.forEach((item, index) => {
+        const el = document.createElement('div');
+        el.className = 'cart-item';
+        el.innerHTML = `
+          <p><strong>${item.name}</strong> - $${item.price}</p>
+          <p>
+            Quantity:
+            <button onclick="decreaseQty(${index})">−</button>
+            ${item.qty}
+            <button onclick="increaseQty(${index})">+</button>
+          </p>
+          <p>Stock left: ${item.stock - item.qty}</p>
+          <button onclick="removeFromCart(${index})">Remove</button>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    // ----- Quantity Control -----
+    function increaseQty(index) {
+      const cart = getFromStorage('cart');
+      if (cart[index].qty < cart[index].stock) {
+        cart[index].qty += 1;
+        setToStorage('cart', cart);
+        updateCounts();
+        renderCart();
+      } else {
+        alert(`Cannot exceed stock for ${cart[index].name}`);
+      }
+    }
+
+    function decreaseQty(index) {
+      const cart = getFromStorage('cart');
+      if (cart[index].qty > 1) {
+        cart[index].qty -= 1;
+      } else {
+        cart.splice(index, 1); // remove item if qty hits 0
+      }
+      setToStorage('cart', cart);
+      updateCounts();
+      renderCart();
+    }
+
+    function removeFromCart(index) {
+      const cart = getFromStorage('cart');
+      const removed = cart.splice(index, 1);
+      setToStorage('cart', cart);
+      updateCounts();
+      renderCart();
+      alert(`${removed[0].name} removed from cart`);
+    }
+
+    // ----- Render Wishlist -----
+    function renderWishlist() {
+      const wishlist = getFromStorage('wishlist');
+      const container = document.getElementById('wishlistItems');
+      container.innerHTML = '';
+
+      if (wishlist.length === 0) {
+        container.innerHTML = '<p>Your wishlist is empty.</p>';
+        return;
+      }
+
+      wishlist.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'wishlist-item';
+        el.innerHTML = `
+          <p><strong>${item.name}</strong> - $${item.price}</p>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    // ----- Counter Updates -----
+    function updateCounts() {
+      const cart = getFromStorage('cart');
+      const wishlist = getFromStorage('wishlist');
+
+      const cartQty = cart.reduce((total, item) => total + (item.qty || 0), 0);
+
+      document.getElementById('cartCount').textContent = cartQty;
+      document.getElementById('wishlistCount').textContent = wishlist.length;
+    }
+
+    // ----- Init Page -----
+    function init() {
+      renderProducts();
+      renderCart();
+      renderWishlist();
+      updateCounts();
+    }
+
+    init(); // Run on page load
+  </script>
+</body>
+</html>
