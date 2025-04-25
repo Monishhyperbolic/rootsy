@@ -6,9 +6,7 @@ function initGeolocation() {
       showLocation,
       showError,
       {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 60000
+        enableHighAccuracy: false
       }
     );
   } else {
