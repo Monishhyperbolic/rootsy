@@ -423,14 +423,17 @@
 
     // Cart Functions
     function addToCart(product) {
-  const cart = getFromStorage('cart');
+        const cart = getFromStorage('cart') || [];
 
-  // Always add a new entry, regardless of duplicates
-  cart.push({
-    ...product,
-    qty: 1,
-    addedAt: Date.now() // optional: helps distinguish items
-  });
+const existingProductIndex = cart.findIndex(item => item.id === product.id);
+
+if (existingProductIndex === -1) {
+  cart.push({ ...product, qty: 1, addedAt: Date.now() });
+  alert(`${product.name} added to cart!`);
+} else {
+  cart[existingProductIndex].qty += 1;
+  alert(`Increased quantity of ${product.name} in cart!`);
+}
 
   setToStorage('cart', cart);
   alert(`${product.name} added to cart!`);
