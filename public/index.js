@@ -1,14 +1,18 @@
 
 
-// Fixed geolocation functionality
 function initGeolocation() {
   if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showLocation, showError);
+    navigator.geolocation.getCurrentPosition(
+      showLocation,
+      showError,
+      {
+        enableHighAccuracy: false,
+        timeout: 5000,
+        maximumAge: 60000
+      }
+    );
   } else {
-    const locationElement = document.getElementById('user-location');
-    if (locationElement) {
-      locationElement.textContent = "Geolocation not supported by this browser";
-    }
+    displayLocation("Geolocation not supported by this browser");
   }
 }
 
@@ -16,75 +20,55 @@ function showLocation(position) {
   const latitude = position.coords.latitude;
   const longitude = position.coords.longitude;
 
-  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
+  const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`;
+
+  fetch(nominatimUrl, { headers: { 'Accept-Language': 'en' } })
     .then(response => response.json())
     .then(data => {
-      console.log("Geolocation data:", data); // Debug log to see what we're getting
-      let locationString = "";
+      const address = data.address || {};
 
-      if (data.address) {
-        // Get street name with proper fallbacks
-        const street = data.address.road || data.address.pedestrian || data.address.street || "";
-        
-        // Get city with proper fallbacks
-        const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
-        
-        // Format as "street, city" when both are available
-        if (street && city) {
-          locationString = `${street}, ${city}`;
-        } else if (street) {
-          locationString = street;
-        } else if (city) {
-          locationString = city;
-        } else {
-          // Fallback to locality + city if street is not available
-          const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-          if (locality && city) {
-            locationString = `${locality}, ${city}`;
-          } else if (locality) {
-            locationString = locality;
-          } else {
-            locationString = "Location unavailable";
-          }
-        }
-      } else {
-        locationString = "Location unavailable";
-      }
+      const street = address.road || address.street || address.pedestrian || "";
+      const city = address.city || address.town || address.village || address.hamlet || "";
 
-      // Display location
-      const locationElement = document.getElementById('user-location');
-      if (locationElement) {
-        locationElement.textContent = locationString;
-      }
+      const locationString = street && city
+        ? `${street}, ${city}`
+        : city || street || "Location unavailable";
+
+      displayLocation(locationString);
     })
     .catch(error => {
-      console.error('Geocoding error:', error);
-      const locationElement = document.getElementById('user-location');
-      if (locationElement) {
-        locationElement.textContent = "Location service error";
-      }
+      console.error("Geocoding error:", error);
+      displayLocation("Location service error");
     });
 }
 
 function showError(error) {
+  let message = "";
+  switch(error.code) {
+    case error.PERMISSION_DENIED:
+      message = "Location access denied";
+      break;
+    case error.POSITION_UNAVAILABLE:
+      message = "Location unavailable";
+      break;
+    case error.TIMEOUT:
+      message = "Location request timed out";
+      break;
+    default:
+      message = "Unknown location error";
+  }
+  displayLocation(message);
+}
+
+function displayLocation(text) {
   const locationElement = document.getElementById('user-location');
   if (locationElement) {
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        locationElement.textContent = "Location access denied";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        locationElement.textContent = "Location information unavailable";
-        break;
-      case error.TIMEOUT:
-        locationElement.textContent = "Location request timed out";
-        break;
-      case error.UNKNOWN_ERROR:
-        locationElement.textContent = "Unknown location error";
-        break;
-    }
+    locationElement.textContent = text;
   }
 }
+
+// Call this on page load or after auth
+window.addEventListener('DOMContentLoaded', initGeolocation);
 
 function signOutUser() {
   auth.signOut().then(function() {
