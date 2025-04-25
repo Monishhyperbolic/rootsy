@@ -8,6 +8,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
   <style>
     /* --- Cart styles (as before) --- */
+    .qty-btn:hover, .remove-btn:hover {
+      background-color: #ddd;
+    }
+    .cart-actions button:hover {
+      opacity: 0.9;
+    }
+
     .cart-container {
       max-width: 900px;
       margin: 40px auto 20px auto;
@@ -142,97 +149,119 @@
     function getCart() {
       return JSON.parse(localStorage.getItem('cart') || '[]');
     }
+  
     function setCart(cart) {
       localStorage.setItem('cart', JSON.stringify(cart));
     }
+  
     function getWishlist() {
       return JSON.parse(localStorage.getItem('wishlist') || '[]');
     }
+  
     function setWishlist(wishlist) {
       localStorage.setItem('wishlist', JSON.stringify(wishlist));
     }
-
+  
     function renderCart() {
       const cart = getCart();
       const cartContent = document.getElementById('cartContent');
+  
       if (!cart.length) {
-        cartContent.innerHTML = `<div class="empty-cart">Your cart is empty.<br><a href="index.html" style="color:#27ae60;">Continue Shopping &rarr;</a></div>`;
-      } else {
-        let total = 0;
-        let table = `<table class="cart-table">
+        cartContent.innerHTML = `
+          <div class="empty-cart">
+            Your cart is empty.<br>
+            <a href="index.html" style="color:#27ae60;">Continue Shopping &rarr;</a>
+          </div>`;
+        renderWishlist();
+        return;
+      }
+  
+      let total = 0;
+      let table = `<table class="cart-table">
+        <tr>
+          <th>Product</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Qty</th>
+          <th>Subtotal</th>
+          <th>Remove</th>
+        </tr>`;
+  
+      cart.forEach((item, idx) => {
+        const image = item.image || 'https://via.placeholder.com/68';
+        const name = item.name || 'Unnamed';
+        const price = item.price || 0;
+        const qty = item.qty || 1;
+        const subtotal = price * qty;
+        total += subtotal;
+  
+        table += `
           <tr>
-            <th>Product</th>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Subtotal</th>
-            <th>Remove</th>
-          </tr>`;
-
-        cart.forEach((item, idx) => {
-          const subtotal = item.price * item.qty;
-          total += subtotal;
-          table += `<tr>
-            <td><img src="${item.image || 'https://via.placeholder.com/68'}" class="cart-img" alt="${item.name}"></td>
-            <td>${item.name}</td>
-            <td>₹${item.price}</td>
+            <td><img src="${image}" class="cart-img" alt="${name}"></td>
+            <td>${name}</td>
+            <td>₹${price.toFixed(2)}</td>
             <td>
               <button class="qty-btn" onclick="changeQty(${idx}, -1)">-</button>
-              ${item.qty}
+              ${qty}
               <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
             </td>
             <td>₹${subtotal.toFixed(2)}</td>
             <td><button class="remove-btn" onclick="removeItem(${idx})"><i class="fa fa-trash"></i></button></td>
           </tr>`;
-        });
-
-        table += `</table>
-          <div class="cart-summary">Total: <strong>₹${total.toFixed(2)}</strong></div>
-          <div class="cart-actions">
-            <button class="clear" onclick="clearCart()">Clear Cart</button>
-            <button onclick="checkoutCart()">Checkout</button>
-          </div>
-        `;
-        cartContent.innerHTML = table;
-      }
-
-      renderWishlist(); // Load wishlist below cart
+      });
+  
+      table += `</table>
+        <div class="cart-summary">Total: <strong>₹${total.toFixed(2)}</strong></div>
+        <div class="cart-actions">
+          <button class="clear" onclick="clearCart()">Clear Cart</button>
+          <button onclick="checkoutCart()">Checkout</button>
+        </div>`;
+  
+      cartContent.innerHTML = table;
+  
+      renderWishlist();
     }
-
+  
     function changeQty(idx, delta) {
       const cart = getCart();
+      if (!cart[idx]) return;
+  
       cart[idx].qty += delta;
-      if (cart[idx].qty < 1) cart.splice(idx, 1);
+      if (cart[idx].qty < 1) {
+        cart.splice(idx, 1);
+      }
+  
       setCart(cart);
       renderCart();
     }
-
+  
     function removeItem(idx) {
       const cart = getCart();
       cart.splice(idx, 1);
       setCart(cart);
       renderCart();
     }
-
+  
     function clearCart() {
       if (confirm("Clear your cart?")) {
         setCart([]);
         renderCart();
       }
     }
-
+  
     function checkoutCart() {
-  window.location.href = "checkout.html";
-    }   
-
+      window.location.href = "checkout.html";
+    }
+  
     function renderWishlist() {
       const wishlist = getWishlist();
       const wishlistContent = document.getElementById('wishlistContent');
+  
       if (!wishlist.length) {
         wishlistContent.innerHTML = `<div class="empty-wishlist">Your wishlist is empty.</div>`;
         return;
       }
-
+  
       let table = `<table class="wishlist-table">
         <tr>
           <th>Product</th>
@@ -240,41 +269,46 @@
           <th>Price</th>
           <th>Action</th>
         </tr>`;
-
+  
       wishlist.forEach((item, idx) => {
-        table += `<tr>
-          <td><img src="${item.image || 'https://via.placeholder.com/68'}" class="wishlist-img" alt="${item.name}"></td>
-          <td>${item.name}</td>
-          <td>₹${item.price}</td>
-          <td>
-            <button onclick="addToCartFromWishlist(${idx})">Add to Cart</button>
-          </td>
-        </tr>`;
+        const image = item.image || 'https://via.placeholder.com/68';
+        const name = item.name || 'Unnamed';
+        const price = item.price || 0;
+  
+        table += `
+          <tr>
+            <td><img src="${image}" class="wishlist-img" alt="${name}"></td>
+            <td>${name}</td>
+            <td>₹${price.toFixed(2)}</td>
+            <td><button onclick="addToCartFromWishlist(${idx})">Add to Cart</button></td>
+          </tr>`;
       });
-
+  
       table += `</table>`;
       wishlistContent.innerHTML = table;
     }
-
+  
     function addToCartFromWishlist(idx) {
       const wishlist = getWishlist();
       const item = wishlist[idx];
       const cart = getCart();
-
+  
       const existing = cart.find(p => p.name === item.name);
       if (existing) {
         existing.qty += 1;
       } else {
         cart.push({ ...item, qty: 1 });
       }
-
+  
       wishlist.splice(idx, 1);
       setCart(cart);
       setWishlist(wishlist);
       renderCart();
     }
-
-    renderCart();
+  
+    // Initial render
+    document.addEventListener('DOMContentLoaded', renderCart);
   </script>
+  
 </body>
 </html>
