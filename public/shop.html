@@ -315,13 +315,10 @@ shop.html
 
     // Automatically get the location when the page loads
     window.onload = initGeolocation;
-    let products = []; // Initialize an empty array for products
-  let filteredProducts = []; // Filtered products after applying filters
-
-  // Fetch products from JSONBin.io
+ 
   async function fetchProducts() {
-    const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Your JSONBin URL
-    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // API Key
+    const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Replace YOUR_BIN_ID
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace YOUR_API_KEY if needed
 
     try {
       const response = await fetch(url, {
@@ -330,110 +327,126 @@ shop.html
         }
       });
       const data = await response.json();
-      products = data.record; // Assuming record directly contains an array of products
-      filteredProducts = [...products]; // Initialize filtered products as all products
-      applyFilters(); // Apply filters when products are fetched
+      const products = data.record; // Assuming record directly contains an array of products
+
+      const productGrid = document.querySelector('.product-grid');
+      productGrid.innerHTML = ''; // Clear default content
+
+      products.forEach(product => {
+        const productCard = `
+          <div class="product-card">
+            ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
+            <img src="${product.image_url}" alt="${product.name}">
+            <h4>${product.name}</h4>
+            <div class="price">
+              <span class="new-price">₹${product.price}</span>
+            </div>
+            <p class="description">${product.description}</p>
+            <p class="seller">Sold by: ${product.seller_name}</p>
+            <div class="product-actions">
+              <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+              <button class="add-to-cart" onclick= "addToCart(${product.name}, '${product.price}', '${product.seller_name}', ${product.image_url})" ${product.stock > 0 ? '' : 'disabled'}>
+                <i class="fas fa-shopping-cart"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        productGrid.insertAdjacentHTML('beforeend', productCard);
+      });
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
+  }function addToCart(name, price, seller_name, image_url) {
+  const product = {
+    name: name,
+    price: price,
+    seller_name: seller_name,
+    image_url: image_url, // Store the image URL
+    quantity: 1 // Initialize quantity as 1 when adding to the cart
+  };
+
+  // Retrieve the existing cart from localStorage (if any)
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  // Check if product already exists in the cart by matching name and seller
+  const existingProductIndex = cart.findIndex(item => item.name === product.name && item.seller_name === product.seller_name);
+  
+  if (existingProductIndex > -1) {
+    // If the product already exists in the cart, just update the quantity
+    cart[existingProductIndex].quantity += 1;
+  } else {
+    // If the product is not in the cart, add it
+    cart.push(product);
   }
 
-  // Function to display products
-  function displayProducts(productsToDisplay) {
-    const productGrid = document.querySelector('.product-grid');
-    productGrid.innerHTML = ''; // Clear previous products
+  // Store the updated cart in localStorage
+  localStorage.setItem('cart', JSON.stringify(cart));
 
-    productsToDisplay.forEach(product => {
-      const productCard = `
-        <div class="product-card">
-          ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
-          <img src="${product.image_url}" alt="${product.name}">
-          <h4>${product.name}</h4>
-          <div class="price">
-            <span class="new-price">₹${product.price}</span>
-          </div>
-          <p class="description">${product.description}</p>
-          <p class="seller">Sold by: ${product.seller_name}</p>
-          <div class="product-actions">
-            <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-            <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
-              <i class="fas fa-shopping-cart"></i>
-            </button>
-          </div>
-        </div>
-      `;
-      productGrid.insertAdjacentHTML('beforeend', productCard);
+  // Update the cart display
+  updateCartDisplay();
+}
+
+// Function to update the cart display
+function updateCartDisplay() {
+  const cart = JSON.parse(localStorage.getItem('cart')) || [];
+  const cartItemsContainer = document.getElementById('cart-items');
+
+  cartItemsContainer.innerHTML = ''; // Clear the cart items container before displaying new items
+
+  if (cart.length === 0) {
+    cartItemsContainer.innerHTML = '<li>Your cart is empty.</li>';
+  } else {
+    cart.forEach(product => {
+      const listItem = document.createElement('li');
+      listItem.classList.add('cart-item');
+      
+      // Create an image element for the product image
+      const imageElement = document.createElement('img');
+      imageElement.src = product.image_url; // Use the product image URL
+      imageElement.alt = product.name;
+      imageElement.style.width = '50px'; // Optional: Set image size
+      imageElement.style.height = '50px'; // Optional: Set image size
+
+      // Create a div for product details
+      const productDetails = document.createElement('div');
+      productDetails.innerHTML = `${product.name} - $${product.price} (x${product.quantity})`;
+
+      // Append the image and details to the list item
+      listItem.appendChild(imageElement);
+      listItem.appendChild(productDetails);
+      
+      // Append the list item to the container
+      cartItemsContainer.appendChild(listItem);
     });
   }
+}
 
-  // Function to filter products based on selected filters
-  function applyFilters() {
-    const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
-      .map(checkbox => checkbox.dataset.category);
-    const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked'))
-      .map(checkbox => checkbox.dataset.status);
+window.onload = function() {
+  updateCartDisplay();
+};
+  
 
-    const minPrice = document.getElementById('min-price').value;
-    const maxPrice = document.getElementById('max-price').value;
+const rangeMin = document.getElementById('range-min');
+const rangeMax = document.getElementById('range-max');
+const minPrice = document.getElementById('min-price');
+const maxPrice = document.getElementById('max-price');
 
-    filteredProducts = products.filter(product => {
-      const matchesCategory = selectedCategories.includes(product.category);
-      const matchesStatus = selectedStatuses.includes(product.status);
-      const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
-      return matchesCategory && matchesStatus && matchesPrice;
-    });
+rangeMin.addEventListener('input', () => {
+  minPrice.value = rangeMin.value;
+});
 
-    // Display the filtered products
-    displayProducts(filteredProducts);
-  }
+rangeMax.addEventListener('input', () => {
+  maxPrice.value = rangeMax.value;
+});
 
-  // Event listeners for filters
-  document.querySelectorAll('.category-filter').forEach(checkbox => {
-    checkbox.addEventListener('change', applyFilters);
-  });
+minPrice.addEventListener('input', () => {
+  rangeMin.value = minPrice.value;
+});
 
-  document.querySelectorAll('.status-filter').forEach(checkbox => {
-    checkbox.addEventListener('change', applyFilters);
-  });
+maxPrice.addEventListener('input', () => {
+  rangeMax.value = maxPrice.value;
+});
 
-  const rangeMin = document.getElementById('range-min');
-  const rangeMax = document.getElementById('range-max');
-  const minPriceInput = document.getElementById('min-price');
-  const maxPriceInput = document.getElementById('max-price');
-
-  rangeMin.addEventListener('input', () => {
-    minPriceInput.value = rangeMin.value;
-    applyFilters();
-  });
-
-  rangeMax.addEventListener('input', () => {
-    maxPriceInput.value = rangeMax.value;
-    applyFilters();
-  });
-
-  minPriceInput.addEventListener('input', () => {
-    rangeMin.value = minPriceInput.value;
-    applyFilters();
-  });
-
-  maxPriceInput.addEventListener('input', () => {
-    rangeMax.value = maxPriceInput.value;
-    applyFilters();
-  });
-
-  // Clear filters button
-  document.querySelector('.clear-filters').addEventListener('click', () => {
-    document.querySelectorAll('.category-filter').forEach(checkbox => checkbox.checked = true);
-    document.querySelectorAll('.status-filter').forEach(checkbox => checkbox.checked = true);
-    minPriceInput.value = 0;
-    maxPriceInput.value = 500;
-    rangeMin.value = 0;
-    rangeMax.value = 500;
-    applyFilters(); // Reapply filters after resetting
-  });
-
-  // Initialize
-  fetchProducts();
 </script>
 </body>
 </html>
