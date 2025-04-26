@@ -1,701 +1,237 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Supabase Product Viewer</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f5f5f5;
-    }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="shop.js"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.7.1"></script>
 
-/* Promo Banner */
-.promo-banner {
-  background-image: url(https://i.postimg.cc/cChB5GYg/main-banner.avif);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-size: cover;
-    padding: 60px;
-    border-radius: 10px;
-}
-
-/* Adjust Promo Content */
-.promo-content {
-    
-    width: 600px;
-    margin-left: 130px;
-    height: auto;
-    position: relative; /* or absolute/fixed/sticky */
-    z-index: 10;
-}
-
-.banner-title {
-  
-    color: #010101;
-    font-size: 2000px;
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: bolder;
-    
-}
-.banner-description {
-    color: #000000;
-    font-size: 16px;
-    margin-bottom: 20px;
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: bold;
-}
-
-    
-    .navbar {
-      background-color: white;
-      padding: 10px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      font-size: 22px;
-      font-weight: bold;
-      color: black;
-      text-decoration: none;
-    }
-
-    .logo img {
-      height: 40px;
-      margin-right: 10px;
-    }
-
-    .location-info {
-      font-size: 14px;
-      color: gray;
-    }
-
-    .search-bar {
-      display: flex;
-      flex: 1;
-      max-width: 500px;
-      margin: 10px;
-    }
-
-    .search-bar input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-right: none;
-      border-radius: 4px 0 0 4px;
-    }
-
-    .search-bar button {
-      padding: 8px 16px;
-      border: none;
-      background-color: #ff6600;
-      color: white;
-      border-radius: 0 4px 4px 0;
-      cursor: pointer;
-    }
-
-    .navbar-right {
-      display: flex;
-      gap: 15px;
-      font-size: 14px;
-    }
-
-    .navbar-right a {
-      text-decoration: none;
-      color: black;
-      position: relative;
-    }
-
-    .icon-count {
-      position: absolute;
-      top: -6px;
-      right: -10px;
-      background: #e74c3c;
-      color: white;
-      font-size: 12px;
-      border-radius: 50%;
-      padding: 2px 6px;
-    }
-
-    .content {
-      padding: 20px 40px;
-    }
-
-    select, input[type="text"] {
-      padding: 6px;
-      font-size: 16px;
-      margin: 0 10px 20px 0;
-    }
-
-    .product {
-      background-color: white;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-
-    .product img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 5px;
-    }
-
-    .product-info {
-      flex: 1;
-    }
-
-    .product-info h3 { margin: 0 0 5px 0; }
-    .product-info p { margin: 3px 0; }
-
-    .btn {
-      padding: 6px 14px;
-      font-size: 14px;
-      margin-right: 8px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .add-cart-btn { background-color: #27ae60; color: white; }
-    .add-wishlist-btn { background-color: #3498db; color: white; }
-
-    .product-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 24px;
-  margin-top: 30px;
-}
-
-.product-card {
-  background: #fff;
-  border: 1.5px solid #e5e5e5;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  position: relative;
-  min-height: 380px;
-  overflow: hidden;
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-
-.product-card:hover {
-  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.10), 0 1.5px 6px rgba(44, 62, 80, 0.05);
-  transform: translateY(-6px) scale(1.025);
-  z-index: 2;
-}
-
-.product-card-image-wrap {
-  width: 100%;
-  height: 180px;
-  background: #f8f8f8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.product-card img {
-  max-width: 90%;
-  max-height: 160px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-  border-radius : 10px;
-}
-
-.product-card-content {
-  padding: 18px 18px 14px 18px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-.badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  background: #ff3a30;
-  color: #fff;
-  font-size: 15px;
-  font-weight: bold;
-  padding: 2px 10px;
-  border-radius: 8px;
-  z-index: 2;
-}
-
-.badge-organic {
-  background: #24b47e;
-  color: #fff;
-  font-size: 13px;
-  font-weight: bold;
-  padding: 2px 10px;
-  border-radius: 6px;
-  margin-bottom: 8px;
-  display: inline-block;
-}
-
-.product-card h3 {
-  font-size: 17px;
-  margin: 8px 0 3px 0;
-  font-weight: 600;
-}
-
-.product-card p {
-  margin: 2px 0;
-  font-size: 14px;
-  color: #222;
-}
-
-.price {
-  color: #e74c3c;
-  font-size: 18px;
-  font-weight: bold;
-  margin-right: 8px;
-}
-
-.old-price {
-  text-decoration: line-through;
-  color: #888;
-  font-size: 15px;
-}
-
-.add-cart-btn {
-  width: 100%;
-  margin-top: 12px;
-  background: #24b47e;
-  color: #fff;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  padding: 11px 0;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s;
-}
-.add-cart-btn:hover {
-  background: #1e9e6f;
-}
-
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 <body>
 
-  <!-- Promo Banner -->
-  <div class="promo-banner">
-    FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.
-    Until the end of the sale: <span>47 days 06 hours 57 minutes 08 sec.</span>
-  </div>
-
-  <!-- Navbar -->
-  <div class="navbar">
-    <a href="index.html" class="logo">
-      <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 100px; height: auto;" alt="Logo" />
-
-      
-    </a>
-
-    <div class="delivery">
-                    <span>Deliver to</span>
-                    
-                    <span id="user-location">Locating...</span>
-                </div>
-
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search products..." />
-      <button onclick="loadAndRenderProducts()">Search</button>
+  <header>
+    <div class="top-banner">
+        
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
     </div>
-
-    <div class="navbar-right">
-      
-      
-      <a href="wishlist.html">❤️ <span class="icon-count" id="wishlistCount">0</span></a>
-      <a href="cart.html">🛒 <span class="icon-count" id="cartCount">0</span></a>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="content">
-    <h1>Product Viewer</h1>
-
-    <label for="categorySelect">Category:</label>
-    <select id="categorySelect">
-      <option value="all">All</option>
-    </select>
-
-    <label for="sortSelect">Sort By:</label>
-    <select id="sortSelect">
-      <option value="default">Default</option>
-      <option value="priceLowHigh">Price: Low to High</option>
-      <option value="priceHighLow">Price: High to Low</option>
-    </select>
-
-    <div id="productList">Loading products...</div>
-  </div>
-  <footer style="background: #f9f9f9; padding: 40px 20px; font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-   
-  
-    <div class="footer-content" style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; max-width: 1200px; margin: 0 auto;">
-      <div class="column" style="flex: 1 1 200px;">
-        <h3 style="margin-bottom: 10px;">Need Help?</h3>
-        <p>Contact our support team: <a href="mailto:support@rootsy.com" style="color: #333;">support@rootsy.com</a></p>
-        <p>Call us: <a href="tel:080019019028" style="color: #333;">0800 19019028</a></p>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+         <a href="seller_login.html">  <button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
       </div>
-  
-      <div class="column" style="flex: 1 1 200px;">
-        <h3 style="margin-bottom: 10px;">Company Info</h3>
-        <ul style="list-style: none; padding: 0;">
-          <li><a href="#" style="text-decoration: none; color: #333;">About Us</a></li>
-          <li><a href="#" style="text-decoration: none; color: #333;">Careers</a></li>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="rootsy Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+                <div id="user-location">Fetching location...</div>
+
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i>  <span>Cart (0)</span>
+            </a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+</header>
+
+<div class="shop-page">
+  <aside class="sidebar">
+    <nav>
+      <p class="breadcrumb"><a href="index.html">Home</a>> <a href="shop.html">shop</a></p>
+
+      <div class="filter-section">
+        <h3> Price filter</h3>
+        <div class="price-filter">
+          <input type="number" id="min-price" value="0"> -
+          <input type="number" id="max-price" value="30">
+          <input type="range" min="0" max="30" value="0" id="range-min">
+          <input type="range" min="0" max="30" value="30" id="range-max">
+          <button id="filter-btn">Filter</button>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3>Product Categories</h3>
+        <ul class="categories">
+            <li><input type="checkbox" checked> Vegetables</li>
+            <li><input type="checkbox" checked> Fruits</li>
+            <li><input type="checkbox" checked> Handicrafts & Artisanal Goods</li>
+            <li><input type="checkbox" checked> Textiles</li>
+            <li><input type="checkbox" checked> Pottery & Ceramics</li>
+            <li><input type="checkbox" checked> Woodcrafts</li>
+            <li><input type="checkbox" checked> Jewelry</li>
+            <li><input type="checkbox" checked> Paintings & Wall Art</li>
+            <li><input type="checkbox" checked> Basketry & Weaving</li>
+            <li><input type="checkbox" checked> Agricultural Products</li>
+            <li><input type="checkbox" checked> Fresh Fruits & Vegetables</li>
+            <li><input type="checkbox" checked> Grains & Pulses</li>
+            <li><input type="checkbox" checked> Spices & Herbs</li>
+            <li><input type="checkbox" checked> Organic Produce</li>
+            <li><input type="checkbox" checked> Dairy & Animal Products</li>
+            <li><input type="checkbox" checked> Honey & Natural Sweeteners</li>
+            <li><input type="checkbox" checked> Homemade & Processed Foods</li>
+      
         </ul>
       </div>
-  
-      <div class="column" style="flex: 1 1 200px;">
-        <h3 style="margin-bottom: 10px;">Follow Us</h3>
-        <div class="social-media" style="display: flex; gap: 10px;">
-          <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook" style="width: 30px; height: 30px;"></a>
-          <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter" style="width: 30px; height: 30px;"></a>
-          <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram" style="width: 30px; height: 30px;"></a>
+
+      <div class="filter-section">
+        <h3>Filter by</h3>
+        <div class="color-option">
+          <span class="color green"></span> organic
         </div>
       </div>
-  
-      <div class="column" style="flex: 1 1 200px;">
-        <h3 style="margin-bottom: 10px;">Payment Methods</h3>
-        <div class="payment-methods" style="font-size: 24px; display: flex; gap: 10px;">
-          <i class="fa-brands fa-cc-visa" style="color: #1a1f71;"></i>
-          <i class="fa-brands fa-cc-mastercard" style="color: #eb001b;"></i>
-          <i class="fa-brands fa-cc-paypal" style="color: #003087;"></i>
+
+      <div class="filter-section">
+        <h3>Filter by Brand</h3>
+        <div>
+          <input type="checkbox"> Fresh
         </div>
       </div>
+
+      <div class="filter-section">
+        <h3>Product Status</h3>
+        <div>
+          <input type="checkbox"> In Stock
+        </div>
+        <div>
+          <input type="checkbox"> On Sale
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="shop-header">
+      <div class="shop-title">
+        <h2>Grocery store with different treasures</h2>
+        <p>We have special discounts for you on grocery products.</p>
+      </div>
+      <div class="filters-bar">
+        <button class="clear-filters">Clear filters</button>
+        <select class="sort-by">
+          <option>Sort by latest</option>
+          <option>Sort by price</option>
+          <option>Sort by popularity</option>
+        </select>
+        <select class="show-items">
+          <option>Show 20 items</option>
+          <option>Show 40 items</option>
+        </select>
+      </div>
     </div>
-  
-    <div class="copyright" style="text-align: center; margin-top: 30px; font-size: 13px; color: #777;">
-      Copyright 2025 © Rootsy All rights reserved. Powered by Bewbandits.
-    </div>
-  
-    <div class="links" style="text-align: center; margin-top: 10px;">
-      <a href="#" style="color: #333; text-decoration: none; margin: 0 5px;">Terms and Conditions</a> |
-      <a href="#" style="color: #333; text-decoration: none; margin: 0 5px;">Privacy Policy</a> |
-      <a href="#" style="color: #333; text-decoration: none; margin: 0 5px;">Order Tracking</a>
-    </div>
-  </footer>
-  <!-- JS Logic -->
-  <script>
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // replace for safety in real project
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-    const categorySelect = document.getElementById('categorySelect');
-    const sortSelect = document.getElementById('sortSelect');
-    const searchInput = document.getElementById('searchInput');
-    const productList = document.getElementById('productList');
-    const cartCount = document.getElementById('cartCount');
-    const wishlistCount = document.getElementById('wishlistCount');
+    <div class="product-grid"></div>
 
-    function getFromStorage(key) {
-      return JSON.parse(localStorage.getItem(key) || '[]');
-    }
+  </main>
+</div>
 
-    function setToStorage(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
-      updateCounts();
-    }
+<footer>
+  <div class="newsletter">
+      <p>Join our newsletter for exclusive discounts!</p>
+      <form>
+          <input type="email" placeholder="Enter your email">
+          <button type="submit">Subscribe</button>
+      </form>
+  </div>
+  <div class="footer-content">
+      <div class="column">
+          <h3>Need Help?</h3>
+          <p>Contact our support team: support@rootsy.com</p>
+          <p>Call us: 0800 19019028</p>
+      </div>
+      <div class="column">
+          <h3>Company Info</h3>
+          <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+          </ul>
+      </div>
+      <div class="column">
+          <h3>Follow Us</h3>
+          <div class="social-media">
+              <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+              <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+              <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+          </div>
+      </div>
+      <div class="column">
+          <h3>Payment Methods</h3>
+          <div class="payment-methods">
+              <i class="fa-brands fa-cc-visa"></i>
+              <i class="fa-brands fa-cc-mastercard"></i>
+              <i class="fa-brands fa-cc-paypal"></i>
+          </div>
+      </div>
+  </div>
+  <div class="copyright">
+      Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+  </div>
+  <div class="links">
+      <a href="#">Terms and Conditions</a> |
+      <a href="#">Privacy Policy</a> |
+      <a href="#">Order Tracking</a>
+  </div>
+</footer>
 
-    function addToCart(product) {
-      const cart = getFromStorage('cart');
-      const existing = cart.find(item => item.id === product.id);
-      if (existing) existing.qty++;
-      else cart.push({ ...product, qty: 1 ,seller_name: product.seller_name});
-      setToStorage('cart', cart);
-      alert(`${product.name} added to cart!`);
-    }
+<script >
+  const rangeMin = document.getElementById('range-min');
+const rangeMax = document.getElementById('range-max');
+const minPrice = document.getElementById('min-price');
+const maxPrice = document.getElementById('max-price');
 
-    function addToWishlist(product) {
-      const wishlist = getFromStorage('wishlist');
-      const exists = wishlist.find(item => item.id === product.id);
-      if (!exists) {
-        wishlist.push(product);
-        setToStorage('wishlist', wishlist);
-        alert(`${product.name} added to wishlist!`);
-      } else {
-        alert(`${product.name} is already in wishlist.`);
-      }
-    }
-
-    function updateCounts() {
-      const cart = getFromStorage('cart');
-      const wishlist = getFromStorage('wishlist');
-      let cartQty = 0;
-      cart.forEach(item => cartQty += item.qty);
-      cartCount.textContent = cartQty;
-      wishlistCount.textContent = wishlist.length;
-    }
-
-    async function loadCategories() {
-      const { data, error } = await supabase.from('categories').select('*');
-      if (error) return console.error('Error loading categories:', error.message);
-      data.forEach(cat => {
-        const option = document.createElement('option');
-        option.value = cat.id;
-        option.textContent = cat.name;
-        categorySelect.appendChild(option);
-      });
-    }
-
-    async function fetchProducts(categoryId) {
-      let query = supabase.from('products').select('*');
-      if (categoryId && categoryId !== 'all') {
-        query = query.eq('category_id', categoryId);
-      }
-      return await query;
-    }
-
-    function filterAndSortProducts(products) {
-      const searchTerm = searchInput.value.toLowerCase();
-      let filtered = products.filter(prod =>
-        prod.name.toLowerCase().includes(searchTerm) ||
-        prod.description.toLowerCase().includes(searchTerm)
-      );
-
-      const sortBy = sortSelect.value;
-      if (sortBy === 'priceLowHigh') filtered.sort((a, b) => a.price - b.price);
-      else if (sortBy === 'priceHighLow') filtered.sort((a, b) => b.price - a.price);
-
-      return filtered;
-    }
-
-    function displayProducts(products) {
-  if (!products || products.length === 0) {
-    productList.innerHTML = '<p>No products found.</p>';
-    return;
-  }
-
-  const grid = document.createElement('div');
-  grid.className = 'product-grid';
-
-  products.forEach(prod => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-
-    // Discount badge
-    if (prod.discount && prod.discount > 0) {
-      const badge = document.createElement('div');
-      badge.className = 'badge';
-      badge.textContent = `${prod.discount}%`;
-      card.appendChild(badge);
-    }
-
-    // Image section (upper half)
-    const imageWrap = document.createElement('div');
-    imageWrap.className = 'product-card-image-wrap';
-    const img = document.createElement('img');
-    img.src = prod.image_url;
-    img.alt = prod.name;
-    imageWrap.appendChild(img);
-    card.appendChild(imageWrap);
-
-    // Card content (lower half)
-    const content = document.createElement('div');
-    content.className = 'product-card-content';
-
-    // Organic badge
-    if (prod.is_organic) {
-      const organicBadge = document.createElement('div');
-      organicBadge.className = 'badge-organic';
-      organicBadge.textContent = 'ORGANIC';
-      content.appendChild(organicBadge);
-    }
-
-    // Product name, description, price
-    const name = document.createElement('h3');
-    name.textContent = prod.name;
-    content.appendChild(name);
-
-    if (prod.description) {
-      const desc = document.createElement('p');
-      desc.textContent = prod.description;
-      content.appendChild(desc);
-    }
-
-    // Price section
-    const priceRow = document.createElement('div');
-    priceRow.style.marginTop = '8px';
-    priceRow.innerHTML = `
-      <span class="price">₹${prod.price}</span>
-      ${prod.old_price ? `<span class="old-price">₹${prod.old_price}</span>` : ''}
-    `;
-    content.appendChild(priceRow);
-
-    // Add to cart button
-    const addCartBtn = document.createElement('button');
-    addCartBtn.className = 'add-cart-btn';
-    addCartBtn.textContent = 'Add to cart +';
-    addCartBtn.onclick = () => addToCart(prod);
-    content.appendChild(addCartBtn);
-
-    card.appendChild(content);
-    grid.appendChild(card);
-  });
-
-  productList.innerHTML = '';
-  productList.appendChild(grid);
-}
-
-    function showLocation(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`)
-        .then(response => response.json())
-        .then(data => {
-            let locationString = "";
-
-            if (data.address) {
-                // Get street, falling back to alternatives if necessary
-                const street = data.address.road || data.address.pedestrian || data.address.street || "";
-                // Get locality: suburb, neighbourhood, or city_district
-                const locality = data.address.suburb || data.address.neighbourhood || data.address.city_district || "";
-                // Get city, town, village, or hamlet
-                const city = data.address.city || data.address.town || data.address.village || data.address.hamlet || "";
-
-                // Build the location string: locality, city (street is optional)
-                if (locality && city) {
-                    locationString = `${locality}, ${city}`;
-                } else if (city) {
-                    locationString = city;
-                } else if (locality) {
-                    locationString = locality;
-                } else {
-                    locationString = "Location unavailable";
-                }
-            } else {
-                locationString = "Location unavailable";
-            }
-
-            // Display location
-            document.getElementById('user-location').textContent = locationString;
-        })
-        .catch(error => {
-            console.error('Geocoding error:', error);
-            document.getElementById('user-location').textContent = "Location service error";
-        });
-}
-
-function showError(error) {
-    const messages = {
-        1: 'Location access denied',
-        2: 'Location unavailable',
-        3: 'Location request timed out'
-    };
-    document.getElementById('user-location').textContent = messages[error.code] || 'Location detection failed';
-}
-
-function initLocation() {
-    const locElem = document.getElementById('user-location');
-    if (!locElem) return;
-    locElem.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting...';
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            showLocation,
-            showError,
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    } else {
-        locElem.textContent = "Geolocation not supported";
-    }
-}
-
-// Call this on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', function() {
-    initLocation();
-    updateCartCount(); // if you want to keep cart count update on load
+rangeMin.addEventListener('input', () => {
+  minPrice.value = rangeMin.value;
 });
 
+rangeMax.addEventListener('input', () => {
+  maxPrice.value = rangeMax.value;
+});
 
+minPrice.addEventListener('input', () => {
+  rangeMin.value = minPrice.value;
+});
 
-      function signOutUser() {
-        auth.signOut().then(function() {
-          window.location.href = "sign_in.html";
-        });
-      }
-      function googleTranslateElementInit() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'en',
-      includedLanguages: 'en,es,fr,de,hi,ar,zh-CN',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    }, 'google_translate_element');
-  }
+maxPrice.addEventListener('input', () => {
+  rangeMax.value = maxPrice.value;
+});
 
-  function applySavedLanguage() {
-    const savedLang = localStorage.getItem('preferredLang');
-    if (savedLang) {
-      const langMap = {
-        'English': 'en',
-        'Spanish': 'es',
-        'French': 'fr',
-        'German': 'de',
-        'Hindi': 'hi',
-        'Arabic': 'ar',
-        'Chinese (Simplified)': 'zh-CN'
-      };
-      const code = langMap[savedLang];
-      if (code) {
-        const select = document.querySelector("select.goog-te-combo");
-        if (select) {
-          select.value = code;
-          select.dispatchEvent(new Event("change"));
-        }
-      }
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(applySavedLanguage, 1000); // wait for translate widget
-  });
-
-    async function loadAndRenderProducts() {
-      productList.innerHTML = 'Loading products...';
-      const categoryId = categorySelect.value;
-      const { data, error } = await fetchProducts(categoryId);
-      if (error) {
-        productList.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
-        return;
-      }
-      const filtered = filterAndSortProducts(data);
-      displayProducts(filtered);
-    }
-
-    categorySelect.addEventListener('change', loadAndRenderProducts);
-    sortSelect.addEventListener('change', loadAndRenderProducts);
-    searchInput.addEventListener('input', loadAndRenderProducts);
-
-    async function init() {
-      await loadCategories();
-      updateCounts();
-      loadAndRenderProducts();
-    }
-
-    init();
-  </script>
-  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
+</script>
 </body>
 </html>
