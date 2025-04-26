@@ -1,5 +1,3 @@
-shop.html
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -148,7 +146,7 @@ shop.html
         </div>
         <div class="product-actions">
           <span class="stock">IN STOCK</span>
-          <button class="add-to-cart"><i class="fas fa-shopping-cart"></i>Add</button>
+          <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
         </div>
       </div>
       
@@ -206,7 +204,51 @@ shop.html
 </footer>
 
 <script >
- 
+ function addToCart(event) {
+  const button = event.target.closest('.add-to-cart'); // Find the clicked button
+  if (!button) return; // If the clicked element is not the button, exit the function
+  
+  // Get the product card data (this can be customized based on your product attributes)
+  const productCard = button.closest('.product-card');
+  const productName = productCard.querySelector('h4').textContent;
+  const productImage = productCard.querySelector('img').src;
+  const productPrice = productCard.querySelector('.price .new-price').textContent.trim(); // Assuming you're using the new price for display
+  const productCategory = productCard.getAttribute('data-category');
+  const productStock = productCard.getAttribute('data-stock');
+  const productOnSale = productCard.getAttribute('data-on-sale');
+
+  // Create a product object
+  const product = {
+    name: productName,
+    image_url: productImage,
+    price: productPrice,
+    category: productCategory,
+    stock: productStock,
+    onSale: productOnSale,
+    quantity: 1 // Start with 1 quantity
+  };
+
+  // Get cart from local storage or initialize an empty array if cart is not found
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+  // Check if the product already exists in the cart
+  const existingProductIndex = cart.findIndex(item => item.name === product.name && item.price === product.price);
+
+  if (existingProductIndex > -1) {
+    // Product already in cart, update quantity
+    cart[existingProductIndex].quantity += 1;
+  } else {
+    // Product not in cart, add it
+    cart.push(product);
+  }
+
+  // Save the updated cart to local storage
+  localStorage.setItem('cart', JSON.stringify(cart));
+
+  // Optionally, provide feedback to the user (like showing a toast or changing the cart icon)
+  alert(`${product.name} has been added to your cart!`);
+}
+
 
   // Firebase configuration
   const firebaseConfig = {
@@ -556,56 +598,6 @@ statusCheckboxes.forEach(checkbox => {
 filterProducts();
 
 
-function addToCart(event) {
-  const button = event.target.closest('.add-to-cart'); // Find the clicked button
-  if (!button) return; // If the clicked element is not the button, exit the function
-  
-  // Get the product card data (this can be customized based on your product attributes)
-  const productCard = button.closest('.product-card');
-  const productName = productCard.querySelector('h4').textContent;
-  const productImage = productCard.querySelector('img').src;
-  const productPrice = productCard.querySelector('.price').textContent.trim();
-  const productCategory = productCard.getAttribute('data-category');
-  const productStock = productCard.getAttribute('data-stock');
-  const productOnSale = productCard.getAttribute('data-on-sale');
-
-  // Create a product object
-  const product = {
-    name: productName,
-    image_url: productImage,
-    price: productPrice,
-    category: productCategory,
-    stock: productStock,
-    onSale: productOnSale,
-    quantity: 1 // Start with 1 quantity
-  };
-
-  // Get cart from local storage or initialize an empty array if cart is not found
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-  // Check if the product already exists in the cart
-  const existingProductIndex = cart.findIndex(item => item.name === productName);
-  
-  if (existingProductIndex !== -1) {
-    // If product already in cart, increase its quantity
-    cart[existingProductIndex].quantity += 1;
-  } else {
-    // If product is not in cart, add it
-    cart.push(product);
-  }
-
-  // Store the updated cart in local storage
-  localStorage.setItem('cart', JSON.stringify(cart));
-
-  // Optionally, display a confirmation or update the cart UI (like showing the number of items in the cart)
-  alert(`${productName} added to cart!`);
-}
-
-// Add event listener to all "Add to Cart" buttons
-const addToCartButtons = document.querySelectorAll('.add-to-cart');
-addToCartButtons.forEach(button => {
-  button.addEventListener('click', addToCart);
-});
 </script>
 
 
