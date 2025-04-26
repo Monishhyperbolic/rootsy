@@ -192,28 +192,31 @@ async function fetchProducts() {
     try {
       const response = await fetch(url, {
         headers: {
-          'X-Master-Key': apiKey  // Only if your bin is private
+          'X-Master-Key': apiKey // Remove this object if your bin is public
         }
       });
       const data = await response.json();
-      const products = data.record.products; // Assuming your products are inside `record.products`
+      const products = data.record; // Assuming record directly contains an array of products
 
       const productGrid = document.querySelector('.product-grid');
-      productGrid.innerHTML = ''; // Clear existing static products
+      productGrid.innerHTML = ''; // Clear default content
 
       products.forEach(product => {
         const productCard = `
           <div class="product-card">
-            ${product.discount ? `<div class="discount-badge">${product.discount}% OFF</div>` : ''}
-            <img src="${product.image}" alt="${product.name}">
+            ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
+            <img src="${product.image_url}" alt="${product.name}">
             <h4>${product.name}</h4>
             <div class="price">
-              <span class="new-price">₹${product.newPrice}</span>
-              ${product.oldPrice ? `<span class="old-price">₹${product.oldPrice}</span>` : ''}
+              <span class="new-price">₹${product.price}</span>
             </div>
+            <p class="description">${product.description}</p>
+            <p class="seller">Sold by: ${product.seller_name}</p>
             <div class="product-actions">
-              <span class="stock">${product.stock ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-              <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
+              <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+              <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
+                <i class="fas fa-shopping-cart"></i>
+              </button>
             </div>
           </div>
         `;
@@ -224,7 +227,7 @@ async function fetchProducts() {
     }
   }
 
-  // Call the function when page loads
+  // Call when page loads
   fetchProducts();
 
 
