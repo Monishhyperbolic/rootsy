@@ -35,13 +35,13 @@ shop.html
       </div>
     <nav class="navbar">
         <div class="navbar-left">
-            <a href="#" class="logo">
+            <a href="index.html" class="logo">
                 <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
                 <span id="brand"></span>
             </a>
             <div class="delivery">
                 <span>Deliver to</span>
-                <span>all</span>
+                <div id="user-location">Fetching location...</div>
             </div>
         </div>
         <div class="navbar-center">
@@ -223,65 +223,239 @@ shop.html
     try {
       const response = await fetch(url, {
         headers: {
-          'X-Master-Key': apiKey // Remove this object if your bin is public
+          'X-Master-Key': apiKey
         }
       });
       const data = await response.json();
-      const products = data.record; // Assuming record directly contains an array of products
-
-      const productGrid = document.querySelector('.product-grid');
-      productGrid.innerHTML = ''; // Clear default content
-
-      products.forEach(product => {
-        const productCard = `
-          <div class="product-card">
-            ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
-            <img src="${product.image_url}" alt="${product.name}">
-            <h4>${product.name}</h4>
-            <div class="price">
-              <span class="new-price">₹${product.price}</span>
-            </div>
-            <p class="description">${product.description}</p>
-            <p class="seller">Sold by: ${product.seller_name}</p>
-            <div class="product-actions">
-              <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-              <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
-                <i class="fas fa-shopping-cart"></i>
-              </button>
-            </div>
-          </div>
-        `;
-        productGrid.insertAdjacentHTML('beforeend', productCard);
-      });
+      allProducts = data.record;
+      renderProducts(allProducts);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
   }
 
-  // Call when page loads
+  function renderProducts(products) {
+    const productGrid = document.querySelector('.product-grid');
+    productGrid.innerHTML = '';
+
+    if (products.length === 0) {
+      productGrid.innerHTML = `<p>No products found matching the filters.</p>`;
+      return;
+    }
+
+    products.forEach(product => {
+      const productCard = `
+        <div class="product-card">
+          ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
+          <img src="${product.image_url}" alt="${product.name}">
+          <h4>${product.name}</h4>
+          <div class="price">
+            <span class="new-price">₹${product.price}</span>
+          </div>
+          <p class="description">${product.description}</p>
+          <p class="seller">Sold by: ${product.seller_name}</p>
+          <div class="product-actions">
+            <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+            <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      productGrid.insertAdjacentHTML('beforeend', productCard);
+    });
+  }
+
+  function applyFilters() {
+    const min = parseFloat(document.getElementById('min-price').value) || 0;
+    const max = parseFloat(document.getElementById('max-price').value) || 999999;
+    const checkedCategories = Array.from(document.querySelectorAll('.categories input:checked'))
+                                   .map(checkbox => checkbox.parentElement.textContent.trim());
+
+    let filtered = allProducts.filter(product => {
+      const price = parseFloat(product.price);
+      const category = product.category_name;
+
+      const inPriceRange = price >= min && price <= max;
+      const inCategory = checkedCategories.length === 0 || checkedCategories.includes(category);
+
+      return inPriceRange && inCategory;
+    });
+
+    renderProducts(filtered);
+  }
+
+  // Event Listeners
+  document.getElementById('filter-btn').addEventListener('click', applyFilters);
+
+  document.querySelectorAll('.categories input').forEach(checkbox => {
+    checkbox.addEventListener('change', applyFilters);
+  });
+
+  document.querySelector('.clear-filters').addEventListener('click', () => {
+    document.getElementById('min-price').value = 0;
+    document.getElementById('max-price').value = 9999;
+    document.getElementById('range-min').value = 0;
+    document.getElementById('range-max').value = 9999;
+    document.querySelectorAll('.categories input').forEach(checkbox => checkbox.checked = false);
+    renderProducts(allProducts);
+  });
+
+  // Keep price input and slider synced
+  const rangeMin = document.getElementById('range-min');
+  const rangeMax = document.getElementById('range-max');
+  const minPrice = document.getElementById('min-price');
+  const maxPrice = document.getElementById('max-price');
+
+  rangeMin.addEventListener('input', () => {
+    minPrice.value = rangeMin.value;
+  });
+  rangeMax.addEventListener('input', () => {
+    maxPrice.value = rangeMax.value;
+  });
+  minPrice.addEventListener('input', () => {
+    rangeMin.value = minPrice.value;
+  });
+  maxPrice.addEventListener('input', () => {
+    rangeMax.value = maxPrice.value;
+  });
+
   fetchProducts();
 
 
-  const rangeMin = document.getElementById('range-min');
-const rangeMax = document.getElementById('range-max');
-const minPrice = document.getElementById('min-price');
-const maxPrice = document.getElementById('max-price');
+function initGeolocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        showLocation,
+        showError,
+        {
+          enableHighAccuracy: true,  // Changed to true for better accuracy
+          timeout: 10000,           // Added timeout setting (10 seconds)
+          maximumAge: 0             // Don't use cached position
+        }
+      );
+    } else {
+      displayLocation("Geolocation not supported by this browser");
+    }
+  }
+  
+  function showLocation(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    
+    // Added zoom parameter for more detailed results
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
+    
+    fetch(nominatimUrl, { 
+      headers: { 
+        'Accept-Language': 'en',
+        'User-Agent': 'YourAppName/1.0' // Add User-Agent for API etiquette
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const address = data.address || {};
+        
+        // More comprehensive address component collection
+        const houseNumber = address.house_number || "";
+        const street = address.road || address.street || address.pedestrian || address.footway || address.path || "";
+        const suburb = address.suburb || address.neighbourhood || address.quarter || "";
+        const city = address.city || address.town || address.village || address.hamlet || "";
+        const county = address.county || address.state_district || "";
+        const state = address.state || "";
+        const country = address.country || "";
+        const postcode = address.postcode || "";
+        
+        // Format a detailed address string
+        let locationParts = [];
+        
+        // Add house number and street if available
+        if (houseNumber && street) {
+          locationParts.push(`${houseNumber} ${street}`);
+        } else if (street) {
+          locationParts.push(street);
+        }
+        
+        // Add suburb if available
+        if (suburb) {
+          locationParts.push(suburb);
+        }
+        
+        // Add city/town
+        if (city) {
+          locationParts.push(city);
+        }
+        
+        // Add county if city is not available
+        if (!city && county) {
+          locationParts.push(county);
+        }
+        
+        // Add state if different from city
+        if (state && state !== city) {
+          locationParts.push(state);
+        }
+        
+        // Fallback options if we couldn't construct a good address
+        const displayName = data.display_name || "";
+        
+        const locationString = locationParts.length > 0 
+          ? locationParts.join(", ")
+          : displayName || "Location details unavailable";
+        
+        // Also log coordinates for debugging
+        console.log(`Coordinates: ${latitude}, ${longitude}`);
+        console.log("Full address data:", data);
+        
+        displayLocation(locationString);
+      })
+      .catch(error => {
+        console.error("Geocoding error:", error);
+        displayLocation("Location service error");
+      });
+  }
+  
+  function showError(error) {
+    let message = "";
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        message = "Location access denied by user";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        message = "Location information unavailable";
+        break;
+      case error.TIMEOUT:
+        message = "Location request timed out";
+        break;
+      default:
+        message = `Unknown location error: ${error.message}`;
+    }
+    console.error("Geolocation error:", error);
+    displayLocation(message);
+  }
+  
+  function displayLocation(text) {
+    const locationElement = document.getElementById('user-location');
+    if (locationElement) {
+      locationElement.textContent = text;
+    } else {
+      console.error("Location display element not found");
+    }
+  }
+  
+  // Call this on page load or after auth
+  window.addEventListener('DOMContentLoaded', initGeolocation);
+function signOutUser() {
+  auth.signOut().then(function() {
+    window.location.href = "sign_in.html";
+  });
+}
 
-rangeMin.addEventListener('input', () => {
-  minPrice.value = rangeMin.value;
-});
-
-rangeMax.addEventListener('input', () => {
-  maxPrice.value = rangeMax.value;
-});
-
-minPrice.addEventListener('input', () => {
-  rangeMin.value = minPrice.value;
-});
-
-maxPrice.addEventListener('input', () => {
-  rangeMax.value = maxPrice.value;
-});
 
 </script>
 </body>
