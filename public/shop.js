@@ -28,45 +28,57 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 // USER
 let currentUser = null;
 
-// Fetch products
 async function fetchProducts() {
-  const { data, error } = await supabase.from('products').select('*');
-  if (error) {
-    console.error('Error fetching products:', error);
-    return;
-  }
-  renderProducts(data);
-}
-
-// Render products to grid
-function renderProducts(products) {
-  const productGrid = document.querySelector('.product-grid');
-  productGrid.innerHTML = '';
-
-  products.forEach(product => {
-    const productCard = document.createElement('div');
-    productCard.className = 'product-card';
-    productCard.innerHTML = `
-      <img src="${product.image_url}" alt="${product.name}" class="product-img">
-      <h4>${product.name}</h4>
-      <div class="price">
-        <span class="new-price">₹${product.price}</span>
-      </div>
-      <div class="product-actions">
-        <span class="stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-        ${product.stock > 0 ? `<button class="add-to-cart" data-id="${product.id}"><i class="fas fa-shopping-cart"></i></button>` : ''}
-      </div>
-    `;
-    productGrid.appendChild(productCard);
-
-    productCard.querySelector('.product-img').addEventListener('click', () => showProductPopup(product));
-    const cartButton = productCard.querySelector('.add-to-cart');
-    if (cartButton) {
-      cartButton.addEventListener('click', () => addToCart(product));
+    const { data, error } = await supabase.from('products').select('*');
+    
+    if (error) {
+      console.error('Error fetching products:', error);
+      alert("Error fetching products. Please try again later.");
+      return;
     }
-  });
-}
-
+    
+    console.log("Products fetched successfully:", data); // Check the structure of the data
+    if (data && data.length > 0) {
+      renderProducts(data);
+    } else {
+      console.log("No products found.");
+      displayNoProductsMessage();
+    }
+  }
+  
+  function renderProducts(products) {
+    const productGrid = document.querySelector('.product-grid');
+    productGrid.innerHTML = ''; // Clear previous products
+  
+    products.forEach(product => {
+      const productCard = document.createElement('div');
+      productCard.className = 'product-card';
+      productCard.innerHTML = `
+        <img src="${product.image_url}" alt="${product.name}" class="product-img">
+        <h4>${product.name}</h4>
+        <div class="price">
+          <span class="new-price">₹${product.price}</span>
+        </div>
+        <div class="product-actions">
+          <span class="stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+          ${product.stock > 0 ? `<button class="add-to-cart" data-id="${product.id}"><i class="fas fa-shopping-cart"></i></button>` : ''}
+        </div>
+      `;
+      productGrid.appendChild(productCard);
+  
+      productCard.querySelector('.product-img').addEventListener('click', () => showProductPopup(product));
+      const cartButton = productCard.querySelector('.add-to-cart');
+      if (cartButton) {
+        cartButton.addEventListener('click', () => addToCart(product));
+      }
+    });
+  }
+  
+  function displayNoProductsMessage() {
+    const productGrid = document.querySelector('.product-grid');
+    productGrid.innerHTML = '<p>No products available at the moment. Please check back later.</p>';
+  }
+  
 // Show product details in a popup
 function showProductPopup(product) {
   const popup = document.createElement('div');
@@ -192,20 +204,21 @@ onAuthStateChanged(auth, (user) => {
 fetchProducts();
 updateMiniCart();
 
-
 function initGeolocation() {
     if (navigator.geolocation) {
+      console.log("Geolocation is supported");
       navigator.geolocation.getCurrentPosition(
         showLocation,
         showError,
         {
-          enableHighAccuracy: true,  // Changed to true for better accuracy
-          timeout: 10000,           // Added timeout setting (10 seconds)
-          maximumAge: 0             // Don't use cached position
+          enableHighAccuracy: true,  // Higher accuracy
+          timeout: 10000,            // 10-second timeout
+          maximumAge: 0              // No cached position
         }
       );
     } else {
-      displayLocation("Geolocation not supported by this browser");
+      console.error("Geolocation not supported by this browser");
+      displayLocation("Geolocation not supported");
     }
   }
   
@@ -213,100 +226,75 @@ function initGeolocation() {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
     
-    // Added zoom parameter for more detailed results
-    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
+    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
     
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
+  
     fetch(nominatimUrl, { 
       headers: { 
         'Accept-Language': 'en',
-        'User-Agent': 'YourAppName/1.0' // Add User-Agent for API etiquette
+        'User-Agent': 'YourAppName/1.0'
       }
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        const address = data.address || {};
-        
-        // More comprehensive address component collection
-        const houseNumber = address.house_number || "";
-        const street = address.road || address.street || address.pedestrian || address.footway || address.path || "";
-        const suburb = address.suburb || address.neighbourhood || address.quarter || "";
-        const city = address.city || address.town || address.village || address.hamlet || "";
-        const county = address.county || address.state_district || "";
-        const state = address.state || "";
-        const country = address.country || "";
-        const postcode = address.postcode || "";
-        
-        // Format a detailed address string
-        let locationParts = [];
-        
-        // Add house number and street if available
-        if (houseNumber && street) {
-          locationParts.push(`${houseNumber} ${street}`);
-        } else if (street) {
-          locationParts.push(street);
-        }
-        
-        // Add suburb if available
-        if (suburb) {
-          locationParts.push(suburb);
-        }
-        
-        // Add city/town
-        if (city) {
-          locationParts.push(city);
-        }
-        
-        // Add county if city is not available
-        if (!city && county) {
-          locationParts.push(county);
-        }
-        
-        // Add state if different from city
-        if (state && state !== city) {
-          locationParts.push(state);
-        }
-        
-        // Fallback options if we couldn't construct a good address
-        const displayName = data.display_name || "";
-        
-        const locationString = locationParts.length > 0 
-          ? locationParts.join(", ")
-          : displayName || "Location details unavailable";
-        
-        // Also log coordinates for debugging
-        console.log(`Coordinates: ${latitude}, ${longitude}`);
-        console.log("Full address data:", data);
-        
-        displayLocation(locationString);
-      })
-      .catch(error => {
-        console.error("Geocoding error:", error);
-        displayLocation("Location service error");
-      });
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      const address = data.address || {};
+      let locationString = constructAddressString(address);
+      
+      console.log("Location data: ", data);
+      displayLocation(locationString);
+    })
+    .catch(error => {
+      console.error("Geocoding error:", error);
+      displayLocation("Error fetching location details");
+    });
+  }
+  
+  function constructAddressString(address) {
+    const houseNumber = address.house_number || "";
+    const street = address.road || address.street || "";
+    const suburb = address.suburb || "";
+    const city = address.city || "";
+    const state = address.state || "";
+    const country = address.country || "";
+  
+    let locationParts = [];
+    if (houseNumber && street) {
+      locationParts.push(`${houseNumber} ${street}`);
+    } else if (street) {
+      locationParts.push(street);
+    }
+  
+    if (suburb) locationParts.push(suburb);
+    if (city) locationParts.push(city);
+    if (state) locationParts.push(state);
+    if (country) locationParts.push(country);
+  
+    return locationParts.join(", ") || "Location details unavailable";
   }
   
   function showError(error) {
-    let message = "";
-    switch(error.code) {
+    let errorMessage = "";
+    switch (error.code) {
       case error.PERMISSION_DENIED:
-        message = "Location access denied by user";
+        errorMessage = "Location access denied by user.";
         break;
       case error.POSITION_UNAVAILABLE:
-        message = "Location information unavailable";
+        errorMessage = "Location information unavailable.";
         break;
       case error.TIMEOUT:
-        message = "Location request timed out";
+        errorMessage = "Location request timed out.";
         break;
       default:
-        message = `Unknown location error: ${error.message}`;
+        errorMessage = `Unknown error: ${error.message}`;
     }
-    console.error("Geolocation error:", error);
-    displayLocation(message);
+    console.error("Geolocation error:", errorMessage);
+    displayLocation(errorMessage);
   }
   
   function displayLocation(text) {
@@ -314,14 +302,7 @@ function initGeolocation() {
     if (locationElement) {
       locationElement.textContent = text;
     } else {
-      console.error("Location display element not found");
+      console.error("Location element not found");
     }
   }
   
-  // Call this on page load or after auth
-  window.addEventListener('DOMContentLoaded', initGeolocation);
-function signOutUser() {
-  auth.signOut().then(function() {
-    window.location.href = "sign_in.html";
-  });
-}
