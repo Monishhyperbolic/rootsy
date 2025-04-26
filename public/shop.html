@@ -1,4 +1,3 @@
-shop.html
 
 
 <!DOCTYPE html>
@@ -41,8 +40,8 @@ shop.html
             </a>
             <div class="delivery">
                 <span>Deliver to</span>
-                <div id="user-location"></div>
-            </div>
+                <div id="user-location">Fetching location...</div>
+              </div>
         </div>
         <div class="navbar-center">
             <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
@@ -72,34 +71,42 @@ shop.html
       <p class="breadcrumb"><a href="index.html">Home</a>> <a href="shop.html">shop</a></p>
 
       <div class="filter-section">
+        <h3> Price filter</h3>
+        <div class="price-filter">
+          <input type="number" id="min-price" value="0"> -
+          <input type="number" id="max-price" value="30">
+          <input type="range" min="0" max="30" value="0" id="range-min">
+          <input type="range" min="0" max="30" value="30" id="range-max">
+          <button id="filter-btn">Filter</button>
+        </div>
+      </div>
+
+      <div class="filter-section">
         <h3>Product Categories</h3>
         <ul class="categories">
-          <li><input type="checkbox"  checked class="category-filter"> Vegetables</li>
-          <li><input type="checkbox" checked  class="category-filter"> Fruits</li>
-          <li><input type="checkbox"  checked class="category-filter"> Handicrafts & Artisanal Goods</li>
-          <li><input type="checkbox"  checked class="category-filter"> Textiles</li>
-          <li><input type="checkbox"  checked class="category-filter"> Pottery & Ceramics</li>
-          <li><input type="checkbox" checked class="category-filter" > Woodcrafts</li>
-          <li><input type="checkbox" checked class="category-filter" > Jewelry</li>
-          <li><input type="checkbox" checked class="category-filter"> Paintings & Wall Art</li>
-          <li><input type="checkbox" checked class="category-filter"> Basketry & Weaving</li>
-          <li><input type="checkbox" checked class="category-filter"> Agricultural Products</li>
-          <li><input type="checkbox" checked class="category-filter"> Fresh Fruits & Vegetables</li>
-          <li><input type="checkbox" checked class="category-filter"> Grains & Pulses</li>
-          <li><input type="checkbox" checked class="category-filter"> Spices & Herbs</li>
-          <li><input type="checkbox" checked class="category-filter"> Organic Produce</li>
-          <li><input type="checkbox" checked class="category-filter"> Dairy & Animal Products</li>
-          <li><input type="checkbox" checked class="category-filter"> Honey & Natural Sweeteners</li>
-          <li><input type="checkbox" checked class="category-filter"> Homemade & Processed Foods</li>
+          <li><input type="checkbox" checked> Fruits & Vegetables</li>
+          <li><input type="checkbox"> Baby & Pregnancy</li>
+          <li><input type="checkbox"> Beverages</li>
+          <li><input type="checkbox"> Meats & Seafood</li>
+          <li><input type="checkbox"> Biscuits & Snacks</li>
+          <li><input type="checkbox"> Breads & Bakery</li>
+          <li><input type="checkbox"> Breakfast & Dairy</li>
+          <li><input type="checkbox"> Frozen Foods</li>
+          <li><input type="checkbox"> Grocery & Staples</li>
+          <li><input type="checkbox"> Healthcare</li>
+          <li><input type="checkbox"> Household Needs</li>
         </ul>
       </div>
 
 
       <div class="filter-section">
         <h3>Product Status</h3>
-        <div><input type="checkbox" class="status-filter" data-status="In Stock"> In Stock</div>
-        <div><input type="checkbox" class="status-filter" data-status="Out of Stock"> Out of stock</div>
-      </div>
+        <div>
+          <input type="checkbox"> In Stock
+        </div>
+        <div>
+          <input type="checkbox"> Out of stock
+        </div>
       </div>
     </nav>
   </aside>
@@ -113,20 +120,18 @@ shop.html
       <div class="filters-bar">
         <button class="clear-filters">Clear filters</button>
         <select class="sort-by">
-          <option value="price-low-to-high" >price low to high</option>
-          <option value="price-high-to-low" >price high to low</option>
-          
+          <option>Sort by latest</option>
+          <option>Sort by price</option>
+          <option>Sort by popularity</option>
         </select>
         <select class="show-items">
-          <option value="20">Show 20 items</option>
-          <option value="40">Show 40 items</option>
+          <option>Show 20 items</option>
+          <option>Show 40 items</option>
         </select>
       </div>
     </div>
 
-    <div class="product-grid">
-      
-    </div>
+    <div class="product-grid">  </div>
 
   </main>
 </div>
@@ -180,157 +185,35 @@ shop.html
 </footer>
 
 <script >
- function initGeolocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          showLocation,
-          showError,
-          {
-            enableHighAccuracy: true,  // Changed to true for better accuracy
-            timeout: 10000,           // Added timeout setting (10 seconds)
-            maximumAge: 0             // Don't use cached position
-          }
-        );
-      } else {
-        displayLocation("Geolocation not supported by this browser");
-      }
-    }
-
-    function showLocation(position) {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-
-      // Reverse geocoding with OpenStreetMap Nominatim API
-      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
-
-      fetch(nominatimUrl, {
-        headers: {
-          'Accept-Language': 'en',
-          'User-Agent': 'GeolocationApp/1.0' // Add User-Agent for API etiquette
-        }
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then(data => {
-          const address = data.address || {};
-
-          // Address components
-          const houseNumber = address.house_number || "";
-          const street = address.road || address.street || address.pedestrian || address.footway || address.path || "";
-          const suburb = address.suburb || address.neighbourhood || address.quarter || "";
-          const city = address.city || address.town || address.village || address.hamlet || "";
-          const county = address.county || address.state_district || "";
-          const state = address.state || "";
-          const country = address.country || "";
-          const postcode = address.postcode || "";
-
-          // Constructing the address string
-          let locationParts = [];
-
-          if (houseNumber && street) {
-            locationParts.push(`${houseNumber} ${street}`);
-          } else if (street) {
-            locationParts.push(street);
-          }
-
-          if (suburb) {
-            locationParts.push(suburb);
-          }
-
-          if (city) {
-            locationParts.push(city);
-          }
-
-          if (!city && county) {
-            locationParts.push(county);
-          }
-
-          if (state && state !== city) {
-            locationParts.push(state);
-          }
-
-          const locationString = locationParts.length > 0
-            ? locationParts.join(", ")
-            : data.display_name || "Location details unavailable";
-
-          console.log(`Coordinates: ${latitude}, ${longitude}`);
-          console.log("Full address data:", data);
-
-          displayLocation(locationString);
-        })
-        .catch(error => {
-          console.error("Geocoding error:", error);
-          displayLocation("Location service error");
-        });
-    }
-
-    function showError(error) {
-      let message = "";
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          message = "Location access denied by user";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          message = "Location information unavailable";
-          break;
-        case error.TIMEOUT:
-          message = "Location request timed out";
-          break;
-        default:
-          message = `Unknown location error: ${error.message}`;
-      }
-      console.error("Geolocation error:", error);
-      displayLocation(message);
-    }
-
-    function displayLocation(text) {
-      const locationElement = document.getElementById('user-location');
-      if (locationElement) {
-        locationElement.textContent = text;
-      } else {
-        console.error("Location display element not found");
-      }
-    }
-
-    // Automatically get the location when the page loads
-    window.onload = initGeolocation;
- 
-  async function fetchProducts() {
-    const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Replace YOUR_BIN_ID
-    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace YOUR_API_KEY if needed
+async function fetchProducts() {
+    const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Replace with your actual JSONBin URL
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace with your API key if needed
 
     try {
       const response = await fetch(url, {
         headers: {
-          'X-Master-Key': apiKey // Remove this object if your bin is public
+          'X-Master-Key': apiKey  // Only if your bin is private
         }
       });
       const data = await response.json();
-      const products = data.record; // Assuming record directly contains an array of products
+      const products = data.record.products; // Assuming your products are inside `record.products`
 
       const productGrid = document.querySelector('.product-grid');
-      productGrid.innerHTML = ''; // Clear default content
+      productGrid.innerHTML = ''; // Clear existing static products
 
       products.forEach(product => {
         const productCard = `
           <div class="product-card">
-            ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
-            <img src="${product.image_url}" alt="${product.name}">
+            ${product.discount ? `<div class="discount-badge">${product.discount}% OFF</div>` : ''}
+            <img src="${product.image}" alt="${product.name}">
             <h4>${product.name}</h4>
             <div class="price">
-              <span class="new-price">₹${product.price}</span>
+              <span class="new-price">₹${product.newPrice}</span>
+              ${product.oldPrice ? `<span class="old-price">₹${product.oldPrice}</span>` : ''}
             </div>
-            <p class="description">${product.description}</p>
-            <p class="seller">Sold by: ${product.seller_name}</p>
             <div class="product-actions">
-              <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-              <button class="add-to-cart"  ${product.stock > 0 ? '' : 'disabled'}>
-                <i class="fas fa-shopping-cart"></i>
-              </button>
+              <span class="stock">${product.stock ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+              <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
             </div>
           </div>
         `;
@@ -340,8 +223,136 @@ shop.html
       console.error('Failed to fetch products:', error);
     }
   }
-window.onload = function()
 
+  // Call the function when page loads
+  fetchProducts();
+
+
+function initGeolocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        showLocation,
+        showError,
+        {
+          enableHighAccuracy: true,  // Changed to true for better accuracy
+          timeout: 10000,           // Added timeout setting (10 seconds)
+          maximumAge: 0             // Don't use cached position
+        }
+      );
+    } else {
+      displayLocation("Geolocation not supported by this browser");
+    }
+  }
+  
+  function showLocation(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    
+    // Added zoom parameter for more detailed results
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
+    
+    fetch(nominatimUrl, { 
+      headers: { 
+        'Accept-Language': 'en',
+        'User-Agent': 'YourAppName/1.0' // Add User-Agent for API etiquette
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        const address = data.address || {};
+        
+        // More comprehensive address component collection
+        const houseNumber = address.house_number || "";
+        const street = address.road || address.street || address.pedestrian || address.footway || address.path || "";
+        const suburb = address.suburb || address.neighbourhood || address.quarter || "";
+        const city = address.city || address.town || address.village || address.hamlet || "";
+        const county = address.county || address.state_district || "";
+        const state = address.state || "";
+        const country = address.country || "";
+        const postcode = address.postcode || "";
+        
+        // Format a detailed address string
+        let locationParts = [];
+        
+        // Add house number and street if available
+        if (houseNumber && street) {
+          locationParts.push(`${houseNumber} ${street}`);
+        } else if (street) {
+          locationParts.push(street);
+        }
+        
+        // Add suburb if available
+        if (suburb) {
+          locationParts.push(suburb);
+        }
+        
+        // Add city/town
+        if (city) {
+          locationParts.push(city);
+        }
+        
+        // Add county if city is not available
+        if (!city && county) {
+          locationParts.push(county);
+        }
+        
+        // Add state if different from city
+        if (state && state !== city) {
+          locationParts.push(state);
+        }
+        
+        // Fallback options if we couldn't construct a good address
+        const displayName = data.display_name || "";
+        
+        const locationString = locationParts.length > 0 
+          ? locationParts.join(", ")
+          : displayName || "Location details unavailable";
+        
+        // Also log coordinates for debugging
+        console.log(`Coordinates: ${latitude}, ${longitude}`);
+        console.log("Full address data:", data);
+        
+        displayLocation(locationString);
+      })
+      .catch(error => {
+        console.error("Geocoding error:", error);
+        displayLocation("Location service error");
+      });
+  }
+  
+  function showError(error) {
+    let message = "";
+    switch(error.code) {
+      case error.PERMISSION_DENIED:
+        message = "Location access denied by user";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        message = "Location information unavailable";
+        break;
+      case error.TIMEOUT:
+        message = "Location request timed out";
+        break;
+      default:
+        message = `Unknown location error: ${error.message}`;
+    }
+    console.error("Geolocation error:", error);
+    displayLocation(message);
+  }
+  
+  function displayLocation(text) {
+    const locationElement = document.getElementById('user-location');
+    if (locationElement) {
+      locationElement.textContent = text;
+    } else {
+      console.error("Location display element not found");
+    }
+  }
+  
 </script>
 </body>
 </html>
