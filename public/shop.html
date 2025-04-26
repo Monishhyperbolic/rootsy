@@ -72,55 +72,34 @@ shop.html
       <p class="breadcrumb"><a href="index.html">Home</a>> <a href="shop.html">shop</a></p>
 
       <div class="filter-section">
-        <h3> Price filter</h3>
-        <div class="price-filter">
-          <input type="number" id="min-price" value="0"> -
-          <input type="number" id="max-price" value="30">
-          <input type="range" min="0" max="30" value="0" id="range-min">
-          <input type="range" min="0" max="30" value="30" id="range-max">
-          <button id="filter-btn">Filter</button>
-        </div>
-      </div>
-
-      <div class="filter-section">
         <h3>Product Categories</h3>
         <ul class="categories">
-          <li><input type="checkbox" checked> Fruits & Vegetables</li>
-          <li><input type="checkbox"> Baby & Pregnancy</li>
-          <li><input type="checkbox"> Beverages</li>
-          <li><input type="checkbox"> Meats & Seafood</li>
-          <li><input type="checkbox"> Biscuits & Snacks</li>
-          <li><input type="checkbox"> Breads & Bakery</li>
-          <li><input type="checkbox"> Breakfast & Dairy</li>
-          <li><input type="checkbox"> Frozen Foods</li>
-          <li><input type="checkbox"> Grocery & Staples</li>
-          <li><input type="checkbox"> Healthcare</li>
-          <li><input type="checkbox"> Household Needs</li>
+          <li><input type="checkbox"  checked class="category-filter"> Vegetables</li>
+          <li><input type="checkbox" checked  class="category-filter"> Fruits</li>
+          <li><input type="checkbox"  checked class="category-filter"> Handicrafts & Artisanal Goods</li>
+          <li><input type="checkbox"  checked class="category-filter"> Textiles</li>
+          <li><input type="checkbox"  checked class="category-filter"> Pottery & Ceramics</li>
+          <li><input type="checkbox" checked class="category-filter" > Woodcrafts</li>
+          <li><input type="checkbox" checked class="category-filter" > Jewelry</li>
+          <li><input type="checkbox" checked class="category-filter"> Paintings & Wall Art</li>
+          <li><input type="checkbox" checked class="category-filter"> Basketry & Weaving</li>
+          <li><input type="checkbox" checked class="category-filter"> Agricultural Products</li>
+          <li><input type="checkbox" checked class="category-filter"> Fresh Fruits & Vegetables</li>
+          <li><input type="checkbox" checked class="category-filter"> Grains & Pulses</li>
+          <li><input type="checkbox" checked class="category-filter"> Spices & Herbs</li>
+          <li><input type="checkbox" checked class="category-filter"> Organic Produce</li>
+          <li><input type="checkbox" checked class="category-filter"> Dairy & Animal Products</li>
+          <li><input type="checkbox" checked class="category-filter"> Honey & Natural Sweeteners</li>
+          <li><input type="checkbox" checked class="category-filter"> Homemade & Processed Foods</li>
         </ul>
       </div>
 
-      <div class="filter-section">
-        <h3>Filter by</h3>
-        <div class="color-option">
-          <span class="color green"></span> organic
-        </div>
-      </div>
-
-      <div class="filter-section">
-        <h3>Filter by Brand</h3>
-        <div>
-          <input type="checkbox"> Fresh
-        </div>
-      </div>
 
       <div class="filter-section">
         <h3>Product Status</h3>
-        <div>
-          <input type="checkbox"> In Stock
-        </div>
-        <div>
-          <input type="checkbox"> On Sale
-        </div>
+        <div><input type="checkbox" class="status-filter" data-status="In Stock"> In Stock</div>
+        <div><input type="checkbox" class="status-filter" data-status="Out of Stock"> Out of stock</div>
+      </div>
       </div>
     </nav>
   </aside>
@@ -134,13 +113,13 @@ shop.html
       <div class="filters-bar">
         <button class="clear-filters">Clear filters</button>
         <select class="sort-by">
-          <option>Sort by latest</option>
-          <option>Sort by price</option>
-          <option>Sort by popularity</option>
+          <option value="price-low-to-high" >price low to high</option>
+          <option value="price-high-to-low" >price high to low</option>
+          
         </select>
         <select class="show-items">
-          <option>Show 20 items</option>
-          <option>Show 40 items</option>
+          <option value="20">Show 20 items</option>
+          <option value="40">Show 40 items</option>
         </select>
       </div>
     </div>
@@ -336,10 +315,13 @@ shop.html
 
     // Automatically get the location when the page loads
     window.onload = initGeolocation;
- 
+    let products = []; // Initialize an empty array for products
+  let filteredProducts = []; // Filtered products after applying filters
+
+  // Fetch products from JSONBin.io
   async function fetchProducts() {
-    const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Replace YOUR_BIN_ID
-    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace YOUR_API_KEY if needed
+    const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Your JSONBin URL
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // API Key
 
     try {
       const response = await fetch(url, {
@@ -348,62 +330,110 @@ shop.html
         }
       });
       const data = await response.json();
-      const products = data.record; // Assuming record directly contains an array of products
-
-      const productGrid = document.querySelector('.product-grid');
-      productGrid.innerHTML = ''; // Clear default content
-
-      products.forEach(product => {
-        const productCard = `
-          <div class="product-card">
-            ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
-            <img src="${product.image_url}" alt="${product.name}">
-            <h4>${product.name}</h4>
-            <div class="price">
-              <span class="new-price">₹${product.price}</span>
-            </div>
-            <p class="description">${product.description}</p>
-            <p class="seller">Sold by: ${product.seller_name}</p>
-            <div class="product-actions">
-              <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-              <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
-                <i class="fas fa-shopping-cart"></i>
-              </button>
-            </div>
-          </div>
-        `;
-        productGrid.insertAdjacentHTML('beforeend', productCard);
-      });
+      products = data.record; // Assuming record directly contains an array of products
+      filteredProducts = [...products]; // Initialize filtered products as all products
+      applyFilters(); // Apply filters when products are fetched
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
   }
 
-  // Call when page loads
+  // Function to display products
+  function displayProducts(productsToDisplay) {
+    const productGrid = document.querySelector('.product-grid');
+    productGrid.innerHTML = ''; // Clear previous products
+
+    productsToDisplay.forEach(product => {
+      const productCard = `
+        <div class="product-card">
+          ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
+          <img src="${product.image_url}" alt="${product.name}">
+          <h4>${product.name}</h4>
+          <div class="price">
+            <span class="new-price">₹${product.price}</span>
+          </div>
+          <p class="description">${product.description}</p>
+          <p class="seller">Sold by: ${product.seller_name}</p>
+          <div class="product-actions">
+            <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+            <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      productGrid.insertAdjacentHTML('beforeend', productCard);
+    });
+  }
+
+  // Function to filter products based on selected filters
+  function applyFilters() {
+    const selectedCategories = Array.from(document.querySelectorAll('.category-filter:checked'))
+      .map(checkbox => checkbox.dataset.category);
+    const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked'))
+      .map(checkbox => checkbox.dataset.status);
+
+    const minPrice = document.getElementById('min-price').value;
+    const maxPrice = document.getElementById('max-price').value;
+
+    filteredProducts = products.filter(product => {
+      const matchesCategory = selectedCategories.includes(product.category);
+      const matchesStatus = selectedStatuses.includes(product.status);
+      const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
+      return matchesCategory && matchesStatus && matchesPrice;
+    });
+
+    // Display the filtered products
+    displayProducts(filteredProducts);
+  }
+
+  // Event listeners for filters
+  document.querySelectorAll('.category-filter').forEach(checkbox => {
+    checkbox.addEventListener('change', applyFilters);
+  });
+
+  document.querySelectorAll('.status-filter').forEach(checkbox => {
+    checkbox.addEventListener('change', applyFilters);
+  });
+
+  const rangeMin = document.getElementById('range-min');
+  const rangeMax = document.getElementById('range-max');
+  const minPriceInput = document.getElementById('min-price');
+  const maxPriceInput = document.getElementById('max-price');
+
+  rangeMin.addEventListener('input', () => {
+    minPriceInput.value = rangeMin.value;
+    applyFilters();
+  });
+
+  rangeMax.addEventListener('input', () => {
+    maxPriceInput.value = rangeMax.value;
+    applyFilters();
+  });
+
+  minPriceInput.addEventListener('input', () => {
+    rangeMin.value = minPriceInput.value;
+    applyFilters();
+  });
+
+  maxPriceInput.addEventListener('input', () => {
+    rangeMax.value = maxPriceInput.value;
+    applyFilters();
+  });
+
+  // Clear filters button
+  document.querySelector('.clear-filters').addEventListener('click', () => {
+    document.querySelectorAll('.category-filter').forEach(checkbox => checkbox.checked = true);
+    document.querySelectorAll('.status-filter').forEach(checkbox => checkbox.checked = true);
+    minPriceInput.value = 0;
+    maxPriceInput.value = 500;
+    rangeMin.value = 0;
+    rangeMax.value = 500;
+    applyFilters(); // Reapply filters after resetting
+  });
+
+  // Initialize
   fetchProducts();
-
-
-const rangeMin = document.getElementById('range-min');
-const rangeMax = document.getElementById('range-max');
-const minPrice = document.getElementById('min-price');
-const maxPrice = document.getElementById('max-price');
-
-rangeMin.addEventListener('input', () => {
-  minPrice.value = rangeMin.value;
-});
-
-rangeMax.addEventListener('input', () => {
-  maxPrice.value = rangeMax.value;
-});
-
-minPrice.addEventListener('input', () => {
-  rangeMin.value = minPrice.value;
-});
-
-maxPrice.addEventListener('input', () => {
-  rangeMax.value = maxPrice.value;
-});
-
 </script>
 </body>
 </html>
