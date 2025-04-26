@@ -1,26 +1,25 @@
-// shop.js
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Initialize Supabase
-const supabase = createClient('https://takraoqafzlolecjgtgn.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs');
+// Initialize Supabase (make sure this runs after the Supabase script is loaded)
+const supabase = supabaseJs.createClient('https://takraoqafzlolecjgtgn.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs');
+
+// Add Firebase configuration
+const firebaseConfig = {
+  // Replace with your actual Firebase config
+    apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+    authDomain: "rootsy-ec110.firebaseapp.com",
+    projectId: "rootsy-ec110",
+    storageBucket: "rootsy-ec110.appspot.com",
+    messagingSenderId: "120254624474",
+    appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+    measurementId: "G-0Y636N5BPV"
+};
 
 // Initialize Firebase
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+const app = initializeApp(firebaseConfig);
 const auth = getAuth();
-
-onAuthStateChanged(auth, (user) => {
-    const accountLink = document.getElementById('account-link');
-  
-    if (user) {
-      // User is signed in
-      const email = user.email;
-      accountLink.href = "profile.html"; // Redirect to profile page
-      accountLink.querySelector('span').textContent = email;
-    } else {
-      // No user is signed in
-      accountLink.href = "sign_in.html";
-      accountLink.querySelector('span').textContent = "Sign in account";
-    }
-  });
 
 // CART
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -28,57 +27,84 @@ let cart = JSON.parse(localStorage.getItem('cart')) || [];
 // USER
 let currentUser = null;
 
+// Monitor Firebase Authentication
+onAuthStateChanged(auth, (user) => {
+  const accountLink = document.getElementById('account-link');
+  
+  if (user) {
+    // User is signed in
+    currentUser = user;
+    console.log('User logged in:', user.email);
+    accountLink.href = "profile.html"; // Redirect to profile page
+    accountLink.querySelector('span').textContent = user.email;
+  } else {
+    // No user is signed in
+    currentUser = null;
+    console.log('User logged out');
+    accountLink.href = "sign_in.html";
+    accountLink.querySelector('span').textContent = "Sign in account";
+  }
+});
+
 async function fetchProducts() {
-    const { data, error } = await supabase.from('products').select('*');
-    
-    if (error) {
-      console.error('Error fetching products:', error);
-      alert("Error fetching products. Please try again later.");
-      return;
-    }
-    
-    console.log("Products fetched successfully:", data); // Check the structure of the data
-    if (data && data.length > 0) {
-      renderProducts(data);
-    } else {
-      console.log("No products found.");
-      displayNoProductsMessage();
-    }
+  const { data, error } = await supabase.from('products').select('*');
+  
+  if (error) {
+    console.error('Error fetching products:', error);
+    alert("Error fetching products. Please try again later.");
+    return;
   }
   
-  function renderProducts(products) {
-    const productGrid = document.querySelector('.product-grid');
-    productGrid.innerHTML = ''; // Clear previous products
+  console.log("Products fetched successfully:", data); // Check the structure of the data
+  if (data && data.length > 0) {
+    renderProducts(data);
+  } else {
+    console.log("No products found.");
+    displayNoProductsMessage();
+  }
+}
+
+function renderProducts(products) {
+  const productGrid = document.querySelector('.product-grid');
   
-    products.forEach(product => {
-      const productCard = document.createElement('div');
-      productCard.className = 'product-card';
-      productCard.innerHTML = `
-        <img src="${product.image_url}" alt="${product.name}" class="product-img">
-        <h4>${product.name}</h4>
-        <div class="price">
-          <span class="new-price">₹${product.price}</span>
-        </div>
-        <div class="product-actions">
-          <span class="stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-          ${product.stock > 0 ? `<button class="add-to-cart" data-id="${product.id}"><i class="fas fa-shopping-cart"></i></button>` : ''}
-        </div>
-      `;
-      productGrid.appendChild(productCard);
-  
-      productCard.querySelector('.product-img').addEventListener('click', () => showProductPopup(product));
-      const cartButton = productCard.querySelector('.add-to-cart');
-      if (cartButton) {
-        cartButton.addEventListener('click', () => addToCart(product));
-      }
-    });
+  if (!productGrid) {
+    console.error("Product grid element not found!");
+    return;
   }
   
-  function displayNoProductsMessage() {
-    const productGrid = document.querySelector('.product-grid');
+  productGrid.innerHTML = ''; // Clear previous products
+
+  products.forEach(product => {
+    const productCard = document.createElement('div');
+    productCard.className = 'product-card';
+    productCard.innerHTML = `
+      <img src="${product.image_url}" alt="${product.name}" class="product-img">
+      <h4>${product.name}</h4>
+      <div class="price">
+        <span class="new-price">₹${product.price}</span>
+      </div>
+      <div class="product-actions">
+        <span class="stock ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+        ${product.stock > 0 ? `<button class="add-to-cart" data-id="${product.id}"><i class="fas fa-shopping-cart"></i></button>` : ''}
+      </div>
+    `;
+    productGrid.appendChild(productCard);
+
+    productCard.querySelector('.product-img').addEventListener('click', () => showProductPopup(product));
+    const cartButton = productCard.querySelector('.add-to-cart');
+    if (cartButton) {
+      cartButton.addEventListener('click', () => addToCart(product));
+    }
+  });
+}
+
+function displayNoProductsMessage() {
+  const productGrid = document.querySelector('.product-grid');
+  if (productGrid) {
     productGrid.innerHTML = '<p>No products available at the moment. Please check back later.</p>';
   }
-  
+}
+
 // Show product details in a popup
 function showProductPopup(product) {
   const popup = document.createElement('div');
@@ -98,10 +124,13 @@ function showProductPopup(product) {
   document.body.appendChild(popup);
 
   popup.querySelector('.close-btn').addEventListener('click', () => popup.remove());
-  popup.querySelector('.add-to-cart')?.addEventListener('click', () => {
-    addToCart(product);
-    popup.remove();
-  });
+  const addToCartBtn = popup.querySelector('.add-to-cart');
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', () => {
+      addToCart(product);
+      popup.remove();
+    });
+  }
 }
 
 // Add to cart
@@ -128,14 +157,17 @@ function saveCart() {
 // Update Mini Cart
 function updateMiniCart() {
   const cartIcon = document.querySelector('.cart');
-  cartIcon.innerHTML = `<i class="fa-solid fa-cart-shopping"></i><span>Cart (${cart.reduce((sum, item) => sum + item.quantity, 0)})</span>`;
-
-  const miniCart = document.querySelector('.mini-cart');
-  if (!miniCart) {
-    createMiniCart();
+  if (cartIcon) {
+    cartIcon.innerHTML = `<i class="fa-solid fa-cart-shopping"></i><span>Cart (${cart.reduce((sum, item) => sum + item.quantity, 0)})</span>`;
   }
 
-  const cartContent = document.querySelector('.mini-cart-content');
+  let miniCart = document.querySelector('.mini-cart');
+  if (!miniCart) {
+    createMiniCart();
+    miniCart = document.querySelector('.mini-cart');
+  }
+
+  const cartContent = miniCart.querySelector('.mini-cart-content');
   cartContent.innerHTML = '';
 
   cart.forEach(item => {
@@ -172,9 +204,13 @@ function createMiniCart() {
   `;
   document.body.appendChild(miniCart);
 
-  document.querySelector('.cart').addEventListener('click', () => {
-    miniCart.classList.toggle('open');
-  });
+  const cartElement = document.querySelector('.cart');
+  if (cartElement) {
+    cartElement.addEventListener('click', (e) => {
+      e.preventDefault();
+      miniCart.classList.toggle('open');
+    });
+  }
 }
 
 // Change Quantity
@@ -189,120 +225,123 @@ function changeQuantity(productId, delta) {
   updateMiniCart();
 }
 
-// Monitor Firebase Authentication
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUser = user;
-    console.log('User logged in:', user.email);
-  } else {
-    currentUser = null;
-    console.log('User logged out');
-  }
-});
-
-// Initial calls
-fetchProducts();
-updateMiniCart();
-
 function initGeolocation() {
-    if (navigator.geolocation) {
-      console.log("Geolocation is supported");
-      navigator.geolocation.getCurrentPosition(
-        showLocation,
-        showError,
-        {
-          enableHighAccuracy: true,  // Higher accuracy
-          timeout: 10000,            // 10-second timeout
-          maximumAge: 0              // No cached position
-        }
-      );
-    } else {
-      console.error("Geolocation not supported by this browser");
-      displayLocation("Geolocation not supported");
-    }
+  if (navigator.geolocation) {
+    console.log("Geolocation is supported");
+    navigator.geolocation.getCurrentPosition(
+      showLocation,
+      showError,
+      {
+        enableHighAccuracy: true,  // Higher accuracy
+        timeout: 10000,            // 10-second timeout
+        maximumAge: 0              // No cached position
+      }
+    );
+  } else {
+    console.error("Geolocation not supported by this browser");
+    displayLocation("Geolocation not supported");
   }
+}
+
+function showLocation(position) {
+  const latitude = position.coords.latitude;
+  const longitude = position.coords.longitude;
   
-  function showLocation(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    
-    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
-    
-    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
+  console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
   
-    fetch(nominatimUrl, { 
-      headers: { 
-        'Accept-Language': 'en',
-        'User-Agent': 'YourAppName/1.0'
-      }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then(data => {
-      const address = data.address || {};
-      let locationString = constructAddressString(address);
-      
-      console.log("Location data: ", data);
-      displayLocation(locationString);
-    })
-    .catch(error => {
-      console.error("Geocoding error:", error);
-      displayLocation("Error fetching location details");
+  const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
+
+  fetch(nominatimUrl, { 
+    headers: { 
+      'Accept-Language': 'en',
+      'User-Agent': 'YourAppName/1.0'
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    const address = data.address || {};
+    let locationString = constructAddressString(address);
+    
+    console.log("Location data: ", data);
+    displayLocation(locationString);
+  })
+  .catch(error => {
+    console.error("Geocoding error:", error);
+    displayLocation("Error fetching location details");
+  });
+}
+
+function constructAddressString(address) {
+  const houseNumber = address.house_number || "";
+  const street = address.road || address.street || "";
+  const suburb = address.suburb || "";
+  const city = address.city || "";
+  const state = address.state || "";
+  const country = address.country || "";
+
+  let locationParts = [];
+  if (houseNumber && street) {
+    locationParts.push(`${houseNumber} ${street}`);
+  } else if (street) {
+    locationParts.push(street);
+  }
+
+  if (suburb) locationParts.push(suburb);
+  if (city) locationParts.push(city);
+  if (state) locationParts.push(state);
+  if (country) locationParts.push(country);
+
+  return locationParts.join(", ") || "Location details unavailable";
+}
+
+function showError(error) {
+  let errorMessage = "";
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      errorMessage = "Location access denied by user.";
+      break;
+    case error.POSITION_UNAVAILABLE:
+      errorMessage = "Location information unavailable.";
+      break;
+    case error.TIMEOUT:
+      errorMessage = "Location request timed out.";
+      break;
+    default:
+      errorMessage = `Unknown error: ${error.message}`;
+  }
+  console.error("Geolocation error:", errorMessage);
+  displayLocation(errorMessage);
+}
+
+function displayLocation(text) {
+  const locationElement = document.getElementById('user-location');
+  if (locationElement) {
+    locationElement.textContent = text;
+  } else {
+    console.error("Location element not found");
+  }
+}
+
+// Initialize everything when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+  fetchProducts();
+  updateMiniCart();
+  initGeolocation();
+  
+  // Set up event listeners for filters
+  const filterBtn = document.getElementById('filter-btn');
+  if (filterBtn) {
+    filterBtn.addEventListener('click', function() {
+      // Implement price filtering logic here
+      const minPrice = document.getElementById('min-price').value;
+      const maxPrice = document.getElementById('max-price').value;
+      console.log(`Filtering products between ₹${minPrice} and ₹${maxPrice}`);
+      // You would typically call fetchProducts() with filter parameters here
     });
   }
-  
-  function constructAddressString(address) {
-    const houseNumber = address.house_number || "";
-    const street = address.road || address.street || "";
-    const suburb = address.suburb || "";
-    const city = address.city || "";
-    const state = address.state || "";
-    const country = address.country || "";
-  
-    let locationParts = [];
-    if (houseNumber && street) {
-      locationParts.push(`${houseNumber} ${street}`);
-    } else if (street) {
-      locationParts.push(street);
-    }
-  
-    if (suburb) locationParts.push(suburb);
-    if (city) locationParts.push(city);
-    if (state) locationParts.push(state);
-    if (country) locationParts.push(country);
-  
-    return locationParts.join(", ") || "Location details unavailable";
-  }
-  
-  function showError(error) {
-    let errorMessage = "";
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        errorMessage = "Location access denied by user.";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        errorMessage = "Location information unavailable.";
-        break;
-      case error.TIMEOUT:
-        errorMessage = "Location request timed out.";
-        break;
-      default:
-        errorMessage = `Unknown error: ${error.message}`;
-    }
-    console.error("Geolocation error:", errorMessage);
-    displayLocation(errorMessage);
-  }
-  
-  function displayLocation(text) {
-    const locationElement = document.getElementById('user-location');
-    if (locationElement) {
-      locationElement.textContent = text;
-    } else {
-      console.error("Location element not found");
-    }
-  }
-  
+});
