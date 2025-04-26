@@ -5,16 +5,6 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 document.addEventListener('DOMContentLoaded', function() {
   console.log("DOM fully loaded");
   
-  // Initialize Supabase (make sure this runs after the Supabase script is loaded)
-  let supabase;
-  try {
-    supabase = supabaseJs.createClient('https://takraoqafzlolecjgtgn.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs');
-    console.log("Supabase initialized successfully");
-  } catch (error) {
-    console.error("Error initializing Supabase:", error);
-    alert("Error connecting to database. Please reload the page or try again later.");
-  }
-
   // Reference to Firebase auth from the global firebaseApp
   const auth = getAuth(window.firebaseApp);
   console.log("Firebase Auth initialized");
@@ -78,26 +68,26 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   async function fetchProducts() {
-    if (!supabase) {
-      console.error("Supabase not initialized");
-      displayNoProductsMessage("Database connection error. Please reload the page.");
-      return;
-    }
-    
-    const { data, error } = await supabase.from('products').select('*');
-    
-    if (error) {
+    try {
+      console.log("Fetching products from Rootsy API...");
+      const response = await fetch('https://rootsy-1.onrender.com/products');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Products fetched successfully:", data);
+      
+      if (data && data.length > 0) {
+        renderProducts(data);
+      } else {
+        console.log("No products found.");
+        displayNoProductsMessage("No products available at the moment. Please check back later.");
+      }
+    } catch (error) {
       console.error('Error fetching products:', error);
       displayNoProductsMessage("Error fetching products. Please try again later.");
-      return;
-    }
-    
-    console.log("Products fetched successfully:", data);
-    if (data && data.length > 0) {
-      renderProducts(data);
-    } else {
-      console.log("No products found.");
-      displayNoProductsMessage("No products available at the moment. Please check back later.");
     }
   }
 
@@ -276,12 +266,26 @@ document.addEventListener('DOMContentLoaded', function() {
   function initializeEventListeners() {
     const filterBtn = document.getElementById('filter-btn');
     if (filterBtn) {
-      filterBtn.addEventListener('click', function() {
-        // Implement price filtering logic here
+      filterBtn.addEventListener('click', async function() {
+        // Get filter values
         const minPrice = document.getElementById('min-price').value;
         const maxPrice = document.getElementById('max-price').value;
         console.log(`Filtering products between ₹${minPrice} and ₹${maxPrice}`);
-        // You would typically call fetchProducts() with filter parameters here
+        
+        try {
+          // Call API with filter parameters
+          const response = await fetch(`https://rootsy-1.onrender.com/products?minPrice=${minPrice}&maxPrice=${maxPrice}`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          renderProducts(data);
+        } catch (error) {
+          console.error('Error filtering products:', error);
+          displayNoProductsMessage("Error applying filters. Please try again.");
+        }
       });
     }
     
