@@ -23,67 +23,175 @@ measurementId: "G-0Y636N5BPV"
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Email/password sign-up
+// JSONBin API setup
+const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Replace with your own bin URL
+
+// Sign-up process for email/password
 async function handleSignUp(event) {
-event.preventDefault();
-const fullName = document.getElementById('fullname').value;
-const email = document.getElementById('email').value;
-const password = document.getElementById('password').value;
-try {
-await auth.createUserWithEmailAndPassword(email, password);
-// Optionally, you can update the user's display name:
-if (auth.currentUser && fullName) {
-await auth.currentUser.updateProfile({ displayName: fullName });
-}
-window.location.href = "index.html";
-} catch (error) {
-alert(error.message);
-}
+  event.preventDefault();
+  const fullName = document.getElementById('fullname').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    // Optionally, you can update the user's display name:
+    if (auth.currentUser && fullName) {
+      await auth.currentUser.updateProfile({ displayName: fullName });
+    }
+    // After sign-up, open profile completion popup
+    document.getElementById('popup-email').value = email;
+    document.getElementById('popup-overlay').style.display = 'flex';
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 // Google sign-up
 async function signUpWithGoogle() {
-const provider = new firebase.auth.GoogleAuthProvider();
-try {
-await auth.signInWithPopup(provider);
-window.location.href = "index.html";
-} catch (error) {
-alert(error.message);
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await auth.signInWithPopup(provider);
+    // After Google sign-up, open profile completion popup
+    document.getElementById('popup-email').value = auth.currentUser.email;
+    document.getElementById('popup-overlay').style.display = 'flex';
+  } catch (error) {
+    alert(error.message);
+  }
 }
+
+// Save user data to JSONBin
+async function saveUserData(userData) {
+  try {
+    const response = await fetch(jsonBinUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.' // Replace with your JSONBin API key
+      },
+      body: JSON.stringify(userData)
+    });
+    
+    const result = await response.json();
+    if (result) {
+      // Redirect to shop after successful data save
+      window.location.href = "shop.html";
+    } else {
+      alert("Error saving data.");
+    }
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+}
+
+// Handle profile completion form submission
+async function submitUserData(event) {
+  event.preventDefault();
+  
+  const userData = {
+    email: document.getElementById('popup-email').value,
+    name: document.getElementById('popup-name').value,
+    phone_number: document.getElementById('popup-phone').value,
+    shipping_address: document.getElementById('popup-shipping').value,
+    billing_address: document.getElementById('popup-billing').value || document.getElementById('popup-shipping').value, 
+    date_of_birth: document.getElementById('popup-dob').value || null,
+    gender: document.getElementById('popup-gender').value || null
+  };
+  
+  // Save user data to JSONBin
+  await saveUserData(userData);
 }
 </script>
 </head>
 <body>
 <div class="container">
-<div class="signup-section">
-<h2>Create Account 👋</h2>
-<p class="subtitle">Welcome! Enter your details to start your journey with us.</p>
+  <div class="signup-section">
+    <h2>Create Account 👋</h2>
+    <p class="subtitle">Welcome! Enter your details to start your journey with us.</p>
 
-<form onsubmit="handleSignUp(event)">
-<label>Full Name</label>
-<input type="text" id="fullname" placeholder="Your name" required />
+    <form onsubmit="handleSignUp(event)">
+      <label>Full Name</label>
+      <input type="text" id="fullname" placeholder="Your name" required />
 
-<label>Email</label>
-<input type="email" id="email" placeholder="Example@email.com" required />
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Example@email.com" required />
 
-<label>Password</label>
-<input type="password" id="password" placeholder="at least 8 characters" required />
+      <label>Password</label>
+      <input type="password" id="password" placeholder="at least 8 characters" required />
 
-<button type="submit">Sign up</button>
-</form>
+      <button type="submit">Sign up</button>
+    </form>
 
-<div class="divider">Or</div>
+    <div class="divider">Or</div>
 
-<button class="google-btn" type="button" onclick="signUpWithGoogle()">Sign up with Google</button>
+    <button class="google-btn" type="button" onclick="signUpWithGoogle()">Sign up with Google</button>
 
-<p class="login">Already have an account? <a href="index.html">Sign in</a></p>
+    <p class="login">Already have an account? <a href="index.html">Sign in</a></p>
 
-<footer>© 2023 ALL RIGHTS RESERVED</footer>
+    <footer>© 2023 ALL RIGHTS RESERVED</footer>
+  </div>
+
+  <div class="image-section">
+    <img src="https://i.postimg.cc/tJtr8cJR/signup-visual.avif" alt="Artistic Poster" />
+  </div>
 </div>
 
-<div class="image-section">
-<img src="https://i.postimg.cc/tJtr8cJR/signup-visual.avif" alt="Artistic Poster" />
+<!-- Profile Completion Popup -->
+<div id="popup-overlay" class="popup-overlay">
+  <div class="popup-content">
+    <h2>Complete Your Profile</h2>
+    <p>Please provide the following information to continue:</p>
+    
+    <form id="user-data-form" onsubmit="submitUserData(event)">
+      <div class="form-group">
+        <label for="popup-email">Email <span class="required">*</span></label>
+        <input type="email" id="popup-email" readonly />
+      </div>
+      
+      <div class="form-group">
+        <label for="popup-name">Full Name <span class="required">*</span></label>
+        <input type="text" id="popup-name" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="popup-phone">Phone Number <span class="required">*</span></label>
+        <input type="tel" id="popup-phone" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="popup-shipping">Shipping Address <span class="required">*</span></label>
+        <textarea id="popup-shipping" rows="3" required></textarea>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="same-address" checked />
+        <label for="same-address">Billing address same as shipping</label>
+      </div>
+      
+      <div class="form-group">
+        <label for="popup-billing">Billing Address</label>
+        <textarea id="popup-billing" rows="3" disabled></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="popup-dob">Date of Birth</label>
+        <input type="date" id="popup-dob" />
+      </div>
+      
+      <div class="form-group">
+        <label for="popup-gender">Gender</label>
+        <select id="popup-gender">
+          <option value="">Prefer not to say</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      
+      <button type="submit">Complete Profile & Continue</button>
+    </form>
+  </div>
 </div>
-</div>
+
 </body>
 </html>

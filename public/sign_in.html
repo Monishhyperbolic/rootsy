@@ -1,421 +1,130 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login Page</title>
-  <link rel="stylesheet" href="sign_in.css" />
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login Page</title>
+    <link rel="stylesheet" href="sign_in.css" />
   
-  <!-- Supabase SDK - Fix: Using the correct CDN URL -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <link rel="stylesheet" href="sign_in.css" />
 
-  <style>
-    /* Popup Form Styles */
-    .popup-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .popup-content {
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 600px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    .popup-content h2 {
-      margin-top: 0;
-      color: #333;
-    }
-    
-    .popup-content .form-group {
-      margin-bottom: 15px;
-    }
-    
-    .popup-content label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    
-    .popup-content input, 
-    .popup-content select, 
-    .popup-content textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    
-    .popup-content .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .popup-content .checkbox-group input {
-      width: auto;
-    }
-    
-    .popup-content button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 15px;
-      width: 100%;
-    }
-    
-    .popup-content button:hover {
-      background-color: #45a049;
-    }
-    
-    .required {
-      color: red;
-    }
-  </style>
-
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
-      authDomain: "rootsy-ec110.firebaseapp.com",
-      projectId: "rootsy-ec110",
-      storageBucket: "rootsy-ec110.appspot.com",
-      messagingSenderId: "120254624474",
-      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
-      measurementId: "G-0Y636N5BPV"
-    };
-
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    
-    // Initialize Supabase - FIXED
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
-    // Fix: Using the correct global object from the CDN
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-    // Check if user exists in the database and has complete information
-    async function checkUserData(email) {
-      try {
-        console.log("Checking user data for:", email);
-        // Query the users table for the given email
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle();
-        
-        if (error) {
-          console.error("Error checking user data:", error);
-          return false;
-        }
-        
-        if (!data) {
-          // User not found in database
-          console.log("User not found in database");
-          return false;
-        } else {
-          // User found, check if they have required fields
-          const hasRequiredFields = !!(data.name && data.phone_number && data.shipping_address);
-          console.log("User found, has required fields:", hasRequiredFields);
-          return hasRequiredFields;
-        }
-      } catch (error) {
-        console.error("Exception when checking user data:", error);
-        return false;
-      }
-    }
-
-    // Save user data to database with auto-generated ID
-    async function saveUserData(userData) {
-      try {
-        console.log("Attempting to save user data:", userData);
-        
-        // Check if user already exists
-        const { data, error: countError } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', userData.email);
-        
-        if (countError) {
-          console.error("Error checking if user exists:", countError);
-          return false;
-        }
-        
-        let result;
-        
-        if (!data || data.length === 0) {
-          // Insert new user - ID will be auto-generated by Supabase
-          console.log("Inserting new user");
-          result = await supabase
-            .from('users')
-            .insert([
-              {
-                ...userData,
-                created_at: new Date().toISOString(),
-                loyalty_points: 0
-                // No need to specify id - Supabase will auto-generate it
-              }
-            ]);
-        } else {
-          // Update existing user
-          console.log("Updating existing user");
-          result = await supabase
-            .from('users')
-            .update(userData)
-            .eq('email', userData.email);
-        }
-        
-        if (result.error) {
-          console.error("Error saving user data:", result.error);
-          alert("Database error: " + result.error.message);
-          return false;
-        }
-        
-        console.log("User data saved successfully");
-        return true;
-      } catch (error) {
-        console.error("Exception when saving user data:", error);
-        alert("Error: " + error.message);
-        return false;
-      }
-    }
-
-    async function handleSignIn(event) {
-      event.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      try {
-        // Sign in the user with Firebase Auth
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        
-        // Check if user data exists and is complete in Supabase
-        const isDataComplete = await checkUserData(user.email);
-        
-        if (isDataComplete) {
-          // User data is complete, redirect to shop
-          window.location.href = "shop.html";
-        } else {
-          // User data is missing, show popup form
-          document.getElementById('popup-email').value = user.email;
-          document.getElementById('popup-overlay').style.display = 'flex';
-        }
-      } catch (error) {
-        alert(error.message);
-      }
-    }
-
-    async function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const result = await auth.signInWithPopup(provider);
-        const user = result.user;
-        
-        // Check if user data exists and is complete in Supabase
-        const isDataComplete = await checkUserData(user.email);
-        
-        if (isDataComplete) {
-          // User data is complete, redirect to shop
-          window.location.href = "shop.html";
-        } else {
-          // User data is missing, show popup form
-          document.getElementById('popup-email').value = user.email;
-          // Set name from Google account if available
-          if (user.displayName) {
-            document.getElementById('popup-name').value = user.displayName;
-          }
-          document.getElementById('popup-overlay').style.display = 'flex';
-        }
-      } catch (error) {
-        alert(error.message);
-      }
-    }
-
-    // Handle form submission
-    async function submitUserData(event) {
-      event.preventDefault();
-      
-      const userData = {
-        email: document.getElementById('popup-email').value,
-        name: document.getElementById('popup-name').value,
-        shipping_address: document.getElementById('popup-shipping').value,
-        billing_address: document.getElementById('popup-billing').value || document.getElementById('popup-shipping').value, // Use shipping address if billing not provided
-        date_of_birth: document.getElementById('popup-dob').value || null,
-        phone_number: document.getElementById('popup-phone').value,
-        newsletter_opt_in: document.getElementById('popup-newsletter').checked,
-        loyalty_opt_in: document.getElementById('popup-loyalty').checked,
-        gender: document.getElementById('popup-gender').value || null
+  
+  
+    <script>
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+        authDomain: "rootsy-ec110.firebaseapp.com",
+        projectId: "rootsy-ec110",
+        storageBucket: "rootsy-ec110.appspot.com",
+        messagingSenderId: "120254624474",
+        appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+        measurementId: "G-0Y636N5BPV"
       };
-      
-      // Show loading state
-      const submitButton = document.querySelector('#user-data-form button[type="submit"]');
-      const originalButtonText = submitButton.textContent;
-      submitButton.textContent = "Saving...";
-      submitButton.disabled = true;
-      
-      const saved = await saveUserData(userData);
-      
-      if (saved) {
-        // Successfully saved user data, redirect to shop
-        window.location.href = "shop.html";
-      } else {
-        // Reset button state
-        submitButton.textContent = originalButtonText;
-        submitButton.disabled = false;
+  
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+  
+      const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Replace with your bin ID
+      const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace with your API key (Master Key)
+  
+      async function checkUserInJsonBin(email) {
+        try {
+          const response = await fetch(jsonBinUrl, {
+            method: 'GET',
+            headers: {
+              'X-Master-Key': apiKey
+            }
+          });
+  
+          const data = await response.json();
+          // Loop through the data and check if the email exists
+          const userExists = data.find(user => user.email === email);
+          return userExists;
+        } catch (error) {
+          console.error('Error fetching data from JSONBin:', error);
+        }
       }
-    }
-
-    // Copy shipping address to billing address if the checkbox is checked
-    function copyShippingToBilling() {
-      const checkbox = document.getElementById('same-address');
-      const billingInput = document.getElementById('popup-billing');
-      
-      if (checkbox.checked) {
-        billingInput.value = document.getElementById('popup-shipping').value;
-        billingInput.disabled = true;
-      } else {
-        billingInput.disabled = false;
+  
+      async function handleSignIn(event) {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+  
+        try {
+          // Sign in the user with Firebase Auth
+          await auth.signInWithEmailAndPassword(email, password);
+  
+          // Check if user exists in JSONBin
+          const userExists = await checkUserInJsonBin(email);
+  
+          if (userExists) {
+            // If user exists in JSONBin, redirect to shop.html
+            window.location.href = "shop.html";
+          } else {
+            // If user doesn't exist, redirect to sign up page
+            window.location.href = "sign_up.html";
+          }
+        } catch (error) {
+          alert(error.message);
+        }
       }
-    }
-
-    // Update billing address when shipping address changes (if checkbox is checked)
-    function updateBillingAddress() {
-      const checkbox = document.getElementById('same-address');
-      if (checkbox.checked) {
-        document.getElementById('popup-billing').value = document.getElementById('popup-shipping').value;
+  
+      async function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+          await auth.signInWithPopup(provider);
+  
+          const userEmail = auth.currentUser.email;
+          // Check if user exists in JSONBin
+          const userExists = await checkUserInJsonBin(userEmail);
+  
+          if (userExists) {
+            window.location.href = "shop.html";
+          } else {
+            window.location.href = "sign_up.html";
+          }
+        } catch (error) {
+          alert(error.message);
+        }
       }
-    }
-  </script>
-</head>
-<body>
-  <div class="container">
-    <div class="login-section">
-      <h2>Welcome Back 👋</h2>
-      <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
-
-      <form onsubmit="handleSignIn(event)">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="Example@email.com" required />
-
-        <label>Password</label>
-        <input type="password" id="password" placeholder="at least 8 characters" required />
-        <div class="forgot"><a href="forgot_password.html">Forgot Password?</a></div>
-
-        <button type="submit">Sign in</button>
-      </form>
-
-      <div class="divider">Or</div>
-
-      <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
-      
-      <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
-
-      <footer>© 2023 ALL RIGHTS RESERVED</footer>
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="login-section">
+        <h2>Welcome Back 👋</h2>
+        <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
+  
+        <form onsubmit="handleSignIn(event)">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="Example@email.com" required />
+  
+          <label>Password</label>
+          <input type="password" id="password" placeholder="at least 8 characters" required />
+          <div class="forgot"><a href="forgot_password.html">Forgot Password?</a></div>
+  
+          <button type="submit">Sign in</button>
+        </form>
+  
+        <div class="divider">Or</div>
+  
+        <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
+        
+        <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
+  
+        <footer>© 2023 ALL RIGHTS RESERVED</footer>
+      </div>
+  
+      <div class="image-section">
+        <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
+      </div>
     </div>
-
-    <div class="image-section">
-      <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
-    </div>
-  </div>
-
-  <!-- User Data Collection Popup -->
-  <div id="popup-overlay" class="popup-overlay">
-    <div class="popup-content">
-      <h2>Complete Your Profile</h2>
-      <p>Please provide the following information to continue to our shop:</p>
-      
-      <form id="user-data-form" onsubmit="submitUserData(event)">
-        <div class="form-group">
-          <label for="popup-email">Email <span class="required">*</span></label>
-          <input type="email" id="popup-email" readonly />
-        </div>
-        
-        <div class="form-group">
-          <label for="popup-name">Full Name <span class="required">*</span></label>
-          <input type="text" id="popup-name" required />
-        </div>
-        
-        <div class="form-group">
-          <label for="popup-phone">Phone Number <span class="required">*</span></label>
-          <input type="tel" id="popup-phone" required />
-        </div>
-        
-        <div class="form-group">
-          <label for="popup-shipping">Shipping Address <span class="required">*</span></label>
-          <textarea id="popup-shipping" rows="3" required onchange="updateBillingAddress()"></textarea>
-        </div>
-        
-        <div class="form-group checkbox-group">
-          <input type="checkbox" id="same-address" onchange="copyShippingToBilling()" checked />
-          <label for="same-address">Billing address same as shipping</label>
-        </div>
-        
-        <div class="form-group">
-          <label for="popup-billing">Billing Address</label>
-          <textarea id="popup-billing" rows="3" disabled></textarea>
-        </div>
-        
-        <div class="form-group">
-          <label for="popup-dob">Date of Birth</label>
-          <input type="date" id="popup-dob" />
-        </div>
-        
-        <div class="form-group">
-          <label for="popup-gender">Gender</label>
-          <select id="popup-gender">
-            <option value="">Prefer not to say</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        
-        <div class="form-group checkbox-group">
-          <input type="checkbox" id="popup-newsletter" />
-          <label for="popup-newsletter">Subscribe to our newsletter</label>
-        </div>
-        
-        <div class="form-group checkbox-group">
-          <input type="checkbox" id="popup-loyalty" />
-          <label for="popup-loyalty">Join our loyalty program</label>
-        </div>
-        
-        <button type="submit">Complete Profile & Continue to Shop</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // This script runs after page load
-    document.addEventListener('DOMContentLoaded', function() {
-      // Test Supabase connection and log if successful
-      console.log("Page loaded, Supabase client initialized:", !!supabase);
-    });
-  </script>
-</body>
-</html>
+  </body>
+  </html>
+  

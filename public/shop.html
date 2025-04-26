@@ -1,3 +1,5 @@
+shop.html
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,9 +9,6 @@
   <title>Shop | Grocery Store</title>
   <link rel="stylesheet" href="shop.css">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-auth.js"></script>
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 <body>
@@ -36,13 +35,13 @@
       </div>
     <nav class="navbar">
         <div class="navbar-left">
-            <a href="index.html" class="logo">
+            <a href="#" class="logo">
                 <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
                 <span id="brand"></span>
             </a>
             <div class="delivery">
                 <span>Deliver to</span>
-                <div id="user-location">Fetching location...</div>
+                <div id="user-location"></div>
             </div>
         </div>
         <div class="navbar-center">
@@ -50,14 +49,9 @@
             <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
         <div class="navbar-right">
-          <a href="sign_in.html" class="account">
-            <i class="fa-solid fa-user"></i>
-            <span>Sign in</span> <!-- This will be replaced with the user's email when logged in -->
-          </a>
+            <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
             <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
             <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-            <button onclick="logout()">Log out</button>
-
         </div>
     </nav>
     <div class="navbar-links">
@@ -77,31 +71,47 @@
     <nav>
       <p class="breadcrumb"><a href="index.html">Home</a>> <a href="shop.html">shop</a></p>
 
-
+      <div class="filter-section">
+        <h3> Price filter</h3>
+        <div class="price-filter">
+          <input type="number" id="min-price" value="0"> -
+          <input type="number" id="max-price" value="30">
+          <input type="range" min="0" max="30" value="0" id="range-min">
+          <input type="range" min="0" max="30" value="30" id="range-max">
+          <button id="filter-btn">Filter</button>
+        </div>
+      </div>
 
       <div class="filter-section">
         <h3>Product Categories</h3>
         <ul class="categories">
-          <li><input type="checkbox" checked> Vegetables</li>
-          <li><input type="checkbox" checked> Fruits</li>
-          <li><input type="checkbox" checked> Handicrafts & Artisanal Goods</li>
-          <li><input type="checkbox" checked> Textiles</li>
-          <li><input type="checkbox" checked> Pottery & Ceramics</li>
-          <li><input type="checkbox" checked> Woodcrafts</li>
-          <li><input type="checkbox" checked> Jewelry</li>
-          <li><input type="checkbox" checked> Paintings & Wall Art</li>
-          <li><input type="checkbox" checked> Basketry & Weaving</li>
-          <li><input type="checkbox" checked> Agricultural Products</li>
-          <li><input type="checkbox" checked> Fresh Fruits & Vegetables</li>
-          <li><input type="checkbox" checked> Grains & Pulses</li>
-          <li><input type="checkbox" checked> Spices & Herbs</li>
-          <li><input type="checkbox" checked> Organic Produce</li>
-          <li><input type="checkbox" checked> Dairy & Animal Products</li>
-          <li><input type="checkbox" checked> Honey & Natural Sweeteners</li>
-          <li><input type="checkbox" checked> Homemade & Processed Foods</li>
+          <li><input type="checkbox" checked> Fruits & Vegetables</li>
+          <li><input type="checkbox"> Baby & Pregnancy</li>
+          <li><input type="checkbox"> Beverages</li>
+          <li><input type="checkbox"> Meats & Seafood</li>
+          <li><input type="checkbox"> Biscuits & Snacks</li>
+          <li><input type="checkbox"> Breads & Bakery</li>
+          <li><input type="checkbox"> Breakfast & Dairy</li>
+          <li><input type="checkbox"> Frozen Foods</li>
+          <li><input type="checkbox"> Grocery & Staples</li>
+          <li><input type="checkbox"> Healthcare</li>
+          <li><input type="checkbox"> Household Needs</li>
         </ul>
       </div>
 
+      <div class="filter-section">
+        <h3>Filter by</h3>
+        <div class="color-option">
+          <span class="color green"></span> organic
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3>Filter by Brand</h3>
+        <div>
+          <input type="checkbox"> Fresh
+        </div>
+      </div>
 
       <div class="filter-section">
         <h3>Product Status</h3>
@@ -126,6 +136,7 @@
         <select class="sort-by">
           <option>Sort by latest</option>
           <option>Sort by price</option>
+          <option>Sort by popularity</option>
         </select>
         <select class="show-items">
           <option>Show 20 items</option>
@@ -150,6 +161,9 @@
         </div>
       </div>
       
+
+      <!-- Repeat product cards here -->
+      <!-- (Add more product-card divs) -->
     </div>
 
   </main>
@@ -204,68 +218,125 @@
 </footer>
 
 <script >
- function addToCart(event) {
-  const button = event.target.closest('.add-to-cart'); // Find the clicked button
-  if (!button) return; // If the clicked element is not the button, exit the function
-  
-  // Get the product card data (this can be customized based on your product attributes)
-  const productCard = button.closest('.product-card');
-  const productName = productCard.querySelector('h4').textContent;
-  const productImage = productCard.querySelector('img').src;
-  const productPrice = productCard.querySelector('.price .new-price').textContent.trim(); // Assuming you're using the new price for display
-  const productCategory = productCard.getAttribute('data-category');
-  const productStock = productCard.getAttribute('data-stock');
-  const productOnSale = productCard.getAttribute('data-on-sale');
+ function initGeolocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          showLocation,
+          showError,
+          {
+            enableHighAccuracy: true,  // Changed to true for better accuracy
+            timeout: 10000,           // Added timeout setting (10 seconds)
+            maximumAge: 0             // Don't use cached position
+          }
+        );
+      } else {
+        displayLocation("Geolocation not supported by this browser");
+      }
+    }
 
-  // Create a product object
-  const product = {
-    name: productName,
-    image_url: productImage,
-    price: productPrice,
-    category: productCategory,
-    stock: productStock,
-    onSale: productOnSale,
-    quantity: 1 // Start with 1 quantity
-  };
+    function showLocation(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
 
-  // Get cart from local storage or initialize an empty array if cart is not found
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
+      // Reverse geocoding with OpenStreetMap Nominatim API
+      const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
 
-  // Check if the product already exists in the cart
-  const existingProductIndex = cart.findIndex(item => item.name === product.name && item.price === product.price);
+      fetch(nominatimUrl, {
+        headers: {
+          'Accept-Language': 'en',
+          'User-Agent': 'GeolocationApp/1.0' // Add User-Agent for API etiquette
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const address = data.address || {};
 
-  if (existingProductIndex > -1) {
-    // Product already in cart, update quantity
-    cart[existingProductIndex].quantity += 1;
-  } else {
-    // Product not in cart, add it
-    cart.push(product);
-  }
+          // Address components
+          const houseNumber = address.house_number || "";
+          const street = address.road || address.street || address.pedestrian || address.footway || address.path || "";
+          const suburb = address.suburb || address.neighbourhood || address.quarter || "";
+          const city = address.city || address.town || address.village || address.hamlet || "";
+          const county = address.county || address.state_district || "";
+          const state = address.state || "";
+          const country = address.country || "";
+          const postcode = address.postcode || "";
 
-  // Save the updated cart to local storage
-  localStorage.setItem('cart', JSON.stringify(cart));
+          // Constructing the address string
+          let locationParts = [];
 
-  // Optionally, provide feedback to the user (like showing a toast or changing the cart icon)
-  alert(`${product.name} has been added to your cart!`);
-}
+          if (houseNumber && street) {
+            locationParts.push(`${houseNumber} ${street}`);
+          } else if (street) {
+            locationParts.push(street);
+          }
 
+          if (suburb) {
+            locationParts.push(suburb);
+          }
 
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
-      authDomain: "rootsy-ec110.firebaseapp.com",
-      projectId: "rootsy-ec110",
-      storageBucket: "rootsy-ec110.appspot.com",
-      messagingSenderId: "120254624474",
-      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
-      measurementId: "G-0Y636N5BPV"
-  };
+          if (city) {
+            locationParts.push(city);
+          }
 
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+          if (!city && county) {
+            locationParts.push(county);
+          }
 
+          if (state && state !== city) {
+            locationParts.push(state);
+          }
 
+          const locationString = locationParts.length > 0
+            ? locationParts.join(", ")
+            : data.display_name || "Location details unavailable";
+
+          console.log(`Coordinates: ${latitude}, ${longitude}`);
+          console.log("Full address data:", data);
+
+          displayLocation(locationString);
+        })
+        .catch(error => {
+          console.error("Geocoding error:", error);
+          displayLocation("Location service error");
+        });
+    }
+
+    function showError(error) {
+      let message = "";
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          message = "Location access denied by user";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          message = "Location information unavailable";
+          break;
+        case error.TIMEOUT:
+          message = "Location request timed out";
+          break;
+        default:
+          message = `Unknown location error: ${error.message}`;
+      }
+      console.error("Geolocation error:", error);
+      displayLocation(message);
+    }
+
+    function displayLocation(text) {
+      const locationElement = document.getElementById('user-location');
+      if (locationElement) {
+        locationElement.textContent = text;
+      } else {
+        console.error("Location display element not found");
+      }
+    }
+
+    // Automatically get the location when the page loads
+    window.onload = initGeolocation;
+ 
   async function fetchProducts() {
     const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4'; // Replace YOUR_BIN_ID
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace YOUR_API_KEY if needed
@@ -273,333 +344,66 @@
     try {
       const response = await fetch(url, {
         headers: {
-          'X-Master-Key': apiKey
+          'X-Master-Key': apiKey // Remove this object if your bin is public
         }
       });
       const data = await response.json();
-      allProducts = data.record;
-      renderProducts(allProducts);
+      const products = data.record; // Assuming record directly contains an array of products
+
+      const productGrid = document.querySelector('.product-grid');
+      productGrid.innerHTML = ''; // Clear default content
+
+      products.forEach(product => {
+        const productCard = `
+          <div class="product-card">
+            ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
+            <img src="${product.image_url}" alt="${product.name}">
+            <h4>${product.name}</h4>
+            <div class="price">
+              <span class="new-price">₹${product.price}</span>
+            </div>
+            <p class="description">${product.description}</p>
+            <p class="seller">Sold by: ${product.seller_name}</p>
+            <div class="product-actions">
+              <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+              <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
+                <i class="fas fa-shopping-cart"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        productGrid.insertAdjacentHTML('beforeend', productCard);
+      });
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
   }
-  auth.onAuthStateChanged((user) => {
-    const signInElement = document.querySelector('.account span'); // Select the sign-in span
-    
-    if (user) {
-      // If the user is logged in, show the user's email
-      signInElement.textContent = user.email; // Replace the text with the user's email
-    } else {
-      // If the user is not logged in, show "Sign in"
-      signInElement.textContent = "Sign in";
-    }
-  });
 
-  // Optional: If you want to log the user out (if you have a logout button)
-  function logout() {
-    auth.signOut().then(() => {
-      console.log('User logged out');
-    }).catch((error) => {
-      console.error('Logout Error: ', error);
-    });
-  }
-  function renderProducts(products) {
-    const productGrid = document.querySelector('.product-grid');
-    productGrid.innerHTML = '';
-
-    if (products.length === 0) {
-      productGrid.innerHTML = `<p>No products found matching the filters.</p>`;
-      return;
-    }
-
-    products.forEach(product => {
-      const productCard = `
-        <div class="product-card">
-          ${product.stock > 0 ? `<div class="discount-badge">New</div>` : `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
-          <img src="${product.image_url}" alt="${product.name}">
-          <h4>${product.name}</h4>
-          <div class="price">
-            <span class="new-price">₹${product.price}</span>
-          </div>
-          <p class="description">${product.description}</p>
-          <p class="seller">Sold by: ${product.seller_name}</p>
-          <div class="product-actions">
-            <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-            <button class="add-to-cart" ${product.stock > 0 ? '' : 'disabled'}>
-              <i class="fas fa-shopping-cart"></i>
-            </button>
-          </div>
-        </div>
-      `;
-      productGrid.insertAdjacentHTML('beforeend', productCard);
-    });
-  }
-
-  function applyFilters() {
-    const min = parseFloat(document.getElementById('min-price').value) || 0;
-    const max = parseFloat(document.getElementById('max-price').value) || 999999;
-    const checkedCategories = Array.from(document.querySelectorAll('.categories input:checked'))
-                                   .map(checkbox => checkbox.parentElement.textContent.trim());
-
-    let filtered = allProducts.filter(product => {
-      const price = parseFloat(product.price);
-      const category = product.category_name;
-
-      const inPriceRange = price >= min && price <= max;
-      const inCategory = checkedCategories.length === 0 || checkedCategories.includes(category);
-
-      return inPriceRange && inCategory;
-    });
-
-    renderProducts(filtered);
-  }
-
-  // Event Listeners
-  document.getElementById('filter-btn').addEventListener('click', applyFilters);
-
-  document.querySelectorAll('.categories input').forEach(checkbox => {
-    checkbox.addEventListener('change', applyFilters);
-  });
-
-  document.querySelector('.clear-filters').addEventListener('click', () => {
-    document.getElementById('min-price').value = 0;
-    document.getElementById('max-price').value = 9999;
-    document.getElementById('range-min').value = 0;
-    document.getElementById('range-max').value = 9999;
-    document.querySelectorAll('.categories input').forEach(checkbox => checkbox.checked = false);
-    renderProducts(allProducts);
-  });
-
-  // Keep price input and slider synced
-  const rangeMin = document.getElementById('range-min');
-  const rangeMax = document.getElementById('range-max');
-  const minPrice = document.getElementById('min-price');
-  const maxPrice = document.getElementById('max-price');
-
-  rangeMin.addEventListener('input', () => {
-    minPrice.value = rangeMin.value;
-  });
-  rangeMax.addEventListener('input', () => {
-    maxPrice.value = rangeMax.value;
-  });
-  minPrice.addEventListener('input', () => {
-    rangeMin.value = minPrice.value;
-  });
-  maxPrice.addEventListener('input', () => {
-    rangeMax.value = maxPrice.value;
-  });
-
+  // Call when page loads
   fetchProducts();
 
 
-function initGeolocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        showLocation,
-        showError,
-        {
-          enableHighAccuracy: true,  // Changed to true for better accuracy
-          timeout: 10000,           // Added timeout setting (10 seconds)
-          maximumAge: 0             // Don't use cached position
-        }
-      );
-    } else {
-      displayLocation("Geolocation not supported by this browser");
-    }
-  }
-  
-  function showLocation(position) {
-    const latitude = position.coords.latitude;
-    const longitude = position.coords.longitude;
-    
-    // Added zoom parameter for more detailed results
-    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`;
-    
-    fetch(nominatimUrl, { 
-      headers: { 
-        'Accept-Language': 'en',
-        'User-Agent': 'YourAppName/1.0' // Add User-Agent for API etiquette
-      }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        const address = data.address || {};
-        
-        // More comprehensive address component collection
-        const houseNumber = address.house_number || "";
-        const street = address.road || address.street || address.pedestrian || address.footway || address.path || "";
-        const suburb = address.suburb || address.neighbourhood || address.quarter || "";
-        const city = address.city || address.town || address.village || address.hamlet || "";
-        const county = address.county || address.state_district || "";
-        const state = address.state || "";
-        const country = address.country || "";
-        const postcode = address.postcode || "";
-        
-        // Format a detailed address string
-        let locationParts = [];
-        
-        // Add house number and street if available
-        if (houseNumber && street) {
-          locationParts.push(`${houseNumber} ${street}`);
-        } else if (street) {
-          locationParts.push(street);
-        }
-        
-        // Add suburb if available
-        if (suburb) {
-          locationParts.push(suburb);
-        }
-        
-        // Add city/town
-        if (city) {
-          locationParts.push(city);
-        }
-        
-        // Add county if city is not available
-        if (!city && county) {
-          locationParts.push(county);
-        }
-        
-        // Add state if different from city
-        if (state && state !== city) {
-          locationParts.push(state);
-        }
-        
-        // Fallback options if we couldn't construct a good address
-        const displayName = data.display_name || "";
-        
-        const locationString = locationParts.length > 0 
-          ? locationParts.join(", ")
-          : displayName || "Location details unavailable";
-        
-        // Also log coordinates for debugging
-        console.log(`Coordinates: ${latitude}, ${longitude}`);
-        console.log("Full address data:", data);
-        
-        displayLocation(locationString);
-      })
-      .catch(error => {
-        console.error("Geocoding error:", error);
-        displayLocation("Location service error");
-      });
-  }
-  
-  function showError(error) {
-    let message = "";
-    switch(error.code) {
-      case error.PERMISSION_DENIED:
-        message = "Location access denied by user";
-        break;
-      case error.POSITION_UNAVAILABLE:
-        message = "Location information unavailable";
-        break;
-      case error.TIMEOUT:
-        message = "Location request timed out";
-        break;
-      default:
-        message = `Unknown location error: ${error.message}`;
-    }
-    console.error("Geolocation error:", error);
-    displayLocation(message);
-  }
-  
-  function displayLocation(text) {
-    const locationElement = document.getElementById('user-location');
-    if (locationElement) {
-      locationElement.textContent = text;
-    } else {
-      console.error("Location display element not found");
-    }
-  }
-  
-  // Call this on page load or after auth
-  window.addEventListener('DOMContentLoaded', initGeolocation);
-function signOutUser() {
-  auth.signOut().then(function() {
-    window.location.href = "sign_in.html";
-  });
-}
-const categoryCheckboxes = document.querySelectorAll('.category');
-const statusCheckboxes = document.querySelectorAll('.status');
-const clearFiltersButton = document.querySelector('.clear-filters');
-const sortBySelect = document.querySelector('.sort-by');
-const showItemsSelect = document.querySelector('.show-items');
-const productCards = document.querySelectorAll('.product-card');
+const rangeMin = document.getElementById('range-min');
+const rangeMax = document.getElementById('range-max');
+const minPrice = document.getElementById('min-price');
+const maxPrice = document.getElementById('max-price');
 
-// Function to filter products
-function filterProducts() {
-  // Get selected categories
-  const selectedCategories = Array.from(categoryCheckboxes)
-    .filter(checkbox => checkbox.checked)
-    .map(checkbox => checkbox.parentElement.textContent.trim());
-    
-  // Get selected status
-  const inStockChecked = document.getElementById('in-stock').checked;
-  const onSaleChecked = document.getElementById('on-sale').checked;
-
-  // Loop through each product and hide/show based on filters
-  productCards.forEach(card => {
-    const category = card.getAttribute('data-category');
-    const isInStock = card.getAttribute('data-stock') === 'in-stock';
-    const isOnSale = card.getAttribute('data-on-sale') === 'true';
-
-    // Check if product matches selected filters
-    const categoryMatch = selectedCategories.includes(category);
-    const stockMatch = inStockChecked ? isInStock : true; // Show all if in stock is unchecked
-    const saleMatch = onSaleChecked ? isOnSale : true; // Show all if on sale is unchecked
-
-    // Show or hide product card based on filters
-    if (categoryMatch && stockMatch && saleMatch) {
-      card.style.display = 'block';
-    } else {
-      card.style.display = 'none';
-    }
-  });
-}
-
-// Function to clear filters
-clearFiltersButton.addEventListener('click', () => {
-  categoryCheckboxes.forEach(checkbox => checkbox.checked = true);
-  statusCheckboxes.forEach(checkbox => checkbox.checked = false);
-  filterProducts(); // Reapply filters after clearing
+rangeMin.addEventListener('input', () => {
+  minPrice.value = rangeMin.value;
 });
 
-// Function to handle sorting
-sortBySelect.addEventListener('change', () => {
-  const sortBy = sortBySelect.value;
-  // Sorting logic here (e.g., by price, latest, or popularity)
-  // You can implement sorting logic based on your product data
-  console.log(`Sort by: ${sortBy}`);
+rangeMax.addEventListener('input', () => {
+  maxPrice.value = rangeMax.value;
 });
 
-// Function to handle item count
-showItemsSelect.addEventListener('change', () => {
-  const showItems = showItemsSelect.value;
-  console.log(`Show: ${showItems}`);
-  // You can modify how many items to display based on this value
-  // For example, hide extra items beyond the selected count
+minPrice.addEventListener('input', () => {
+  rangeMin.value = minPrice.value;
 });
 
-// Apply filters when category or status checkbox changes
-categoryCheckboxes.forEach(checkbox => {
-  checkbox.addEventListener('change', filterProducts);
+maxPrice.addEventListener('input', () => {
+  rangeMax.value = maxPrice.value;
 });
-
-statusCheckboxes.forEach(checkbox => {
-  checkbox.addEventListener('change', filterProducts);
-});
-
-// Initial call to apply filters on page load
-filterProducts();
-
 
 </script>
-
-
 </body>
 </html>

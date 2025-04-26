@@ -518,15 +518,4 @@ body {
     height: 25px;
     margin: 0 5px;
   }
-  .product-card .description {
-    font-size: 0.9rem;
-    color: #666;
-    margin-top: 5px;
-  }
   
-  .product-card .seller {
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 3px;
-  }
-    
