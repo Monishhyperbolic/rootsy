@@ -125,24 +125,7 @@ shop.html
     </div>
 
     <div class="product-grid">
-      <!-- Product Card Example -->
-      <div class="product-card">
-        <div class="discount-badge">20% OFF</div>
-        <img src="https://i.postimg.cc/3wyqsbS9/orange.jpg" alt="Product">
-        <h4>Fresh Nagpur Oranges</h4>
-        <div class="price">
-          <span class="new-price">₹70</span>
-          <span class="old-price">₹90</span>
-        </div>
-        <div class="product-actions">
-          <span class="stock">IN STOCK</span>
-          <button class="add-to-cart"><i class="fas fa-shopping-cart"></i></button>
-        </div>
-      </div>
       
-
-      <!-- Repeat product cards here -->
-      <!-- (Add more product-card divs) -->
     </div>
 
   </main>
@@ -345,7 +328,7 @@ shop.html
             <p class="seller">Sold by: ${product.seller_name}</p>
             <div class="product-actions">
               <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-              <button class="add-to-cart" onclick= "addToCart(${product.name}, '${product.price}', '${product.seller_name}', ${product.image_url})" ${product.stock > 0 ? '' : 'disabled'}>
+              <button class="add-to-cart"  ${product.stock > 0 ? '' : 'disabled'}>
                 <i class="fas fa-shopping-cart"></i>
               </button>
             </div>
@@ -356,96 +339,8 @@ shop.html
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
-  }function addToCart(name, price, seller_name, image_url) {
-  const product = {
-    name: name,
-    price: price,
-    seller_name: seller_name,
-    image_url: image_url, // Store the image URL
-    quantity: 1 // Initialize quantity as 1 when adding to the cart
-  };
-
-  // Retrieve the existing cart from localStorage (if any)
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-  // Check if product already exists in the cart by matching name and seller
-  const existingProductIndex = cart.findIndex(item => item.name === product.name && item.seller_name === product.seller_name);
-  
-  if (existingProductIndex > -1) {
-    // If the product already exists in the cart, just update the quantity
-    cart[existingProductIndex].quantity += 1;
-  } else {
-    // If the product is not in the cart, add it
-    cart.push(product);
   }
-
-  // Store the updated cart in localStorage
-  localStorage.setItem('cart', JSON.stringify(cart));
-
-  // Update the cart display
-  updateCartDisplay();
-}
-
-// Function to update the cart display
-function updateCartDisplay() {
-  const cart = JSON.parse(localStorage.getItem('cart')) || [];
-  const cartItemsContainer = document.getElementById('cart-items');
-
-  cartItemsContainer.innerHTML = ''; // Clear the cart items container before displaying new items
-
-  if (cart.length === 0) {
-    cartItemsContainer.innerHTML = '<li>Your cart is empty.</li>';
-  } else {
-    cart.forEach(product => {
-      const listItem = document.createElement('li');
-      listItem.classList.add('cart-item');
-      
-      // Create an image element for the product image
-      const imageElement = document.createElement('img');
-      imageElement.src = product.image_url; // Use the product image URL
-      imageElement.alt = product.name;
-      imageElement.style.width = '50px'; // Optional: Set image size
-      imageElement.style.height = '50px'; // Optional: Set image size
-
-      // Create a div for product details
-      const productDetails = document.createElement('div');
-      productDetails.innerHTML = `${product.name} - $${product.price} (x${product.quantity})`;
-
-      // Append the image and details to the list item
-      listItem.appendChild(imageElement);
-      listItem.appendChild(productDetails);
-      
-      // Append the list item to the container
-      cartItemsContainer.appendChild(listItem);
-    });
-  }
-}
-
-window.onload = function() {
-  updateCartDisplay();
-};
-  
-
-const rangeMin = document.getElementById('range-min');
-const rangeMax = document.getElementById('range-max');
-const minPrice = document.getElementById('min-price');
-const maxPrice = document.getElementById('max-price');
-
-rangeMin.addEventListener('input', () => {
-  minPrice.value = rangeMin.value;
-});
-
-rangeMax.addEventListener('input', () => {
-  maxPrice.value = rangeMax.value;
-});
-
-minPrice.addEventListener('input', () => {
-  rangeMin.value = minPrice.value;
-});
-
-maxPrice.addEventListener('input', () => {
-  rangeMax.value = maxPrice.value;
-});
+window.onload = function()
 
 </script>
 </body>
