@@ -484,3 +484,125 @@ body {
     box-shadow: 0 0 8px rgba(0,0,0,0.2);
   }
   
+
+
+
+
+
+
+
+
+
+
+
+/* Cart Page */
+.cart-page {
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  max-width: 900px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#cart-items-container {
+  margin-bottom: 30px;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.cart-item span {
+  font-size: 16px;
+  color: #333;
+}
+
+.cart-item button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+/* Add to Wishlist Button */
+.cart-item button:nth-child(3) {
+  background-color: #ff69b4; /* Pink */
+  color: white;
+}
+
+.cart-item button:nth-child(3):hover {
+  background-color: #ff3385;
+}
+
+/* Remove Button */
+.cart-item button:nth-child(4) {
+  background-color: #ff4500; /* Orange */
+  color: white;
+}
+
+.cart-item button:nth-child(4):hover {
+  background-color: #ff0000;
+}
+
+/* Checkout Button */
+.checkout-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background-color: #28a745; /* Green */
+  color: white;
+  text-align: center;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.checkout-btn:hover {
+  background-color: #218838;
+}
+
+/* Cart Summary */
+#cart-summary {
+  font-size: 18px;
+  text-align: right;
+  margin-top: 20px;
+}
+
+#cart-summary p {
+  margin: 5px 0;
+}
+
+#total-items, #total-price {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cart-item button {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    margin-top: 15px;
+  }
+}
