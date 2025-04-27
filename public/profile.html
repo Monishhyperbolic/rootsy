@@ -200,72 +200,112 @@
         document.getElementById('user-country').value = '';
       }
     }
-
-    // Update user data
     async function updateUserData() {
-      const user = firebase.auth().currentUser;
-      const updatedUserData = {
-        name: document.getElementById('user-name').value,
-        email: user.email, // Ensure we store the email for new users
-        address: {
-          street: document.getElementById('user-street').value,
-          city: document.getElementById('user-city').value,
-          postal_code: document.getElementById('user-postal-code').value,
-          country: document.getElementById('user-country').value
-        }
-      };
+      try {
+        const user = firebase.auth().currentUser;
+        const updatedUserData = {
+          name: document.getElementById('user-name').value,
+          email: user.email, // Ensure we store the email for new users
+          address: {
+            street: document.getElementById('user-street').value,
+            city: document.getElementById('user-city').value,
+            postal_code: document.getElementById('user-postal-code').value,
+            country: document.getElementById('user-country').value
+          }
+        };
 
-      // Fetch existing data from JSONBin
-      const response = await fetch(jsonBinUrl, {
-        method: 'GET',
-        headers: {
-          'X-Master-Key': apiKey
-        }
-      });
-      const data = await response.json();
-      const userExists = data.users.some(user => user.email === updatedUserData.email);
-
-      if (userExists) {
-        // If user exists, update data
-        const updateResponse = await fetch(jsonBinUrl, {
-          method: 'PUT',
+        // Fetch existing data from JSONBin
+        const response = await fetch(jsonBinUrl, {
+          method: 'GET',
           headers: {
-            'X-Master-Key': apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            users: data.users.map(user => {
-              if (user.email === updatedUserData.email) {
-                return updatedUserData; // Replace existing user data with updated data
-              }
-              return user; // Keep other users unchanged
+            'X-Master-Key': apiKey
+          }
+        });
+
+        const data = await response.json();
+        console.log('Current Data:', data); // Debugging: Log the current data
+
+        const userExists = data.users.some(user => user.email === updatedUserData.email);
+        console.log('User Exists:', userExists); // Debugging: Log if user exists
+
+        if (userExists) {
+          // If user exists, update their data
+          const updateResponse = await fetch(jsonBinUrl, {
+            method: 'PUT',
+            headers: {
+              'X-Master-Key': apiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              users: data.users.map(user => {
+                if (user.email === updatedUserData.email) {
+                  return updatedUserData; // Replace existing user data with updated data
+                }
+                return user; // Keep other users unchanged
+              })
             })
-          })
-        });
-        if (updateResponse.ok) {
-          alert("Your profile has been updated successfully.");
+          });
+          if (updateResponse.ok) {
+            alert("Your profile has been updated successfully.");
+          } else {
+            alert("There was an error updating your profile.");
+          }
         } else {
-          alert("There was an error updating your profile.");
+          // If the user doesn't exist, add their data
+          const addUserResponse = await fetch(jsonBinUrl, {
+            method: 'PUT',
+            headers: {
+              'X-Master-Key': apiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              users: [...data.users, updatedUserData] // Add new user data
+            })
+          });
+          if (addUserResponse.ok) {
+            alert("Welcome! Your profile has been created.");
+          } else {
+            alert("There was an error creating your profile.");
+          }
         }
-      } else {
-        // If user doesn't exist, add new user data
-        const addUserResponse = await fetch(jsonBinUrl, {
-          method: 'PUT',
-          headers: {
-            'X-Master-Key': apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            users: [...data.users, updatedUserData] // Add new user data
-          })
-        });
-        if (addUserResponse.ok) {
-          alert("Welcome! Your profile has been created.");
-        } else {
-          alert("There was an error creating your profile.");
-        }
+      } catch (error) {
+        console.error('Error updating user data:', error);
       }
     }
+    // Function to handle user logout
+function logout() {
+    firebase.auth().signOut().then(() => {
+        // Redirect the user to the login page after logging out
+        window.location.href = 'sign_in.html';
+    }).catch((error) => {
+        // Handle any error that occurs during logout
+        console.error('Error during logout: ', error);
+        alert('There was an error logging out. Please try again.');
+    });
+}
+// Function to handle password reset
+function resetPassword() {
+  const user = firebase.auth().currentUser;
+  
+  if (user) {
+    const email = user.email;
+    firebase.auth().sendPasswordResetEmail(email)
+      .then(() => {
+        // Notify the user that a reset email has been sent
+        alert('Password reset email sent. Please check your inbox.');
+      })
+      .catch((error) => {
+        // Handle errors (e.g., user not found, network issues, etc.)
+        console.error('Error sending password reset email:', error);
+        alert('There was an error sending the password reset email. Please try again.');
+      });
+  } else {
+    alert('No user is signed in. Please sign in first.');
+  }
+}
+
+
+    
   </script>
 </body>
 </html>
