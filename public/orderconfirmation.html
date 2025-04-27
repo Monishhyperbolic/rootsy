@@ -51,7 +51,7 @@
 </head>
 <body>
 
-  <!-- Header (same as checkout.html) -->
+  <!-- Header -->
   <header>
     <div class="top-banner">
         <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
@@ -116,7 +116,7 @@
     </div>
   </div>
 
-  <!-- Footer (same as checkout.html) -->
+  <!-- Footer -->
   <footer>
     <div class="newsletter">
         <p>Join our newsletter for exclusive discounts!</p>
@@ -166,7 +166,7 @@
   </footer>
 
   <script>
-    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116'; // Replace with your orders bin ID
+    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
     async function fetchOrderDetails() {
@@ -187,7 +187,7 @@
         if (order) {
           document.getElementById('order-details').innerHTML = `
             <p><strong>Order ID:</strong> ${order.orderId}</p>
-            <p><strong>Total Amount:</strong> $${order.totalAmount.toFixed(2)}</p>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount.toFixed(2)}</p>
             <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
             <p><strong>Estimated Delivery:</strong> ${new Date(order.deliveryDate).toLocaleDateString()}</p>
             <p><strong>Shipping Address:</strong> ${order.user.shippingAddress.addressLine1}, ${order.user.shippingAddress.city}, ${order.user.shippingAddress.state ? order.user.shippingAddress.state + ', ' : ''}${order.user.shippingAddress.postalCode}, ${order.user.shippingAddress.country}</p>
@@ -196,7 +196,7 @@
             <h3>Items:</h3>
             <ul>
               ${order.products.map(item => `
-                <li>${item.name} - Quantity: ${item.quantity} - $${item.totalPrice.toFixed(2)}</li>
+                <li>${item.name} - Quantity: ${item.quantity} - ₹${item.totalPrice.toFixed(2)}</li>
               `).join('')}
             </ul>
           `;
