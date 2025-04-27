@@ -1006,3 +1006,59 @@ to { text-shadow: 0 0 15px #ff9900; }
     grid-template-columns: repeat(1, 1fr); /* 1 card per row on small screens */
 }
 }
+.glow-btn {
+  position: relative;
+  display: inline-block;
+  padding: 18px 48px;
+  font-size: 1.3rem;
+  font-family: 'Montserrat', sans-serif;
+  color: #fff;
+  background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+  border: none;
+  border-radius: 40px;
+  box-shadow: 0 0 24px 0 rgba(67, 233, 123, 0.6), 0 0 64px 0 rgba(56, 249, 215, 0.2);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(.4,2,.3,1), box-shadow 0.2s;
+  outline: none;
+}
+
+.glow-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  background: rgba(255,255,255,0.4);
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s cubic-bezier(.4,2,.3,1), height 0.4s cubic-bezier(.4,2,.3,1), opacity 0.4s;
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.glow-btn:active::before {
+  width: 300px;
+  height: 300px;
+  opacity: 0.2;
+  transition: 0s;
+}
+
+.glow-btn:hover {
+  transform: scale(1.08) rotate(-1deg);
+  box-shadow: 0 0 48px 0 rgba(67, 233, 123, 0.8), 0 0 128px 0 rgba(56, 249, 215, 0.4);
+  background: linear-gradient(90deg, #38f9d7 0%, #43e97b 100%);
+}
+
+.glow-btn span {
+  position: relative;
+  z-index: 2;
+  letter-spacing: 1px;
+  font-weight: bold;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  transition: color 0.2s;
+}
+
+.glow-btn:hover span {
+  color: #222;
+}
