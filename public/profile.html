@@ -159,7 +159,8 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Your JSONBin URL
+    // Firebase and JSONBin Configuration
+  const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Your JSONBin URL
   const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Your API Key (Master Key)
 
   // Fetch and display user data from JSONBin.io
@@ -208,6 +209,9 @@
 
   // Update or Add User Data
   async function updateUserData() {
+    // Add an alert here to ensure the function is being called when the button is clicked
+    alert('Update Info button clicked!');  // This will confirm if the button triggers the function
+
     const user = firebase.auth().currentUser;
     if (!user) {
       console.error('No user is currently logged in.');
@@ -295,7 +299,7 @@
     }
   }
 
-    
-  </script>
+
+</script>
 </body>
 </html>
