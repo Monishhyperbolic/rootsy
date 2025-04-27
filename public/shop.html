@@ -5,193 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shop | Grocery Store</title>
   <link rel="stylesheet" href="shop.css">
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-  <header>
-    <div class="top-banner">
-      <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
-      <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
-    </div>
-    <div class="top-header">
-      <div class="left-section">
-        <a href="about.html">About Us</a>
-        <a href="profile.html">My account</a>
-        <a href="wishlist.html">Wishlist</a>
-        <span class="divider"></span>
-        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
-      </div>
-      <div class="right-section">
-        <div id="google_translate_element"></div>
-        <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
-        <a href="#">Order Tracking</a>
-      </div>
-    </div>
-    <nav class="navbar">
-      <div class="navbar-left">
-        <a href="#" class="logo">
-          <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
-          <span id="brand"></span>
-        </a>
-        <div class="delivery">
-          <span>Deliver to</span>
-          <div id="user-location">Fetching location...</div>
-        </div>
-      </div>
-      <div class="navbar-center">
-        <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
-        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-      </div>
-      <div class="navbar-right">
-        <a id="account-link" href="profile.html" class="account">
-          <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
-        </a>
-        <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-        <a href="cart.html" class="cart">
-          <i class="fa-solid fa-cart-shopping"></i>
-          <span>Cart</span>
-          <span class="cart-count">0</span>
-        </a>
-      </div>
-    </nav>
-    <div class="navbar-links">
-      <a href="index.html">Home</a>
-      <a href="shop.html">Shop</a>
-      <a href="fruitsvegetable.html">Fruits & Vegetables</a>
-      <a href="beverages.html">Beverages</a>
-      <a href="blog.html">Blog</a>
-      <a href="contact.html">Contact</a>
-      <a href="trendingproduct.html">Trending Products</a>
-      <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
-    </div>
-  </header>
-
-  <div class="shop-page">
-    <aside class="sidebar">
-      <nav>
-        <p class="breadcrumb"><a href="index.html">Home</a> > <a href="shop.html">Shop</a></p>
-        <div class="filter-section">
-          <h3>Price Filter</h3>
-          <div class="price-filter">
-            <div class="price-range">
-              <span id="price-min">₹0</span> - <span id="price-max">₹5000</span>
-            </div>
-            <input type="range" min="0" max="5000" value="5000" id="price-slider">
-            <button id="filter-price-btn">Apply Filter</button>
-          </div>
-        </div>
-        <div class="filter-section">
-          <h3>Product Categories</h3>
-          <ul class="categories" id="category-filters">
-            <li><input type="checkbox" value="Vegetables" checked> Vegetables</li>
-            <li><input type="checkbox" value="Fruits" checked> Fruits</li>
-            <li><input type="checkbox" value="Dairy Products" checked> Dairy Products</li>
-            <li><input type="checkbox" value="Grains & Pulses" checked> Grains & Pulses</li>
-            <li><input type="checkbox" value="Spices & Herbs" checked> Spices & Herbs</li>
-            <li><input type="checkbox" value="Organic Produce" checked> Organic Produce</li>
-            <li><input type="checkbox" value="Beverages" checked> Beverages</li>
-            <li><input type="checkbox" value="Bakery" checked> Bakery</li>
-            <li><input type="checkbox" value="Snacks" checked> Snacks</li>
-            <li><input type="checkbox" value="Household Items" checked> Household Items</li>
-          </ul>
-        </div>
-        <div class="filter-section">
-          <h3>Product Status</h3>
-          <div>
-            <input type="checkbox" id="in-stock" checked> In Stock
-          </div>
-          <div>
-            <input type="checkbox" id="out-of-stock"> Out of stock
-          </div>
-        </div>
-      </nav>
-    </aside>
-
-    <main class="main-content">
-      <div class="shop-header">
-        <div class="shop-title">
-          <h2>Grocery store with different treasures</h2>
-          <p>We have special discounts for you on grocery products.</p>
-        </div>
-        <div class="filters-bar">
-          <button class="clear-filters" id="clear-filters-btn">Clear filters</button>
-          <select class="sort-by" id="sort-by">
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="name-asc">Name: A to Z</option>
-            <option value="name-desc">Name: Z to A</option>
-          </select>
-          <select class="show-items" id="items-per-page">
-            <option value="all" selected>Show All Products</option>
-            <option value="20">Show 20 items</option>
-            <option value="40">Show 40 items</option>
-          </select>
-        </div>
-      </div>
-      <div class="product-grid"></div>
-      <div id="no-products-message" style="display: none; text-align: center; padding: 20px;">
-        No products match your current filters. Please try different filter options.
-      </div>
-      <div id="loading-message" style="text-align: center; padding: 20px;">
-        Loading products...
-      </div>
-    </main>
-  </div>
-
-  <footer>
-    <div class="newsletter">
-      <p>Join our newsletter for exclusive discounts!</p>
-      <form>
-        <input type="email" placeholder="Enter your email">
-        <button type="submit">Subscribe</button>
-      </form>
-    </div>
-    <div class="footer-content">
-      <div class="column">
-        <h3>Need Help?</h3>
-        <p>Contact our support team: support@rootsy.com</p>
-        <p>Call us: 0800 19019028</p>
-      </div>
-      <div class="column">
-        <h3>Company Info</h3>
-        <ul>
-          <li><a href="#">About Us</a></li>
-          <li><a href="#">Careers</a></li>
-        </ul>
-      </div>
-      <div class="column">
-        <h3>Follow Us</h3>
-        <div class="social-media">
-          <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
-          <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
-          <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
-        </div>
-      </div>
-      <div class="column">
-        <h3>Payment Methods</h3>
-        <div class="payment-methods">
-          <i class="fa-brands fa-cc-visa"></i>
-          <i class="fa-brands fa-cc-mastercard"></i>
-          <i class="fa-brands fa-cc-paypal"></i>
-        </div>
-      </div>
-    </div>
-    <div class="copyright">
-      Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
-    </div>
-    <div class="links">
-      <a href="#">Terms and Conditions</a> |
-      <a href="#">Privacy Policy</a> |
-      <a href="#">Order Tracking</a>
-    </div>
-  </footer>
-
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
+<script>
+  const firebaseConfig = {
       apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
       authDomain: "rootsy-ec110.firebaseapp.com",
       projectId: "rootsy-ec110",
@@ -199,505 +19,800 @@
       messagingSenderId: "120254624474",
       appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
       measurementId: "G-0Y636N5BPV"
-    };
+  };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-    // JSONBin Configuration
-    const productsBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4120';
-    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
-
-    // Global variables
-    let allProducts = [];
-    let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-    let filterSettings = {
-      priceMax: 5000,
-      categories: [],
-      inStock: true,
-      outOfStock: false,
-      sort: 'price-low',
-      itemsPerPage: 'all'
-    };
-
-    // Sample products for fallback
-    const sampleProducts = [
-      {
-        "name": "Organic Tomatoes",
-        "image_url": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=800&q=80",
-        "price": "49.99",
-        "description": "Farm-fresh organic tomatoes grown without pesticides.",
-        "category_name": "Vegetables",
-        "seller_name": "Mumbai Organic Farms",
-        "stock": 139
-      },
-      {
-        "name": "Fresh Carrots",
-        "image_url": "https://images.unsplash.com/photo-1598170845058-c2edb8b0ec96?auto=format&fit=crop&w=800&q=80",
-        "price": "39.50",
-        "description": "Sweet and crunchy carrots freshly harvested.",
-        "category_name": "Vegetables",
-        "seller_name": "Green Farms",
-        "stock": 95
-      },
-      {
-        "name": "Alphonso Mangoes",
-        "image_url": "https://images.unsplash.com/photo-1591073113125-e46713c829ed?auto=format&fit=crop&w=800&q=80",
-        "price": "399.99",
-        "description": "The king of fruits - sweet and juicy Alphonso mangoes.",
-        "category_name": "Fruits",
-        "seller_name": "Ratnagiri Farms",
-        "stock": 45
-      },
-      {
-        "name": "Brown Rice (5kg)",
-        "image_url": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80",
-        "price": "249.99",
-        "description": "Nutrient-rich brown rice, perfect for healthy meals.",
-        "category_name": "Grains & Pulses",
-        "seller_name": "Organic Staples",
-        "stock": 120
-      },
-      {
-        "name": "Natural Honey",
-        "image_url": "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=800&q=80",
-        "price": "299.99",
-        "description": "Pure, raw honey collected from wildflower meadows.",
-        "category_name": "Organic Produce",
-        "seller_name": "Himalayan Apiaries",
-        "stock": 67
-      },
-      {
-        "name": "Fresh Milk (1L)",
-        "image_url": "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&q=80",
-        "price": "69.99",
-        "description": "Farm-fresh cow's milk, pasteurized and ready to drink.",
-        "category_name": "Dairy Products",
-        "seller_name": "Happy Cow Dairy",
-        "stock": 0
-      },
-      {
-        "name": "Organic Spinach",
-        "image_url": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=800&q=80",
-        "price": "59.99",
-        "description": "Fresh, organic spinach leaves perfect for salads and cooking.",
-        "category_name": "Vegetables",
-        "seller_name": "Green Valley Farms",
-        "stock": 89
-      },
-      {
-        "name": "Assorted Spices Pack",
-        "image_url": "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=800&q=80",
-        "price": "499.99",
-        "description": "A collection of essential Indian spices in a gift box.",
-        "category_name": "Spices & Herbs",
-        "seller_name": "Kerala Spice Market",
-        "stock": 35
-      }
-    ];
-
-    // Auth state check
-    auth.onAuthStateChanged(function(user) {
-      const accountLink = document.getElementById('account-link');
-      const profileImage = document.getElementById('profile-image');
-      if (user) {
-        console.log('User is signed in:', user.email);
-        accountLink.href = 'profile.html';
-        profileImage.src = user.photoURL || 'default-profile.png';
+  function checkUserAuthStatus() {
+  firebase.auth().onAuthStateChanged(function(user) {
+    const accountLink = document.getElementById('account-link');
+    const profileImage = document.getElementById('profile-image');
+    
+    if (user) {
+      console.log('User is signed in:', user.email);
+      accountLink.href = 'profile.html';
+      
+      // If user has a profile photo URL, use it; otherwise, fallback
+      if (user.photoURL) {
+        profileImage.src = user.photoURL;
       } else {
-        console.log('User is signed out');
-        accountLink.href = 'sign_in.html';
-        profileImage.src = 'default-profile.png';
+        profileImage.src = 'default-profile.png'; // fallback image
       }
-    }, function(error) {
-      console.error('Auth state change error:', error);
-    });
-
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', function() {
-      initGeolocation();
-      loadCartFromStorage();
-      setupEventListeners();
-      fetchProducts();
-    });
-
-    // Setup event listeners
-    function setupEventListeners() {
-      // Price filter
-      document.getElementById('price-slider').addEventListener('input', function() {
-        document.getElementById('price-max').textContent = '₹' + this.value;
-        filterSettings.priceMax = parseInt(this.value);
-      });
-
-      // Filter button
-      document.getElementById('filter-price-btn').addEventListener('click', applyFilters);
-
-      // Category checkboxes
-      document.querySelectorAll('#category-filters input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-          updateCategoryFilters();
-          applyFilters();
-        });
-      });
-
-      // Stock status checkboxes
-      document.getElementById('in-stock').addEventListener('change', function() {
-        filterSettings.inStock = this.checked;
-        applyFilters();
-      });
-
-      document.getElementById('out-of-stock').addEventListener('change', function() {
-        filterSettings.outOfStock = this.checked;
-        applyFilters();
-      });
-
-      // Sort dropdown
-      document.getElementById('sort-by').addEventListener('change', function() {
-        filterSettings.sort = this.value;
-        applyFilters();
-      });
-
-      // Items per page dropdown
-      document.getElementById('items-per-page').addEventListener('change', function() {
-        filterSettings.itemsPerPage = this.value;
-        applyFilters();
-      });
-
-      // Clear filters button
-      document.getElementById('clear-filters-btn').addEventListener('click', resetFilters);
-
-      // Search functionality
-      document.getElementById('searchbox').addEventListener('input', function() {
-        const searchTerm = this.value.trim().toLowerCase();
-        if (searchTerm) {
-          const filteredProducts = allProducts.filter(product => 
-            product.name.toLowerCase().includes(searchTerm) ||
-            product.description.toLowerCase().includes(searchTerm) ||
-            product.seller_name.toLowerCase().includes(searchTerm) ||
-            product.category_name.toLowerCase().includes(searchTerm)
-          );
-          renderProducts(filteredProducts);
-        } else {
-          applyFilters();
-        }
-      });
+    } else {
+      console.log('User is signed out');
+      accountLink.href = 'sign_in.html';
+      profileImage.src = 'default-profile.png'; // reset to default image
     }
+  }, function(error) {
+    console.error('Auth state change error:', error);
+  });
+}
 
-    // Load sample products (fallback)
-    function loadSampleProducts() {
-      document.getElementById('loading-message').style.display = 'none';
-      allProducts = sampleProducts.map((product, index) => ({
-        ...product,
-        id: 'product-' + (index + 1)
-      }));
+</script>
+<body>
+
+  <header>
+    <div class="top-banner">
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <div id="user-location">Fetching location...</div>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+          <a id="account-link" href="profile.html" class="account">
+            <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+          </a>
+          
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart">
+              <i class="fa-solid fa-cart-shopping"></i>
+              <span>Cart</span>
+              <span class="cart-count">0</span>
+            </a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+</header>
+
+<div class="shop-page">
+  <aside class="sidebar">
+    <nav>
+      <p class="breadcrumb"><a href="index.html">Home</a> > <a href="shop.html">Shop</a></p>
+
+      <div class="filter-section">
+        <h3>Price Filter</h3>
+        <div class="price-filter">
+          <div class="price-range">
+            <span id="price-min">₹0</span> - <span id="price-max">₹5000</span>
+          </div>
+          <input type="range" min="0" max="5000" value="5000" id="price-slider">
+          <button id="filter-price-btn">Apply Filter</button>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <h3>Product Categories</h3>
+        <ul class="categories" id="category-filters">
+          <li><input type="checkbox" value="Vegetables" checked> Vegetables</li>
+          <li><input type="checkbox" value="Fruits" checked> Fruits</li>
+          <li><input type="checkbox" value="Dairy" checked> Dairy Products</li>
+          <li><input type="checkbox" value="Grains" checked> Grains & Pulses</li>
+          <li><input type="checkbox" value="Spices" checked> Spices & Herbs</li>
+          <li><input type="checkbox" value="Organic" checked> Organic Produce</li>
+          <li><input type="checkbox" value="Beverages" checked> Beverages</li>
+          <li><input type="checkbox" value="Bakery" checked> Bakery</li>
+          <li><input type="checkbox" value="Snacks" checked> Snacks</li>
+          <li><input type="checkbox" value="Household" checked> Household Items</li>
+        </ul>
+      </div>
+
+      <div class="filter-section">
+        <h3>Product Status</h3>
+        <div>
+          <input type="checkbox" id="in-stock" checked> In Stock
+        </div>
+        <div>
+          <input type="checkbox" id="out-of-stock"> Out of stock
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="shop-header">
+      <div class="shop-title">
+        <h2>Grocery store with different treasures</h2>
+        <p>We have special discounts for you on grocery products.</p>
+      </div>
+      <div class="filters-bar">
+        <button class="clear-filters" id="clear-filters-btn">Clear filters</button>
+        <select class="sort-by" id="sort-by">
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="name-asc">Name: A to Z</option>
+          <option value="name-desc">Name: Z to A</option>
+        </select>
+        <select class="show-items" id="items-per-page">
+          <option value="1000">Show all items</option>
+          <option value="40">Show 40 items</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid"></div>
+    <div id="no-products-message" style="display: none; text-align: center; padding: 20px;">
+      No products match your current filters. Please try different filter options.
+    </div>
+    <div id="loading-message" style="text-align: center; padding: 20px;">
+      Loading products...
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="newsletter">
+      <p>Join our newsletter for exclusive discounts!</p>
+      <form>
+          <input type="email" placeholder="Enter your email">
+          <button type="submit">Subscribe</button>
+      </form>
+  </div>
+  <div class="footer-content">
+      <div class="column">
+          <h3>Need Help?</h3>
+          <p>Contact our support team: support@rootsy.com</p>
+          <p>Call us: 0800 19019028</p>
+      </div>
+      <div class="column">
+          <h3>Company Info</h3>
+          <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+          </ul>
+      </div>
+      <div class="column">
+          <h3>Follow Us</h3>
+          <div class="social-media">
+              <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+              <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+              <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+          </div>
+      </div>
+      <div class="column">
+          <h3>Payment Methods</h3>
+          <div class="payment-methods">
+              <i class="fa-brands fa-cc-visa"></i>
+              <i class="fa-brands fa-cc-mastercard"></i>
+              <i class="fa-brands fa-cc-paypal"></i>
+          </div>
+      </div>
+  </div>
+  <div class="copyright">
+      Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+  </div>
+  <div class="links">
+      <a href="#">Terms and Conditions</a> |
+      <a href="#">Privacy Policy</a> |
+      <a href="#">Order Tracking</a>
+  </div>
+</footer>
+
+<script>
+// Global variables
+let allProducts = []; // Will hold all products
+let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+let filterSettings = {
+  priceMax: 5000,
+  categories: [],
+  inStock: true,
+  outOfStock: false,
+  sort: 'price-low',
+  itemsPerPage: 1000
+};
+
+// Sample products data structure based on the provided example
+const sampleProducts = [
+  {
+    "name": "Organic Tomatoes",
+    "image_url": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=800&q=80",
+    "price": "49.99",
+    "description": "Farm-fresh organic tomatoes grown without pesticides.",
+    "category_name": "Vegetables",
+    "seller_name": "Mumbai Organic Farms",
+    "stock": 139
+  },
+  {
+    "name": "Fresh Carrots",
+    "image_url": "https://images.unsplash.com/photo-1598170845058-c2edb8b0ec96?auto=format&fit=crop&w=800&q=80",
+    "price": "39.50",
+    "description": "Sweet and crunchy carrots freshly harvested.",
+    "category_name": "Vegetables",
+    "seller_name": "Green Farms",
+    "stock": 95
+  },
+  {
+    "name": "Alphonso Mangoes",
+    "image_url": "https://images.unsplash.com/photo-1591073113125-e46713c829ed?auto=format&fit=crop&w=800&q=80",
+    "price": "399.99",
+    "description": "The king of fruits - sweet and juicy Alphonso mangoes.",
+    "category_name": "Fruits",
+    "seller_name": "Ratnagiri Farms",
+    "stock": 45
+  },
+  {
+    "name": "Brown Rice (5kg)",
+    "image_url": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80",
+    "price": "249.99",
+    "description": "Nutrient-rich brown rice, perfect for healthy meals.",
+    "category_name": "Grains",
+    "seller_name": "Organic Staples",
+    "stock": 120
+  },
+  {
+    "name": "Natural Honey",
+    "image_url": "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=800&q=80",
+    "price": "299.99",
+    "description": "Pure, raw honey collected from wildflower meadows.",
+    "category_name": "Organic",
+    "seller_name": "Himalayan Apiaries",
+    "stock": 67
+  },
+  {
+    "name": "Fresh Milk (1L)",
+    "image_url": "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&q=80",
+    "price": "69.99",
+    "description": "Farm-fresh cow's milk, pasteurized and ready to drink.",
+    "category_name": "Dairy",
+    "seller_name": "Happy Cow Dairy",
+    "stock": 0
+  },
+  {
+    "name": "Organic Spinach",
+    "image_url": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=800&q=80",
+    "price": "59.99",
+    "description": "Fresh, organic spinach leaves perfect for salads and cooking.",
+    "category_name": "Vegetables",
+    "seller_name": "Green Valley Farms",
+    "stock": 89
+  },
+  {
+    "name": "Assorted Spices Pack",
+    "image_url": "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=800&q=80",
+    "price": "499.99",
+    "description": "A collection of essential Indian spices in a gift box.",
+    "category_name": "Spices",
+    "seller_name": "Kerala Spice Market",
+    "stock": 35
+  }
+];
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+  initGeolocation();
+  loadCartFromStorage();
+  setupEventListeners();
+  
+  // Use this function for API fetch
+  fetchProducts();
+  
+  // Use this as a fallback or for testing
+  // loadSampleProducts();
+});
+
+// Setup all event listeners
+function setupEventListeners() {
+  // Price filter
+  const priceSlider = document.getElementById('price-slider');
+  priceSlider.addEventListener('input', function() {
+    document.getElementById('price-max').textContent = '₹' + this.value;
+    filterSettings.priceMax = parseInt(this.value);
+  });
+
+  // Filter button
+  document.getElementById('filter-price-btn').addEventListener('click', applyFilters);
+  
+  // Category checkboxes
+  const categoryCheckboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
+  categoryCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
       updateCategoryFilters();
       applyFilters();
-    }
-
-    // Update category filters
-    function updateCategoryFilters() {
-      const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]:checked');
-      filterSettings.categories = Array.from(checkboxes).map(cb => cb.value);
-    }
-
-    // Reset filters
-    function resetFilters() {
-      const priceSlider = document.getElementById('price-slider');
-      priceSlider.value = 5000;
-      document.getElementById('price-max').textContent = '₹5000';
-      filterSettings.priceMax = 5000;
-
-      document.querySelectorAll('#category-filters input[type="checkbox"]').forEach(checkbox => {
-        checkbox.checked = true;
-      });
-      updateCategoryFilters();
-
-      document.getElementById('in-stock').checked = true;
-      document.getElementById('out-of-stock').checked = false;
-      filterSettings.inStock = true;
-      filterSettings.outOfStock = false;
-
-      document.getElementById('sort-by').value = 'price-low';
-      document.getElementById('items-per-page').value = 'all';
-      filterSettings.sort = 'price-low';
-      filterSettings.itemsPerPage = 'all';
-
-      document.getElementById('searchbox').value = '';
-      applyFilters();
-    }
-
-    // Apply filters
-    function applyFilters() {
-      let filteredProducts = [...allProducts];
-
-      // Price filter
-      filteredProducts = filteredProducts.filter(product => 
-        parseFloat(product.price) <= filterSettings.priceMax
+    });
+  });
+  
+  // Stock status checkboxes
+  document.getElementById('in-stock').addEventListener('change', function() {
+    filterSettings.inStock = this.checked;
+    applyFilters();
+  });
+  
+  document.getElementById('out-of-stock').addEventListener('change', function() {
+    filterSettings.outOfStock = this.checked;
+    applyFilters();
+  });
+  
+  // Sort dropdown
+  document.getElementById('sort-by').addEventListener('change', function() {
+    filterSettings.sort = this.value;
+    applyFilters();
+  });
+  
+  // Items per page dropdown
+  document.getElementById('items-per-page').addEventListener('change', function() {
+    filterSettings.itemsPerPage = parseInt(this.value);
+    applyFilters();
+  });
+  
+  // Clear filters button
+  document.getElementById('clear-filters-btn').addEventListener('click', resetFilters);
+  
+  // Search functionality
+  document.getElementById('searchbox').addEventListener('input', function() {
+    const searchTerm = this.value.trim().toLowerCase();
+    if (searchTerm) {
+      const filteredProducts = allProducts.filter(product => 
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.description.toLowerCase().includes(searchTerm) ||
+        product.seller_name.toLowerCase().includes(searchTerm) ||
+        product.category_name.toLowerCase().includes(searchTerm)
       );
-
-      // Category filter
-      if (filterSettings.categories.length > 0) {
-        filteredProducts = filteredProducts.filter(product => 
-          filterSettings.categories.includes(product.category_name)
-        );
-      }
-
-      // Stock status filter
-      if (filterSettings.inStock && !filterSettings.outOfStock) {
-        filteredProducts = filteredProducts.filter(product => parseInt(product.stock) > 0);
-      } else if (!filterSettings.inStock && filterSettings.outOfStock) {
-        filteredProducts = filteredProducts.filter(product => parseInt(product.stock) <= 0);
-      } else if (!filterSettings.inStock && !filterSettings.outOfStock) {
-        filteredProducts = [];
-      }
-
-      // Sort
-      switch (filterSettings.sort) {
-        case 'price-low':
-          filteredProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-          break;
-        case 'price-high':
-          filteredProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-          break;
-        case 'name-asc':
-          filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        case 'name-desc':
-          filteredProducts.sort((a, b) => b.name.localeCompare(b.name));
-          break;
-      }
-
-      // Limit items
-      if (filterSettings.itemsPerPage !== 'all') {
-        filteredProducts = filteredProducts.slice(0, parseInt(filterSettings.itemsPerPage));
-      }
-
       renderProducts(filteredProducts);
+    } else {
+      applyFilters();
     }
+  });
+}
 
-    // Fetch products from JSONBin.io
-    async function fetchProducts() {
-      const maxRetries = 3;
-      let retries = 0;
+// Fallback function to load sample products (for testing or if API fails)
+function loadSampleProducts() {
+  document.getElementById('loading-message').style.display = 'none';
+  
+  // Add unique IDs to sample products
+  allProducts = sampleProducts.map((product, index) => ({
+    ...product,
+    id: 'product-' + (index + 1)
+  }));
+  
+  // Initialize category filters
+  updateCategoryFilters();
+  
+  // Apply filters and render products
+  applyFilters();
+}
 
-      const fetchWithRetry = async () => {
-        try {
-          const response = await axios.get(productsBinUrl, {
-            headers: { 'X-Master-Key': apiKey }
-          });
+// Initialize category filters based on checkboxes
+function updateCategoryFilters() {
+  const checkboxes = document.querySelectorAll('#category-filters input[type="checkbox"]:checked');
+  filterSettings.categories = Array.from(checkboxes).map(cb => cb.value);
+}
 
-          const data = response.data;
-          if (data && data.record && Array.isArray(data.record.products)) {
-            allProducts = data.record.products.map((product, index) => ({
-              ...product,
-              id: 'product-' + (index + 1)
-            }));
-          } else {
-            console.warn('API response did not match expected format. Using sample data.');
-            loadSampleProducts();
-            return;
+// Reset all filters to default values
+function resetFilters() {
+  // Reset price slider
+  const priceSlider = document.getElementById('price-slider');
+  priceSlider.value = 5000;
+  document.getElementById('price-max').textContent = '₹5000';
+  filterSettings.priceMax = 5000;
+  
+  // Reset category checkboxes
+  const categoryCheckboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
+  categoryCheckboxes.forEach(checkbox => {
+    checkbox.checked = true;
+  });
+  updateCategoryFilters();
+  
+  // Reset stock status
+  document.getElementById('in-stock').checked = true;
+  document.getElementById('out-of-stock').checked = false;
+  filterSettings.inStock = true;
+  filterSettings.outOfStock = false;
+  
+  // Reset sort and items per page
+  document.getElementById('sort-by').value = 'price-low';
+  document.getElementById('items-per-page').value = '20';
+  filterSettings.sort = 'price-low';
+  filterSettings.itemsPerPage = 20;
+  
+  // Clear search
+  document.getElementById('searchbox').value = '';
+  
+  // Apply the reset filters
+  applyFilters();
+}
+
+// Apply all current filters to the product list
+function applyFilters() {
+  // Start with all products
+  let filteredProducts = [...allProducts];
+  
+  // Apply price filter
+  filteredProducts = filteredProducts.filter(product => 
+    parseFloat(product.price) <= filterSettings.priceMax
+  );
+  
+  // Apply category filters if any are selected
+  if (filterSettings.categories.length > 0) {
+    filteredProducts = filteredProducts.filter(product => 
+      filterSettings.categories.some(category => 
+        product.category_name && product.category_name.includes(category)
+      )
+    );
+  }
+  
+  // Apply stock status filters
+  if (filterSettings.inStock && !filterSettings.outOfStock) {
+    filteredProducts = filteredProducts.filter(product => parseInt(product.stock) > 0);
+  } else if (!filterSettings.inStock && filterSettings.outOfStock) {
+    filteredProducts = filteredProducts.filter(product => parseInt(product.stock) <= 0);
+  } else if (!filterSettings.inStock && !filterSettings.outOfStock) {
+    // If neither is checked, show no products
+    filteredProducts = [];
+  }
+  // If both are checked, show all products (no additional filtering needed)
+  
+  // Apply sorting
+  switch (filterSettings.sort) {
+    case 'price-low':
+      filteredProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      break;
+    case 'price-high':
+      filteredProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      break;
+    case 'name-asc':
+      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'name-desc':
+      filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+  }
+  
+  // Limit to items per page (for pagination - we're not implementing page navigation here)
+  filteredProducts = filteredProducts.slice(0, filterSettings.itemsPerPage);
+  
+  // Render the filtered products
+  renderProducts(filteredProducts);
+}
+
+// Fetch products from API with error handling and retries
+async function fetchProducts() {
+  const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4';
+  const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+  const maxRetries = 3;
+  let retries = 0;
+  
+  const fetchWithRetry = async () => {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'X-Master-Key': apiKey
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Check if the API returned the expected data structure
+      if (data && Array.isArray(data)) {
+        allProducts = data.map((product, index) => ({
+          ...product,
+          id: 'product-' + (index + 1)
+        }));
+      } else if (data && data.record && Array.isArray(data.record)) {
+        // Handle the case where data is wrapped in a 'record' property
+        allProducts = data.record.map((product, index) => ({
+          ...product,
+          id: 'product-' + (index + 1)
+        }));
+      } else {
+        // If we can't find an array structure, use our sample data
+        console.warn('API response did not match expected format. Using sample data.');
+        loadSampleProducts();
+        return;
+      }
+      
+      document.getElementById('loading-message').style.display = 'none';
+      
+      // Initialize category filters
+      updateCategoryFilters();
+      
+      // Apply filters and render products
+      applyFilters();
+      
+    } catch (error) {
+      console.error(`Attempt ${retries + 1} failed to fetch products:`, error);
+      
+      if (retries < maxRetries) {
+        retries++;
+        console.log(`Retrying... (${retries}/${maxRetries})`);
+        setTimeout(fetchWithRetry, 1000 * retries); // Exponential backoff
+      } else {
+        console.error('Failed to fetch products after multiple attempts. Loading sample data instead.');
+        document.getElementById('loading-message').style.display = 'none';
+        loadSampleProducts();
+      }
+    }
+  };
+  
+  // Start the fetch process
+  fetchWithRetry();
+}
+
+// Render products to the product grid
+function renderProducts(products) {
+  const productGrid = document.querySelector('.product-grid');
+  const noProductsMessage = document.getElementById('no-products-message');
+  
+  if (products.length === 0) {
+    productGrid.innerHTML = '';
+    noProductsMessage.style.display = 'block';
+    return;
+  }
+  
+  noProductsMessage.style.display = 'none';
+  productGrid.innerHTML = '';
+
+  products.forEach(product => {
+    // Check if item is in cart
+    const isInCart = cartItems.some(item => item.id === product.id);
+    
+    const productCard = document.createElement('div');
+    productCard.className = 'product-card';
+    productCard.innerHTML = `
+      ${parseInt(product.stock) > 0 ? 
+        `<div class="discount-badge">New</div>` : 
+        `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
+      <img src="${product.image_url}" alt="${product.name}" class="product-image">
+      <h4>${product.name}</h4>
+      <div class="price">
+        <span class="new-price">₹${parseFloat(product.price).toFixed(2)}</span>
+      </div>
+      <p class="description">${product.description}</p>
+      <p class="seller">Sold by: ${product.seller_name}</p>
+      <div class="product-actions">
+        <span class="stock">${parseInt(product.stock) > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+        <button class="add-to-cart ${isInCart ? 'in-cart' : ''}" 
+                data-id="${product.id}" 
+                ${parseInt(product.stock) > 0 ? '' : 'disabled'}>
+          <i class="fas ${isInCart ? 'fa-check' : 'fa-shopping-cart'}"></i>
+          ${isInCart ? 'Added' : 'Add to Cart'}
+        </button>
+      </div>
+    `;
+    
+    productGrid.appendChild(productCard);
+    
+    // Add event listener to the Add to Cart button
+    const addToCartBtn = productCard.querySelector('.add-to-cart');
+    addToCartBtn.addEventListener('click', function() {
+      const productId = this.getAttribute('data-id');
+      const product = products.find(p => p.id === productId);
+      
+      if (product) {
+        addToCart(product);
+        
+        // Update button appearance
+        this.classList.add('in-cart');
+        this.innerHTML = '<i class="fas fa-check"></i> Added';
+      }
+    });
+  });
+}
+
+// Add product to cart
+function addToCart(product) {
+  // Check if product is already in cart
+  const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
+  
+  if (existingItemIndex >= 0) {
+    // Increment quantity if already in cart
+    cartItems[existingItemIndex].quantity += 1;
+  } else {
+    // Add new item to cart
+    cartItems.push({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      image: product.image_url,
+      quantity: 1,
+      seller: product.seller_name
+    });
+  }
+  
+  // Save cart to localStorage
+  saveCartToStorage();
+  
+  // Update cart count
+  updateCartCount();
+}
+
+// Load cart from localStorage
+function loadCartFromStorage() {
+  cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+  updateCartCount();
+}
+
+// Save cart to localStorage
+function saveCartToStorage() {
+  localStorage.setItem('cart', JSON.stringify(cartItems));
+}
+
+// Update cart count display
+function updateCartCount() {
+  const cartCount = document.querySelector('.cart-count');
+  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+  cartCount.textContent = totalItems;
+}
+
+// Improved geolocation function
+function initGeolocation() {
+  const locationElement = document.getElementById('user-location');
+  
+  // First set to a loading state
+  locationElement.textContent = 'Detecting your location...';
+  
+  // Check if geolocation is supported
+  if (!navigator.geolocation) {
+    locationElement.textContent = 'Geolocation not supported by your browser';
+    return;
+  }
+  
+  // First try to get from local storage to avoid delay
+  const cachedLocation = localStorage.getItem('userLocation');
+  if (cachedLocation) {
+    locationElement.textContent = cachedLocation;
+  }
+  
+  // Options for geolocation request
+  const options = {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 300000 // 5 minutes
+  };
+  
+  // Request current position
+  navigator.geolocation.getCurrentPosition(
+    // Success handler
+    position => {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      
+      // Use reverse geocoding from OpenStreetMap's Nominatim
+      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18`, {
+        headers: {
+          'Accept-Language': 'en',
+          'User-Agent': 'RootsyGroceryStore/1.0'
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        let locationString = 'Unknown location';
+        
+        // Format the address
+        if (data && data.address) {
+          const address = data.address;
+          
+          // Try to construct a readable address
+          const addressParts = [];
+          
+          // Add neighborhood or suburb
+          if (address.suburb || address.neighbourhood) {
+            addressParts.push(address.suburb || address.neighbourhood);
           }
-
-          document.getElementById('loading-message').style.display = 'none';
-          updateCategoryFilters();
-          applyFilters();
-        } catch (error) {
-          console.error(`Attempt ${retries + 1} failed to fetch products:`, error);
-          if (retries < maxRetries) {
-            retries++;
-            console.log(`Retrying... (${retries}/${maxRetries})`);
-            setTimeout(fetchWithRetry, 1000 * retries);
-          } else {
-            console.error('Failed to fetch products after multiple attempts. Loading sample data.');
-            loadSampleProducts();
+          
+          // Add city or town
+          if (address.city || address.town || address.village) {
+            addressParts.push(address.city || address.town || address.village);
+          }
+          
+          // Add state or region
+          if (address.state || address.region) {
+            // Only add if different from city
+            const stateOrRegion = address.state || address.region;
+            const cityOrTown = address.city || address.town || address.village;
+            
+            if (stateOrRegion !== cityOrTown) {
+              addressParts.push(stateOrRegion);
+            }
+          }
+          
+          // Add country if we have very little information
+          if (addressParts.length <= 1 && address.country) {
+            addressParts.push(address.country);
+          }
+          
+          // Join the parts with commas
+          if (addressParts.length > 0) {
+            locationString = addressParts.join(', ');
+          } else if (data.display_name) {
+            // Fallback to display_name if we couldn't construct a good address
+            locationString = data.display_name;
           }
         }
-      };
-
-      fetchWithRetry();
-    }
-
-    // Render products
-    function renderProducts(products) {
-      const productGrid = document.querySelector('.product-grid');
-      const noProductsMessage = document.getElementById('no-products-message');
-      if (products.length === 0) {
-        productGrid.innerHTML = '';
-        noProductsMessage.style.display = 'block';
-        return;
-      }
-
-      noProductsMessage.style.display = 'none';
-      productGrid.innerHTML = '';
-
-      products.forEach(product => {
-        const isInCart = cartItems.some(item => item.id === product.id);
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-          ${parseInt(product.stock) > 0 ? 
-            `<div class="discount-badge">New</div>` : 
-            `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
-          <img src="${product.image_url}" alt="${product.name}" class="product-image">
-          <h4>${product.name}</h4>
-          <div class="price">
-            <span class="new-price">₹${parseFloat(product.price).toFixed(2)}</span>
-          </div>
-          <p class="description">${product.description}</p>
-          <p class="seller">Sold by: ${product.seller_name}</p>
-          <div class="product-actions">
-            <span class="stock">${parseInt(product.stock) > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
-            <button class="add-to-cart ${isInCart ? 'in-cart' : ''}" 
-                    data-id="${product.id}" 
-                    ${parseInt(product.stock) > 0 ? '' : 'disabled'}>
-              <i class="fas ${isInCart ? 'fa-check' : 'fa-shopping-cart'}"></i>
-              ${isInCart ? 'Added' : 'Add to Cart'}
-            </button>
-          </div>
-        `;
-        productGrid.appendChild(productCard);
-
-        const addToCartBtn = productCard.querySelector('.add-to-cart');
-        addToCartBtn.addEventListener('click', function() {
-          const productId = this.getAttribute('data-id');
-          const product = products.find(p => p.id === productId);
-          if (product) {
-            addToCart(product);
-            this.classList.add('in-cart');
-            this.innerHTML = '<i class="fas fa-check"></i> Added';
-          }
-        });
+        
+        // Cache the location string
+        localStorage.setItem('userLocation', locationString);
+        
+        // Display the location
+        locationElement.textContent = locationString;
+      })
+      .catch(error => {
+        console.error('Error fetching location details:', error);
+        locationElement.textContent = 'Location service error';
       });
-    }
-
-    // Add to cart
-    function addToCart(product) {
-      const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
-      if (existingItemIndex >= 0) {
-        cartItems[existingItemIndex].quantity += 1;
-      } else {
-        cartItems.push({
-          id: product.id,
-          name: product.name,
-          price: parseFloat(product.price),
-          image: product.image_url,
-          quantity: 1,
-          seller: product.seller_name
-        });
+    },
+    // Error handler
+    error => {
+      let errorMessage;
+      
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = 'Location access denied';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = 'Location unavailable';
+          break;
+        case error.TIMEOUT:
+          errorMessage = 'Location request timed out';
+          break;
+        default:
+          errorMessage = 'Unknown location error';
       }
-      saveCartToStorage();
-      updateCartCount();
-    }
+      
+      console.error('Geolocation error:', error);
+      locationElement.textContent = errorMessage;
+    },
+    options
+  );
+}
 
-    // Load cart from storage
-    function loadCartFromStorage() {
-      cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-      updateCartCount();
-    }
 
-    // Save cart to storage
-    function saveCartToStorage() {
-      localStorage.setItem('cart', JSON.stringify(cartItems));
-    }
 
-    // Update cart count
-    function updateCartCount() {
-      const cartCount = document.querySelector('.cart-count');
-      const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-      cartCount.textContent = totalItems;
-    }
-
-    // Geolocation
-    function initGeolocation() {
-      const locationElement = document.getElementById('user-location');
-      locationElement.textContent = 'Detecting your location...';
-      if (!navigator.geolocation) {
-        locationElement.textContent = 'Geolocation not supported by your browser';
-        return;
-      }
-
-      const cachedLocation = localStorage.getItem('userLocation');
-      if (cachedLocation) {
-        locationElement.textContent = cachedLocation;
-      }
-
-      const options = {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      };
-
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18`, {
-            headers: {
-              'Accept-Language': 'en',
-              'User-Agent': 'RootsyGroceryStore/1.0'
-            }
-          })
-          .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-            return response.json();
-          })
-          .then(data => {
-            let locationString = 'Unknown location';
-            if (data && data.address) {
-              const address = data.address;
-              const addressParts = [];
-              if (address.suburb || address.neighbourhood) {
-                addressParts.push(address.suburb || address.neighbourhood);
-              }
-              if (address.city || address.town || address.village) {
-                addressParts.push(address.city || address.town || address.village);
-              }
-              if (address.state || address.region) {
-                const stateOrRegion = address.state || address.region;
-                const cityOrTown = address.city || address.town || address.village;
-                if (stateOrRegion !== cityOrTown) {
-                  addressParts.push(stateOrRegion);
-                }
-              }
-              if (addressParts.length <= 1 && address.country) {
-                addressParts.push(address.country);
-              }
-              if (addressParts.length > 0) {
-                locationString = addressParts.join(', ');
-              } else if (data.display_name) {
-                locationString = data.display_name;
-              }
-            }
-            localStorage.setItem('userLocation', locationString);
-            locationElement.textContent = locationString;
-          })
-          .catch(error => {
-            console.error('Error fetching location details:', error);
-            locationElement.textContent = 'Location service error';
-          });
-        },
-        error => {
-          let errorMessage;
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = 'Location access denied';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Location unavailable';
-              break;
-            case error.TIMEOUT:
-              errorMessage = 'Location request timed out';
-              break;
-            default:
-              errorMessage = 'Unknown location error';
-          }
-          console.error('Geolocation error:', error);
-          locationElement.textContent = errorMessage;
-        },
-        options
-      );
-    }
-  </script>
+</script>
 </body>
 </html>
