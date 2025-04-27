@@ -8,8 +8,8 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 </head>
@@ -18,8 +18,7 @@
 <!-- Header -->
 <header class="flex items-center justify-between p-4 bg-white shadow">
   <div class="flex items-center gap-2">
-    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;"alt="Logo" class="h-8">
-
+    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;" alt="Logo" class="h-8">
   </div>
   <div class="flex items-center gap-4">
     <input type="text" id="search-dashboard" placeholder="Search..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
@@ -45,7 +44,6 @@
       <a href="products.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
         <i class="fas fa-box"></i> Products
       </a>
-      
       <a href="#" id="logout-button" class="flex items-center gap-2 text-red-600 hover:text-red-700 mt-auto">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>
@@ -93,7 +91,7 @@
         <div class="bg-white rounded-xl shadow p-6">
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-semibold">Total Products Sold</h3>
-            <div id="products-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+5% ↑</div>
+            <div id="products-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+0% ↔</div>
           </div>
           <div class="flex items-end gap-2">
             <span id="total-products-sold" class="text-4xl font-bold">0</span>
@@ -110,7 +108,7 @@
         <div class="bg-white rounded-xl shadow p-6">
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-semibold">Total Revenue</h3>
-            <div id="revenue-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+12% ↑</div>
+            <div id="revenue-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+0% ↔</div>
           </div>
           <div class="flex items-end gap-2">
             <span id="total-revenue" class="text-4xl font-bold">$0.00</span>
@@ -165,10 +163,10 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
-  // Supabase Configuration
-  const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  // JSONBin Configuration
+  const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
+  const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
+  const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
   // DOM Elements
   const dashboardLoading = document.getElementById('dashboard-loading');
@@ -197,15 +195,13 @@
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       try {
-        // Get seller details
-        const { data: seller, error } = await supabaseClient
-          .from('sellers')
-          .select('*')
-          .eq('email', user.email)
-          .single();
+        // Fetch seller details from JSONBin.io
+        const sellerResponse = await axios.get(sellersBinUrl, {
+          headers: { 'X-Master-Key': apiKey }
+        });
+        const sellers = sellerResponse.data.record?.sellerdetails || [];
+        const seller = sellers.find(s => s.email === user.email);
 
-        if (error) throw error;
-        
         if (seller) {
           currentSeller = seller;
           sellerNameElement.textContent = seller.name;
@@ -215,15 +211,15 @@
           loadStatsData();
         } else {
           // Redirect to login
-          window.location.href = "/login.html";
+          window.location.href = 'sign_in.html';
         }
       } catch (error) {
-        console.error("Error fetching seller details:", error);
-        alert("Error loading seller information. Please try again later.");
+        console.error('Error fetching seller details:', error);
+        alert('Error loading seller information. Please try again later.');
       }
     } else {
       // Redirect to login
-      window.location.href = "/login.html";
+      window.location.href = 'sign_in.html';
     }
   });
 
@@ -235,15 +231,21 @@
       dashboardLoading.classList.remove('hidden');
       dashboardContent.classList.add('hidden');
       
-      const timePeriod = parseInt(timePeriodSelect.value);
-      const isAllTime = timePeriodSelect.value === 'all';
+      const timePeriod = timePeriodSelect.value === 'all' ? 'all' : parseInt(timePeriodSelect.value);
+      const isAllTime = timePeriod === 'all';
       
       // Update time period labels
       const timeLabel = isAllTime ? 'All time' : `In the last ${timePeriod} days`;
       timePeriodLabel.textContent = timeLabel;
       revenueTimePeriodLabel.textContent = timeLabel;
       
-      // Fetch previous period data for comparison
+      // Fetch orders from JSONBin.io
+      const ordersResponse = await axios.get(ordersBinUrl, {
+        headers: { 'X-Master-Key': apiKey }
+      });
+      const orders = ordersResponse.data.record?.orders || [];
+
+      // Calculate date ranges
       let previousPeriodStart, previousPeriodEnd;
       let currentPeriodStart, currentPeriodEnd;
       
@@ -260,47 +262,37 @@
         previousPeriodStart.setDate(previousPeriodStart.getDate() - timePeriod);
       }
       
-      // Fetch orders for current period
-      const { data: currentOrders, error: currentError } = await supabaseClient
-        .from('orders')
-        .select('*')
-        .eq('seller_name', currentSeller.name)
-        .gte('created_at', currentPeriodStart.toISOString())
-        .lte('created_at', currentPeriodEnd.toISOString());
+      // Filter orders for current and previous periods
+      const currentOrders = orders.filter(order => {
+        const orderDate = new Date(order.orderDate);
+        return orderDate >= currentPeriodStart && orderDate <= currentPeriodEnd &&
+               order.products.some(p => p.seller.name === currentSeller.name);
+      });
       
-      if (currentError) throw currentError;
-      
-      // Fetch previous period data if not all time
-      let previousOrders = [];
-      if (!isAllTime) {
-        const { data: prevOrders, error: prevError } = await supabaseClient
-          .from('orders')
-          .select('*')
-          .eq('seller_name', currentSeller.name)
-          .gte('created_at', previousPeriodStart.toISOString())
-          .lte('created_at', previousPeriodEnd.toISOString());
-        
-        if (prevError) throw prevError;
-        previousOrders = prevOrders || [];
-      }
+      const previousOrders = isAllTime ? [] : orders.filter(order => {
+        const orderDate = new Date(order.orderDate);
+        return orderDate >= previousPeriodStart && orderDate <= previousPeriodEnd &&
+               order.products.some(p => p.seller.name === currentSeller.name);
+      });
       
       // Calculate stats
-      const totalProductsSold = currentOrders.length;
-      const totalRevenue = currentOrders.reduce((sum, order) => sum + parseFloat(order.amount), 0);
+      const currentStats = calculateStats(currentOrders);
+      const previousStats = calculateStats(previousOrders);
       
-      previousProductsSold = previousOrders.length;
-      previousRevenue = previousOrders.reduce((sum, order) => sum + parseFloat(order.amount), 0);
+      // Update global variables for trends
+      previousProductsSold = previousStats.totalProductsSold;
+      previousRevenue = previousStats.totalRevenue;
       
       // Calculate trends
       let productsTrend = 0;
       let revenueTrend = 0;
       
       if (previousProductsSold > 0) {
-        productsTrend = ((totalProductsSold - previousProductsSold) / previousProductsSold) * 100;
+        productsTrend = ((currentStats.totalProductsSold - previousProductsSold) / previousProductsSold) * 100;
       }
       
       if (previousRevenue > 0) {
-        revenueTrend = ((totalRevenue - previousRevenue) / previousRevenue) * 100;
+        revenueTrend = ((currentStats.totalRevenue - previousRevenue) / previousRevenue) * 100;
       }
       
       // Update UI with trends
@@ -312,8 +304,8 @@
       const topProducts = processTopProducts(currentOrders);
       
       // Update UI with data
-      totalProductsSoldElement.textContent = totalProductsSold;
-      totalRevenueElement.textContent = `$${totalRevenue.toFixed(2)}`;
+      totalProductsSoldElement.textContent = currentStats.totalProductsSold;
+      totalRevenueElement.textContent = `$${currentStats.totalRevenue.toFixed(2)}`;
       
       // Render charts and tables
       renderProductsChart(salesByDate.dates, salesByDate.counts);
@@ -325,9 +317,29 @@
       dashboardContent.classList.remove('hidden');
       
     } catch (error) {
-      console.error("Error loading stats data:", error);
-      alert("Error loading stats data. Please try again later.");
+      console.error('Error loading stats data:', error);
+      alert('Error loading stats data. Please try again later.');
     }
+  }
+  
+  // Calculate stats from orders
+  function calculateStats(orders) {
+    let totalProductsSold = 0;
+    let totalRevenue = 0;
+    
+    orders.forEach(order => {
+      order.products.forEach(product => {
+        if (product.seller.name === currentSeller.name) {
+          totalProductsSold += product.quantity;
+          totalRevenue += product.totalPrice;
+        }
+      });
+    });
+    
+    return {
+      totalProductsSold,
+      totalRevenue
+    };
   }
   
   // Process sales data by date
@@ -339,7 +351,7 @@
     
     // Create empty data points for all dates in the range
     const isAllTime = timePeriod === 'all';
-    const numDays = isAllTime ? Math.min(30, Math.ceil((new Date() - new Date(orders[0]?.created_at || new Date())) / (1000 * 60 * 60 * 24))) : timePeriod;
+    const numDays = isAllTime ? Math.min(30, Math.ceil((new Date() - new Date(orders[0]?.orderDate || new Date())) / (1000 * 60 * 60 * 24))) : timePeriod;
     
     for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date();
@@ -351,10 +363,14 @@
     
     // Fill in actual data
     orders.forEach(order => {
-      const dateString = new Date(order.created_at).toISOString().split('T')[0];
+      const dateString = new Date(order.orderDate).toISOString().split('T')[0];
       if (salesByDate[dateString]) {
-        salesByDate[dateString].count += 1;
-        salesByDate[dateString].amount += parseFloat(order.amount);
+        order.products.forEach(product => {
+          if (product.seller.name === currentSeller.name) {
+            salesByDate[dateString].count += product.quantity;
+            salesByDate[dateString].amount += product.totalPrice;
+          }
+        });
       }
     });
     
@@ -382,17 +398,20 @@
     const productMap = {};
     
     orders.forEach(order => {
-      const productName = order.product_name;
-      if (!productMap[productName]) {
-        productMap[productName] = {
-          name: productName,
-          count: 0,
-          revenue: 0
-        };
-      }
-      
-      productMap[productName].count += 1;
-      productMap[productName].revenue += parseFloat(order.amount);
+      order.products.forEach(product => {
+        if (product.seller.name === currentSeller.name) {
+          const productName = product.name;
+          if (!productMap[productName]) {
+            productMap[productName] = {
+              name: productName,
+              count: 0,
+              revenue: 0
+            };
+          }
+          productMap[productName].count += product.quantity;
+          productMap[productName].revenue += product.totalPrice;
+        }
+      });
     });
     
     // Convert to array and sort by count
@@ -414,7 +433,6 @@
       element.className = isPositive 
         ? 'bg-green-100 text-green-700 p-1 px-2 rounded text-xs'
         : 'bg-red-100 text-red-700 p-1 px-2 rounded text-xs';
-        
       element.innerHTML = `${isPositive ? '+' : ''}${formattedTrend}% ${isPositive ? '↑' : '↓'}`;
     }
   }
@@ -442,30 +460,17 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false
-          }
+          legend: { display: false }
         },
         scales: {
           y: {
             beginAtZero: true,
-            grid: {
-              display: true,
-              color: 'rgba(0, 0, 0, 0.05)'
-            },
-            ticks: {
-              precision: 0
-            }
+            grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: { precision: 0 }
           },
           x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              autoSkip: true,
-              maxRotation: 0,
-              maxTicksLimit: 10
-            }
+            grid: { display: false },
+            ticks: { autoSkip: true, maxRotation: 0, maxTicksLimit: 10 }
           }
         }
       }
@@ -497,27 +502,16 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false
-          }
+          legend: { display: false }
         },
         scales: {
           y: {
             beginAtZero: true,
-            grid: {
-              display: true,
-              color: 'rgba(0, 0, 0, 0.05)'
-            }
+            grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' }
           },
           x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              autoSkip: true,
-              maxRotation: 0,
-              maxTicksLimit: 10
-            }
+            grid: { display: false },
+            ticks: { autoSkip: true, maxRotation: 0, maxTicksLimit: 10 }
           }
         }
       }
@@ -553,10 +547,10 @@
   async function logout() {
     try {
       await auth.signOut();
-      window.location.href = "/login.html";
+      window.location.href = 'sign_in.html';
     } catch (error) {
-      console.error("Error signing out:", error);
-      alert("Error signing out. Please try again.");
+      console.error('Error signing out:', error);
+      alert('Error signing out. Please try again.');
     }
   }
 
@@ -564,11 +558,6 @@
   timePeriodSelect.addEventListener('change', loadStatsData);
   refreshStatsButton.addEventListener('click', loadStatsData);
   logoutButton.addEventListener('click', logout);
-
-  // Initialize page
-  document.addEventListener('DOMContentLoaded', () => {
-    // Auth state change will trigger loadStatsData
-  });
 </script>
 
 </body>
