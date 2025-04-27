@@ -72,7 +72,7 @@
 
     <div id="cart-summary">
       <p>Total Items: <span id="total-items">0</span></p>
-      <p>Total Price: $<span id="total-price">0.00</span></p>
+      <p>Total Price: ₹<span id="total-price">0.00</span></p>
     </div>
 
     <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
@@ -142,7 +142,7 @@
         itemDiv.classList.add('cart-item');
         itemDiv.innerHTML = `
           <span>${item.name}</span>
-          <span>$${item.price}</span>
+          <span>₹${item.price}</span>
           <button onclick="addToWishlist(${index})">Add to Wishlist</button>
           <button onclick="removeFromCart(${index})">Remove</button>
         `;
