@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cart | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+</head>
+<body>
+
+  <header>
+    <div class="top-banner">
+      <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+      <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+      <div class="left-section">
+        <a href="about.html">About Us</a>
+        <a href="profile.html">My account</a>
+        <a href="wishlist.html">Wishlist</a>
+        <span class="divider"></span>
+        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+      </div>
+      <div class="right-section">
+        <div id="google_translate_element"></div>
+        <a href="seller_login.html">  <button class="seller-btn">Seller Login</button></a>
+        <a href="#">Order Tracking</a>
+      </div>
+    </div>
+    <nav class="navbar">
+      <div class="navbar-left">
+        <a href="#" class="logo">
+          <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+          <span id="brand"></span>
+        </a>
+        <div class="delivery">
+          <span>Deliver to</span>
+          <span>all</span>
+        </div>
+      </div>
+      <div class="navbar-center">
+        <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </div>
+      <div class="navbar-right">
+        <a id="account-link" href="profile.html" class="account">
+          <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+        </a>
+        <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+        <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+      </div>
+    </nav>
+    <div class="navbar-links">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+      <a href="beverages.html">Beverages</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+      <a href="trendingproduct.html">Trending Products</a>
+      <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+  </header>
+
+  <div class="cart-page">
+    <h2>Your Cart</h2>
+    <div id="cart-items-container">
+      <!-- Cart items will be dynamically added here -->
+    </div>
+
+    <div id="cart-summary">
+      <p>Total Items: <span id="total-items">0</span></p>
+      <p>Total Price: $<span id="total-price">0.00</span></p>
+    </div>
+
+    <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+  </div>
+
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
+
+  <script>
+    let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    let wishlistItems = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+    function updateCartDisplay() {
+      const cartContainer = document.getElementById('cart-items-container');
+      const totalItems = document.getElementById('total-items');
+      const totalPrice = document.getElementById('total-price');
+      
+      cartContainer.innerHTML = '';
+      let total = 0;
+      cartItems.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('cart-item');
+        itemDiv.innerHTML = `
+          <span>${item.name}</span>
+          <span>$${item.price}</span>
+          <button onclick="addToWishlist(${index})">Add to Wishlist</button>
+          <button onclick="removeFromCart(${index})">Remove</button>
+        `;
+        cartContainer.appendChild(itemDiv);
+        total += item.price;
+      });
+
+      totalItems.textContent = cartItems.length;
+      totalPrice.textContent = total.toFixed(2);
+    }
+
+    function addToWishlist(index) {
+      const item = cartItems[index];
+      wishlistItems.push(item);
+      localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
+      alert('Item added to wishlist');
+    }
+
+    function removeFromCart(index) {
+      cartItems.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cartItems));
+      updateCartDisplay();
+    }
+
+    document.getElementById('checkout-btn').addEventListener('click', () => {
+      window.location.href = 'checkout.html';
+    });
+
+    updateCartDisplay();
+  </script>
+</body>
+</html>
