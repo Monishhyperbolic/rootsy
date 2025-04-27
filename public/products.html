@@ -8,9 +8,8 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
 
@@ -43,7 +42,6 @@
       <a href="products.html" class="flex items-center gap-2 text-blue-600 font-bold">
         <i class="fas fa-box"></i> Products
       </a>
-      
       <a href="#" id="logout-button" class="flex items-center gap-2 text-red-600 hover:text-red-700 mt-auto">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>
@@ -93,57 +91,14 @@
                 <option value="" disabled selected>Select a category</option>
                 <option value="Vegetables">Vegetables</option>
                 <option value="Fruits">Fruits</option>
-                <option value="Handicrafts & Artisanal Goods">Handicrafts & Artisanal Goods</option>
-                <option value="Textiles">Textiles</option>
-                <option value="Pottery & Ceramics">Pottery & Ceramics</option>
-                <option value="Woodcrafts">Woodcrafts</option>
-                <option value="Jewelry">Jewelry</option>
-                <option value="Paintings & Wall Art">Paintings & Wall Art</option>
-                <option value="Basketry & Weaving">Basketry & Weaving</option>
-                <option value="Agricultural Products">Agricultural Products</option>
-                <option value="Fresh Fruits & Vegetables">Fresh Fruits & Vegetables</option>
+                <option value="Dairy Products">Dairy Products</option>
                 <option value="Grains & Pulses">Grains & Pulses</option>
                 <option value="Spices & Herbs">Spices & Herbs</option>
                 <option value="Organic Produce">Organic Produce</option>
-                <option value="Dairy & Animal Products">Dairy & Animal Products</option>
-                <option value="Honey & Natural Sweeteners">Honey & Natural Sweeteners</option>
-                <option value="Homemade & Processed Foods">Homemade & Processed Foods</option>
-                <option value="Pickles & Chutneys">Pickles & Chutneys</option>
-                <option value="Snacks & Sweets">Snacks & Sweets</option>
-                <option value="Traditional Beverages">Traditional Beverages</option>
-                <option value="Bakery Items">Bakery Items</option>
-                <option value="Preserves & Jams">Preserves & Jams</option>
-                <option value="Tools & Equipment">Tools & Equipment</option>
-                <option value="Farming Tools">Farming Tools</option>
-                <option value="Handcrafted Tools">Handcrafted Tools</option>
-                <option value="Eco-friendly Household Tools">Eco-friendly Household Tools</option>
-                <option value="Clothing & Apparel">Clothing & Apparel</option>
-                <option value="Traditional Wear">Traditional Wear</option>
-                <option value="Handmade Accessories">Handmade Accessories</option>
-                <option value="Embroidered Items">Embroidered Items</option>
-                <option value="Local Fabrics">Local Fabrics</option>
-                <option value="Personal Care & Wellness">Personal Care & Wellness</option>
-                <option value="Herbal Soaps">Herbal Soaps</option>
-                <option value="Natural Oils & Balms">Natural Oils & Balms</option>
-                <option value="Handmade Cosmetics">Handmade Cosmetics</option>
-                <option value="Ayurvedic Products">Ayurvedic Products</option>
-                <option value="Home Decor & Utilities">Home Decor & Utilities</option>
-                <option value="Rugs & Carpets">Rugs & Carpets</option>
-                <option value="Lamps & Lighting">Lamps & Lighting</option>
-                <option value="Eco-friendly Furniture">Eco-friendly Furniture</option>
-                <option value="Kitchenware">Kitchenware</option>
-                <option value="Animal Husbandry Products">Animal Husbandry Products</option>
-                <option value="Livestock Feed">Livestock Feed</option>
-                <option value="Handmade Leather Goods">Handmade Leather Goods</option>
-                <option value="Organic Fertilizers">Organic Fertilizers</option>
-                <option value="Education & Services">Education & Services</option>
-                <option value="Local Tutoring Services">Local Tutoring Services</option>
-                <option value="Language Translation">Language Translation</option>
-                <option value="Technical Repair">Technical Repair</option>
-                <option value="Miscellaneous">Miscellaneous</option>
-                <option value="Recycled/Upcycled Products">Recycled/Upcycled Products</option>
-                <option value="Seasonal Offers">Seasonal Offers</option>
-                <option value="Combo Packs & Gift Hampers">Combo Packs & Gift Hampers</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Bakery">Bakery</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Household Items">Household Items</option>
               </select>
             </div>
           </div>
@@ -155,7 +110,7 @@
               class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"></textarea>
           </div>
 
-          <!-- Product Image and 3D Model -->
+          <!-- Product Image -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Product Image URL -->
             <div>
@@ -170,15 +125,6 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Image Preview</label>
                 <img id="image-preview" src="#" alt="Preview" class="max-w-full h-auto rounded-md border border-gray-200">
               </div>
-            </div>
-
-            <!-- 3D Model URL (Optional) -->
-            <div>
-              <label for="model-url" class="block text-sm font-medium text-gray-700 mb-1">3D Model URL (Optional)</label>
-              <input type="url" id="model-url" name="model-url" 
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
-                placeholder="https://example.com/model.glb">
-              <p class="mt-1 text-sm text-gray-500">Enter a URL to a 3D model file (GLB, GLTF) if available</p>
             </div>
           </div>
 
@@ -238,12 +184,11 @@
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-  const storage = firebase.storage();
 
-  // Supabase Configuration
-  const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs';
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  // JSONBin Configuration
+  const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
+  const productsBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4120';
+  const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
   // DOM Elements
   const pageLoading = document.getElementById('page-loading');
@@ -269,15 +214,13 @@
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       try {
-        // Get seller details
-        const { data: seller, error } = await supabaseClient
-          .from('sellers')
-          .select('*')
-          .eq('email', user.email)
-          .single();
+        // Fetch seller details from JSONBin.io
+        const sellerResponse = await axios.get(sellersBinUrl, {
+          headers: { 'X-Master-Key': apiKey }
+        });
+        const sellers = sellerResponse.data.record?.sellerdetails || [];
+        const seller = sellers.find(s => s.email === user.email);
 
-        if (error) throw error;
-        
         if (seller) {
           currentSeller = seller;
           sellerNameElement.textContent = seller.name;
@@ -288,15 +231,15 @@
           productForm.classList.remove('hidden');
         } else {
           // Redirect to login
-          window.location.href = "/login.html";
+          window.location.href = 'sign_in.html';
         }
       } catch (error) {
-        console.error("Error fetching seller details:", error);
-        showAlert("error", "Error loading seller information. Please try again later.");
+        console.error('Error fetching seller details:', error);
+        showAlert('error', 'Error loading seller information. Please try again later.');
       }
     } else {
       // Redirect to login
-      window.location.href = "/login.html";
+      window.location.href = 'sign_in.html';
     }
   });
 
@@ -305,16 +248,13 @@
     const imageUrl = event.target.value;
     if (imageUrl) {
       try {
-        // Basic URL validation
         new URL(imageUrl);
         imagePreview.src = imageUrl;
         imagePreviewContainer.classList.remove('hidden');
       } catch (e) {
-        // Invalid URL, hide preview
         imagePreviewContainer.classList.add('hidden');
       }
     } else {
-      // Empty input, hide preview
       imagePreviewContainer.classList.add('hidden');
     }
   });
@@ -324,7 +264,7 @@
     event.preventDefault();
     
     if (!currentSeller) {
-      showAlert("error", "Please log in to add products.");
+      showAlert('error', 'Please log in to add products.');
       return;
     }
 
@@ -334,64 +274,83 @@
     const productCategory = document.getElementById('product-category').value;
     const productDescription = document.getElementById('product-description').value;
     const imageUrl = document.getElementById('product-image-url').value;
-    const modelUrl = document.getElementById('model-url').value || null;
     const stockQuantity = parseInt(document.getElementById('stock-quantity').value);
     
-    // Validate price
+    // Validate inputs
     if (isNaN(productPrice) || productPrice <= 0) {
-      showAlert("error", "Please enter a valid price.");
+      showAlert('error', 'Please enter a valid price.');
       return;
     }
     
-    // Validate image URL
     if (!imageUrl) {
-      showAlert("error", "Please enter a product image URL");
+      showAlert('error', 'Please enter a product image URL.');
       return;
     }
     
     try {
-      // Validate URL format
       new URL(imageUrl);
     } catch (e) {
-      showAlert("error", "Please enter a valid image URL");
+      showAlert('error', 'Please enter a valid image URL.');
+      return;
+    }
+
+    if (stockQuantity < 1) {
+      showAlert('error', 'Stock quantity must be at least 1.');
       return;
     }
 
     try {
       // Set button to loading state
       setButtonLoading(true);
-      showAlert("info", "Saving product data...");
+      showAlert('info', 'Saving product data...');
       
       // Create product object
       const productData = {
         name: productName,
-        price: productPrice,
+        image_url: imageUrl,
+        price: productPrice.toFixed(2),
         description: productDescription,
         category_name: productCategory,
         seller_name: currentSeller.name,
-        model_url: modelUrl,
-        image_url: imageUrl,
         stock: stockQuantity
       };
       
-      // Insert product into database
-      const { data, error } = await supabaseClient
-        .from('products')
-        .insert([productData]);
-      
-      if (error) throw error;
+      // Fetch existing products
+      let products = [];
+      try {
+        const productsResponse = await axios.get(productsBinUrl, {
+          headers: { 'X-Master-Key': apiKey }
+        });
+        products = productsResponse.data.record?.products || [];
+      } catch (error) {
+        if (error.response?.status !== 404) {
+          throw error;
+        }
+        // Bin doesn't exist yet, will create with first product
+      }
+
+      // Add new product
+      products.push(productData);
+
+      // Update JSONBin.io
+      await axios.put(productsBinUrl, { products }, {
+        headers: {
+          'X-Master-Key': apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
       
       // Show success message
-      showAlert("success", "Product added successfully!");
+      showAlert('success', 'Product added successfully!');
       
       // Redirect to products page after 2 seconds
       setTimeout(() => {
-        window.location.href = "products.html";
+        window.location.href = 'products.html';
       }, 2000);
       
     } catch (error) {
-      console.error("Error adding product:", error);
-      showAlert("error", `Error adding product: ${error.message}`);
+      console.error('Error adding product:', error);
+      showAlert('error', `Error adding product: ${error.message}`);
       setButtonLoading(false);
     }
   });
@@ -401,7 +360,7 @@
     statusAlert.classList.remove('hidden', 'bg-green-50', 'bg-red-50', 'bg-blue-50');
     statusIcon.innerHTML = '';
     
-    if (type === "success") {
+    if (type === 'success') {
       statusAlert.classList.add('bg-green-50');
       statusMessage.className = 'text-sm font-medium text-green-800';
       statusIcon.innerHTML = `
@@ -409,7 +368,7 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
         </svg>
       `;
-    } else if (type === "info") {
+    } else if (type === 'info') {
       statusAlert.classList.add('bg-blue-50');
       statusMessage.className = 'text-sm font-medium text-blue-800';
       statusIcon.innerHTML = `
@@ -429,8 +388,7 @@
     
     statusMessage.textContent = message;
     
-    // Auto-hide success and info messages after 5 seconds
-    if (type === "success" || type === "info") {
+    if (type === 'success' || type === 'info') {
       setTimeout(() => {
         statusAlert.classList.add('hidden');
       }, 5000);
@@ -454,20 +412,15 @@
   async function logout() {
     try {
       await auth.signOut();
-      window.location.href = "/login.html";
+      window.location.href = 'sign_in.html';
     } catch (error) {
-      console.error("Error signing out:", error);
-      showAlert("error", "Error signing out. Please try again.");
+      console.error('Error signing out:', error);
+      showAlert('error', 'Error signing out. Please try again.');
     }
   }
 
   // Add event listeners
   logoutButton.addEventListener('click', logout);
-
-  // Initialize page
-  document.addEventListener('DOMContentLoaded', () => {
-    // Auth state change will trigger page loading
-  });
 </script>
 
 </body>

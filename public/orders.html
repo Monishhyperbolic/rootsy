@@ -8,15 +8,15 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <!-- Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.0/dist/umd/supabase.min.js"></script>
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
 
 <!-- Header -->
 <header class="flex items-center justify-between p-4 bg-white shadow">
   <div class="flex items-center gap-2">
-    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png"  style="width: 80px; height: auto;" alt="Logo" class="h-8">
+    <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;" alt="Logo" class="h-8">
   </div>
   <div class="flex items-center gap-4">
     <input type="text" id="search-orders" placeholder="Search Orders..." class="border rounded-full px-4 py-2 w-64 focus:outline-none focus:ring">
@@ -42,7 +42,6 @@
       <a href="products.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
         <i class="fas fa-box"></i> Products
       </a>
-      
       <a href="#" id="logout-button" class="flex items-center gap-2 text-red-600 hover:text-red-700 mt-auto">
         <i class="fas fa-sign-out-alt"></i> Logout
       </a>
@@ -158,10 +157,10 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
-  // Supabase Configuration
-  const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // Replace with your actual Supabase anon key
-  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  // JSONBin Configuration
+  const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
+  const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
+  const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
   // DOM Elements
   const searchInput = document.getElementById('search-orders');
@@ -190,15 +189,13 @@
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       try {
-        // Get seller details
-        const { data: seller, error } = await supabaseClient
-          .from('sellers')
-          .select('*')
-          .eq('email', user.email)
-          .single();
+        // Fetch seller details from JSONBin.io
+        const sellerResponse = await axios.get(sellersBinUrl, {
+          headers: { 'X-Master-Key': apiKey }
+        });
+        const sellers = sellerResponse.data.record?.sellerdetails || [];
+        const seller = sellers.find(s => s.email === user.email);
 
-        if (error) throw error;
-        
         if (seller) {
           currentSeller = seller;
           sellerNameElement.textContent = seller.name;
@@ -208,15 +205,15 @@
           fetchOrders();
         } else {
           // Redirect to login
-          window.location.href = "/login.html";
+          window.location.href = 'sign_in.html';
         }
       } catch (error) {
-        console.error("Error fetching seller details:", error);
-        alert("Error loading seller information. Please try again later.");
+        console.error('Error fetching seller details:', error);
+        alert('Error loading seller information. Please try again later.');
       }
     } else {
       // Redirect to login
-      window.location.href = "/login.html";
+      window.location.href = 'sign_in.html';
     }
   });
 
@@ -229,46 +226,48 @@
       ordersTable.classList.add('hidden');
       noOrders.classList.add('hidden');
       
-      // Build query
-      let query = supabaseClient
-        .from('orders')
-        .select(`
-          id,
-          customer_name,
-          product_name,
-          amount,
-          created_at,
-          status,
-          customer_email,
-          customer_address,
-          payment_method
-        `)
-        .eq('seller_name', currentSeller.name);
-      
+      // Fetch orders from JSONBin.io
+      const ordersResponse = await axios.get(ordersBinUrl, {
+        headers: { 'X-Master-Key': apiKey }
+      });
+      let orders = ordersResponse.data.record?.orders || [];
+
+      // Filter orders by seller
+      orders = orders.filter(order => 
+        order.products.some(p => p.seller.name === currentSeller.name)
+      );
+
       // Apply date filter
-      const dayFilter = parseInt(dateFilter.value);
-      if (dayFilter && dayFilter !== 'all') {
+      const dayFilter = dateFilter.value === 'all' ? 'all' : parseInt(dateFilter.value);
+      if (dayFilter !== 'all') {
         const fromDate = new Date();
         fromDate.setDate(fromDate.getDate() - dayFilter);
-        query = query.gte('created_at', fromDate.toISOString());
+        orders = orders.filter(order => new Date(order.orderDate) >= fromDate);
       }
-      
+
       // Apply status filter
       const statusValue = statusFilter.value;
-      if (statusValue && statusValue !== 'all') {
-        query = query.eq('status', statusValue);
+      if (statusValue !== 'all') {
+        orders = orders.filter(order => 
+          normalizeStatus(order.orderStatus) === statusValue
+        );
       }
-      
+
       // Apply search filter
       const searchValue = searchInput.value.trim().toLowerCase();
       if (searchValue) {
-        query = query.or(`customer_name.ilike.%${searchValue}%,product_name.ilike.%${searchValue}%,id.ilike.%${searchValue}%`);
+        orders = orders.filter(order => 
+          order.orderId.toLowerCase().includes(searchValue) ||
+          order.user.name.toLowerCase().includes(searchValue) ||
+          order.products.some(p => 
+            p.name.toLowerCase().includes(searchValue) && 
+            p.seller.name === currentSeller.name
+          )
+        );
       }
-      
-      // Execute query
-      const { data: orders, error } = await query.order('created_at', { ascending: false });
-      
-      if (error) throw error;
+
+      // Sort by orderDate descending
+      orders.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
       
       currentOrders = orders;
       
@@ -282,10 +281,19 @@
         renderOrdersTable(orders);
       }
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error('Error fetching orders:', error);
       ordersLoading.classList.add('hidden');
-      alert("Error loading orders. Please try again later.");
+      alert('Error loading orders. Please try again later.');
     }
+  }
+
+  // Normalize order status (e.g., map 'Shipped' to 'completed')
+  function normalizeStatus(status) {
+    const statusMap = {
+      'shipped': 'completed',
+      'delivered': 'completed'
+    };
+    return statusMap[status.toLowerCase()] || status.toLowerCase();
   }
 
   // Render orders table
@@ -293,11 +301,18 @@
     ordersTableBody.innerHTML = '';
     
     orders.forEach(order => {
+      // Get seller's products
+      const sellerProducts = order.products.filter(
+        p => p.seller.name === currentSeller.name
+      );
+      const productNames = sellerProducts.map(p => p.name).join(', ');
+      const amount = sellerProducts.reduce((sum, p) => sum + p.totalPrice, 0);
+      
       const row = document.createElement('tr');
       row.className = 'border-b';
       
       // Format date
-      const orderDate = new Date(order.created_at);
+      const orderDate = new Date(order.orderDate);
       const formattedDate = orderDate.toLocaleDateString('en-US', { 
         year: 'numeric', 
         month: 'short', 
@@ -305,8 +320,9 @@
       });
       
       // Determine status color
+      const normalizedStatus = normalizeStatus(order.orderStatus);
       let statusColor = '';
-      switch(order.status.toLowerCase()) {
+      switch(normalizedStatus) {
         case 'completed':
           statusColor = 'bg-green-100 text-green-700';
           break;
@@ -324,16 +340,16 @@
       }
       
       row.innerHTML = `
-        <td class="py-4 px-6">#${order.id}</td>
-        <td class="py-4 px-6">${order.customer_name}</td>
-        <td class="py-4 px-6">${order.product_name}</td>
-        <td class="py-4 px-6">$${parseFloat(order.amount).toFixed(2)}</td>
+        <td class="py-4 px-6">${order.orderId}</td>
+        <td class="py-4 px-6">${order.user.name}</td>
+        <td class="py-4 px-6">${productNames}</td>
+        <td class="py-4 px-6">$${amount.toFixed(2)}</td>
         <td class="py-4 px-6">${formattedDate}</td>
         <td class="py-4 px-6">
-          <span class="${statusColor} py-1 px-3 rounded-full text-xs capitalize">${order.status}</span>
+          <span class="${statusColor} py-1 px-3 rounded-full text-xs capitalize">${normalizedStatus}</span>
         </td>
         <td class="py-4 px-6 text-right">
-          <button class="text-blue-600 hover:underline view-order" data-order-id="${order.id}">View</button>
+          <button class="text-blue-600 hover:underline view-order" data-order-id="${order.orderId}">View</button>
         </td>
       `;
       
@@ -351,13 +367,13 @@
 
   // Show order details in modal
   function showOrderDetails(orderId) {
-    const order = currentOrders.find(o => o.id === orderId);
+    const order = currentOrders.find(o => o.orderId === orderId);
     if (!order) return;
     
     currentOrderDetail = order;
     
     // Format date
-    const orderDate = new Date(order.created_at);
+    const orderDate = new Date(order.orderDate);
     const formattedDate = orderDate.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
@@ -366,11 +382,27 @@
       minute: '2-digit'
     });
     
+    // Get seller's products
+    const sellerProducts = order.products.filter(
+      p => p.seller.name === currentSeller.name
+    );
+    const amount = sellerProducts.reduce((sum, p) => sum + p.totalPrice, 0);
+    
+    // Format address
+    const address = order.user.shippingAddress;
+    const formattedAddress = [
+      address.addressLine1,
+      address.city,
+      address.state,
+      address.postalCode,
+      address.country
+    ].filter(Boolean).join(', ');
+    
     orderDetailsContent.innerHTML = `
       <div class="grid grid-cols-2 gap-4">
         <div>
           <h4 class="font-medium text-gray-500">Order ID</h4>
-          <p class="font-semibold">#${order.id}</p>
+          <p class="font-semibold">${order.orderId}</p>
         </div>
         <div>
           <h4 class="font-medium text-gray-500">Date</h4>
@@ -379,15 +411,15 @@
         <div>
           <h4 class="font-medium text-gray-500">Status</h4>
           <select id="order-status" class="border rounded px-2 py-1 w-full">
-            <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
-            <option value="completed" ${order.status === 'completed' ? 'selected' : ''}>Completed</option>
-            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+            <option value="pending" ${normalizeStatus(order.orderStatus) === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="processing" ${normalizeStatus(order.orderStatus) === 'processing' ? 'selected' : ''}>Processing</option>
+            <option value="completed" ${normalizeStatus(order.orderStatus) === 'completed' ? 'selected' : ''}>Completed</option>
+            <option value="cancelled" ${normalizeStatus(order.orderStatus) === 'cancelled' ? 'selected' : ''}>Cancelled</option>
           </select>
         </div>
         <div>
           <h4 class="font-medium text-gray-500">Amount</h4>
-          <p class="font-semibold">$${parseFloat(order.amount).toFixed(2)}</p>
+          <p class="font-semibold">$${amount.toFixed(2)}</p>
         </div>
       </div>
       
@@ -396,15 +428,19 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <h5 class="text-sm text-gray-500">Name</h5>
-            <p>${order.customer_name}</p>
+            <p>${order.user.name}</p>
           </div>
           <div>
             <h5 class="text-sm text-gray-500">Email</h5>
-            <p>${order.customer_email || 'N/A'}</p>
+            <p>${order.user.email || 'N/A'}</p>
+          </div>
+          <div>
+            <h5 class="text-sm text-gray-500">Phone</h5>
+            <p>${order.user.phone || 'N/A'}</p>
           </div>
           <div class="col-span-2">
             <h5 class="text-sm text-gray-500">Address</h5>
-            <p>${order.customer_address || 'N/A'}</p>
+            <p>${formattedAddress || 'N/A'}</p>
           </div>
         </div>
       </div>
@@ -416,19 +452,23 @@
             <thead class="bg-gray-50">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.product_name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$${parseFloat(order.amount).toFixed(2)}</td>
-              </tr>
+              ${sellerProducts.map(product => `
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${product.name}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.quantity}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$${product.totalPrice.toFixed(2)}</td>
+                </tr>
+              `).join('')}
             </tbody>
             <tfoot class="bg-gray-50">
               <tr>
-                <td class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</td>
-                <td class="px-6 py-3 text-right text-xs font-medium text-gray-900 tracking-wider">$${parseFloat(order.amount).toFixed(2)}</td>
+                <td class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" colspan="2">Total</td>
+                <td class="px-6 py-3 text-right text-xs font-medium text-gray-900 tracking-wider">$${amount.toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>
@@ -440,7 +480,11 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <h5 class="text-sm text-gray-500">Payment Method</h5>
-            <p>${order.payment_method || 'N/A'}</p>
+            <p>${order.paymentMethod || 'N/A'}</p>
+          </div>
+          <div>
+            <h5 class="text-sm text-gray-500">Payment Status</h5>
+            <p>${order.paymentStatus || 'N/A'}</p>
           </div>
         </div>
       </div>
@@ -456,19 +500,34 @@
     const newStatus = document.getElementById('order-status').value;
     
     try {
-      const { data, error } = await supabaseClient
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', currentOrderDetail.id);
-      
-      if (error) throw error;
+      // Fetch current orders
+      const ordersResponse = await axios.get(ordersBinUrl, {
+        headers: { 'X-Master-Key': apiKey }
+      });
+      let orders = ordersResponse.data.record?.orders || [];
+
+      // Update the order status
+      const orderIndex = orders.findIndex(o => o.orderId === currentOrderDetail.orderId);
+      if (orderIndex === -1) {
+        throw new Error('Order not found');
+      }
+
+      orders[orderIndex].orderStatus = newStatus;
+
+      // Update JSONBin.io
+      await axios.put(ordersBinUrl, { orders }, {
+        headers: {
+          'X-Master-Key': apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
       
       alert('Order status updated successfully!');
       closeOrderModal();
       fetchOrders(); // Refresh orders list
     } catch (error) {
-      console.error("Error updating order status:", error);
-      alert("Error updating order status. Please try again later.");
+      console.error('Error updating order status:', error);
+      alert('Error updating order status: ' + error.message);
     }
   }
 
@@ -482,10 +541,10 @@
   async function logout() {
     try {
       await auth.signOut();
-      window.location.href = "/login.html";
+      window.location.href = 'sign_in.html';
     } catch (error) {
-      console.error("Error signing out:", error);
-      alert("Error signing out. Please try again.");
+      console.error('Error signing out:', error);
+      alert('Error signing out. Please try again.');
     }
   }
 
@@ -502,11 +561,6 @@
   closeModalBtn.addEventListener('click', closeOrderModal);
   updateStatus.addEventListener('click', updateOrderStatus);
   logoutButton.addEventListener('click', logout);
-
-  // Initialize page
-  document.addEventListener('DOMContentLoaded', () => {
-    // Auth state change will trigger fetchOrders
-  });
 </script>
 
 </body>
