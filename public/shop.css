@@ -606,3 +606,125 @@ body {
     margin-top: 15px;
   }
 }
+
+/* Wishlist Page */
+.wishlist-main {
+  margin: 30px auto;
+  padding: 20px;
+  max-width: 1200px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+/* Title */
+.wishlist-main h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+/* Wishlist Items Container */
+#wishlist-items-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+/* Item Card */
+.wishlist-item {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: calc(33.33% - 20px);
+  box-sizing: border-box;
+  transition: transform 0.3s ease;
+}
+
+/* Item Card on Hover */
+.wishlist-item:hover {
+  transform: scale(1.05);
+}
+
+/* Item Name and Price */
+.wishlist-item span:first-child {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.wishlist-item span:nth-child(2) {
+  font-size: 16px;
+  color: #28a745;
+}
+
+/* Wishlist Actions (Buttons) */
+.wishlist-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* Buttons */
+button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Add to Cart Button */
+.add-to-cart-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Remove Button */
+.remove-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
+
+/* Checkout Button (Go to Cart) */
+.checkout-btn {
+  background-color: #28a745;
+  color: white;
+  font-size: 16px;
+  padding: 15px 30px;
+  margin-top: 30px;
+  border-radius: 5px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.checkout-btn:hover {
+  background-color: #218838;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .wishlist-item {
+      width: calc(50% - 20px); /* 2 items per row on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  .wishlist-item {
+      width: 100%; /* 1 item per row on very small screens */
+  }
+}

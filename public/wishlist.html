@@ -78,14 +78,13 @@
       <!-- Wishlist Item -->
       <div class="wishlist-item">
         <span>Product Name</span>
-        <span>$20.99</span>
+        <span>₹20.99</span>
         <div class="wishlist-actions">
           <button class="add-to-cart-btn">Add to Cart</button>
           <button class="remove-btn">Remove</button>
         </div>
       </div>
       <!-- Repeat above block for each wishlist item -->
-
     </div>
 
     <!-- Checkout/Go to Cart Button -->
@@ -195,7 +194,7 @@ function updateWishlist() {
         itemElement.classList.add('wishlist-item');
         itemElement.innerHTML = `
             <span>${item.name}</span>
-            <span>$${item.price}</span>
+            <span>₹${item.price}</span>
             <div class="wishlist-actions">
                 <button class="add-to-cart-btn" onclick="addToCart(${JSON.stringify(item)})">Add to Cart</button>
                 <button class="remove-btn" onclick="removeFromWishlist(${item.id})">Remove</button>
