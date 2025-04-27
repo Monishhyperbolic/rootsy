@@ -1,3 +1,5 @@
+contact.html
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +8,22 @@
   <title>Contact Section</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #fff;
-      color: #111;
-    }
+   body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
 
+/* Top Banner */
+.top-banner {
+    background-color: #6a1b9a;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
 
-    .top-header {
+/* Top Header */
+.top-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -25,6 +33,26 @@
   color: #555;
   border-bottom: 1px solid #dfe4ea;
 }
+
+/* Smooth color transition for all header links */
+.top-header a,
+.navbar-right a,
+.navbar-links a {
+  transition: color 0.3s ease, transform 0.3s ease;
+  position: relative;
+}
+
+/* Change color and slightly scale up on hover */
+.top-header a:hover,
+.navbar-right a:hover,
+.navbar-links a:hover {
+  color: #30014d; /* example highlight color */
+  transform: scale(1.1);
+}
+
+
+
+
 
 .left-section a,
 .right-section a {
@@ -72,13 +100,20 @@
   padding: 4px 10px;
   font-size: 13px;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .seller-btn:hover {
-  background-color: #f1f1f1;
-  border-color: #aaa;
+  background-color: #333333; /* dark grey background on hover */
+  border-color: #333333; /* optional: match border color to background */
+  color: white; /* optional: improve contrast on dark background */
 }
+.seller-btn,
+.seller-btn:hover {
+  text-decoration: none !important;
+}
+
+
 
 
 .navbar {
@@ -503,28 +538,30 @@
 <body>
 
   <header>
-    
-    <div class="top-header">
-      <div class="left-section">
-        <a href="#">About Us</a>
-        <a href="#">My account</a>
-        <a href="#">Wishlist</a>
-        <span class="divider"></span>
-        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
-      </div>
-      <div class="right-section">
-        <div class="dropdown">English ▼</div>
-        <div class="dropdown">USD ▼</div>
-        <button class="seller-btn">Seller Login</button>
-        <a href="#">Order Tracking</a>
-      </div>
+    <div class="top-banner">
+        
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
     </div>
-
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+         <a href="seller_login.html">  <button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
     <nav class="navbar">
         <div class="navbar-left">
             <a href="#" class="logo">
-                <img src="images/RRootsy.png" alt="Rootsy Logo">
-                
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
             </a>
             <div class="delivery">
                 <span>Deliver to</span>
@@ -537,19 +574,19 @@
         </div>
         <div class="navbar-right">
             <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
-            <a href="#" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-            <a href="checkout.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
         </div>
     </nav>
     <div class="navbar-links">
         <a href="index.html">Home</a>
-        <a href="#">Shop</a>
-        <a href="#">Fruits & Vegetables</a>
-        <a href="#">Beverages</a>
-        <a href="#">Blog</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
         <a href="contact.html">Contact</a>
-        <a href="#">Trending Products</a>
-        <a href="#" class="sale">Almost Finished SALE</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
     </div>
 </header>
 
@@ -583,10 +620,10 @@
 
       <div class="social-icons">
         <span>Follow us:</span>
-        <a href="#"><img src="images/facebook.webp" alt="Facebook"></a>
-        <a href="#"><img src="images/twitter.webp" alt="Twitter"></a>
-        <a href="#"><img src="images/instagram.webp" alt="Instagram"></a>
-        <a href="#"><img src="images/linkedin.png" alt="Instagram"></a>
+        <a href="#"><img src="https://i.postimg.cc/8P5DK9hV/facebook.webp" alt="Facebook"></a>
+        <a href="#"><img src="https://i.postimg.cc/Hshmfz28/twitter.webp" alt="Twitter"></a>
+        <a href="#"><img src="https://i.postimg.cc/9f3hffsW/instagram.webp" alt="Instagram"></a>
+        <a href="#"><img src="https://i.postimg.cc/gJsF4HjJ/linkedin.png" alt="linkedin"></a>
       </div>
     </div>
 
@@ -608,12 +645,12 @@
 
   <section class="features">
     <div class="feature">
-      <img src="images/payonlyonline.webp" alt="Payment only online">
+      <img src="https://i.postimg.cc/xT0q06Ms/Online-Payment-PNG-Photo.png" alt="Payment only online">
       <h3>Payment only online</h3>
       <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
     </div>
     <div class="feature">
-      <img src="images/stocks&sales.webp" alt="New stocks and sales">
+      <img src="https://i.postimg.cc/vZTBnDPf/3d-illustration-business-sales-growth-png.webp" alt="New stocks and sales">
       <h3>New stocks and sales</h3>
       <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
     </div>
@@ -623,7 +660,7 @@
       <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
     </div>
     <div class="feature">
-      <img src="images/delivery.png" alt="Delivery from 1 hour">
+      <img src="https://i.postimg.cc/L54RM0wL/3d-delivery-person-waiving-hand-while-riding-scooter-png.webp" alt="Delivery from 1 hour">
       <h3>Delivery from 1 hour</h3>
       <p>Tasigförsamhet beteendedesign. Mobile checkout. Ylig kärrtorpa.</p>
     </div>
@@ -639,44 +676,43 @@
         </form>
     </div>
     <div class="footer-content">
-        <div class="column">
-            <h3>Need Help?</h3>
-            <p>Contact our support team: info@example.com</p>
-            <p>Call us: 0 800 300-353</p>
-        </div>
-        <div class="column">
-            <h3>Company Info</h3>
-            <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Careers</a></li>
-            </ul>
-        </div>
-        <div class="column">
-            <h3>Follow Us</h3>
-            <div class="social-media">
-                <a href="#"><img src="images/facebook.webp" alt="Facebook"></a>
-                <a href="#"><img src="images/twitter.webp" alt="Twitter"></a>
-                <a href="#"><img src="images/instagram.webp" alt="Instagram"></a>
-                <a href="#"><img src="images/linkedin.webp" alt="Instagram"></a>
-            </div>
-        </div>
-        <div class="column">
-            <h3>Payment Methods</h3>
-            <div class="payment-methods">
-                <i class="fa-brands fa-cc-visa"></i>
-                <i class="fa-brands fa-cc-mastercard"></i>
-                <i class="fa-brands fa-cc-paypal"></i>
-            </div>
+      <div class="column">
+        <h3>Need Help?</h3>
+        <p>Contact our support team: support@rootsy.com</p>
+        <p>Call us: 0800 19019028</p>
+    </div>
+    <div class="column">
+        <h3>Company Info</h3>
+        <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+        </ul>
+    </div>
+    <div class="column">
+        <h3>Follow Us</h3>
+        <div class="social-media">
+            <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+            <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+            <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
         </div>
     </div>
-    <div class="copyright">
-        Copyright 2024 © Jinstore WooCommerce WordPress Theme. All rights reserved. Powered by BlackRise Themes.
+    <div class="column">
+        <h3>Payment Methods</h3>
+        <div class="payment-methods">
+            <i class="fa-brands fa-cc-visa"></i>
+            <i class="fa-brands fa-cc-mastercard"></i>
+            <i class="fa-brands fa-cc-paypal"></i>
+        </div>
     </div>
-    <div class="links">
-        <a href="#">Terms and Conditions</a> |
-        <a href="#">Privacy Policy</a> |
-        <a href="#">Order Tracking</a>
-    </div>
+</div>
+<div class="copyright">
+    Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+</div>
+<div class="links">
+    <a href="#">Terms and Conditions</a> |
+    <a href="#">Privacy Policy</a> |
+    <a href="#">Order Tracking</a>
+</div>
 </footer>
 
 </body>
