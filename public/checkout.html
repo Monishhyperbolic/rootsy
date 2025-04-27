@@ -56,6 +56,35 @@
       margin-top: 20px;
       font-weight: bold;
     }
+    .coupon-section {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .coupon-section input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      flex: 1;
+    }
+    .coupon-section button {
+      padding: 8px 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .coupon-notification {
+      margin-top: 10px;
+      color: #28a745;
+      font-size: 14px;
+    }
+    .discount-info {
+      margin-top: 10px;
+      color: #e67e22;
+      font-weight: bold;
+    }
     .payment-options {
       margin-top: 20px;
     }
@@ -191,7 +220,14 @@
     <div class="cart-section">
       <h3>Cart Summary</h3>
       <ul id="cart-items"></ul>
+      <div class="cart-total" id="cart-subtotal">Subtotal: ₹0.00</div>
+      <div class="discount-info" id="cart-discount" style="display: none;">Discount: ₹0.00</div>
       <div class="cart-total" id="cart-total">Total: ₹0.00</div>
+      <p class="coupon-notification">Use coupon hackhazards10 to get 10% off</p>
+      <div class="coupon-section">
+        <input type="text" id="coupon-code" placeholder="Enter coupon code">
+        <button onclick="applyCoupon()">Apply Coupon</button>
+      </div>
     </div>
 
     <!-- Payment Options -->
@@ -288,7 +324,7 @@
 
     // Stellar Configuration (Testnet for testing, replace with mainnet for production)
     const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
-    const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD'; // e.g., GABC...
+    const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD';
 
     // Check auth state and fetch user data
     firebase.auth().onAuthStateChanged((user) => {
@@ -333,15 +369,19 @@
       }
     }
 
-    // Load cart from localStorage
+    // Load cart from localStorage and apply coupon if previously set
     function loadCart() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const cartItems = document.getElementById('cart-items');
+      const cartSubtotal = document.getElementById('cart-subtotal');
+      const cartDiscount = document.getElementById('cart-discount');
       const cartTotal = document.getElementById('cart-total');
-      let total = 0;
+      let subtotal = 0;
 
       if (cart.length === 0) {
         cartItems.innerHTML = '<li>Your cart is empty.</li>';
+        cartSubtotal.textContent = 'Subtotal: ₹0.00';
+        cartDiscount.style.display = 'none';
         cartTotal.textContent = 'Total: ₹0.00';
         return;
       }
@@ -351,10 +391,40 @@
         const li = document.createElement('li');
         li.textContent = `${item.name} - Quantity: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`;
         cartItems.appendChild(li);
-        total += item.price * item.quantity;
+        subtotal += item.price * item.quantity;
       });
 
-      cartTotal.textContent = `Total: ₹${total.toFixed(2)}`;
+      const appliedCoupon = localStorage.getItem('appliedCoupon');
+      let discount = 0;
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+        discount = subtotal * 0.10; // 10% discount
+        cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
+        cartDiscount.style.display = 'block';
+      } else {
+        cartDiscount.style.display = 'none';
+      }
+
+      cartSubtotal.textContent = `Subtotal: ₹${subtotal.toFixed(2)}`;
+      cartTotal.textContent = `Total: ₹${(subtotal - discount).toFixed(2)}`;
+    }
+
+    // Apply coupon code
+    function applyCoupon() {
+      const couponInput = document.getElementById('coupon-code');
+      const couponCode = couponInput.value.trim();
+      const errorMessage = document.getElementById('error-message');
+
+      if (couponCode.toLowerCase() === 'hackhazards10') {
+        localStorage.setItem('appliedCoupon', couponCode);
+        errorMessage.textContent = 'Coupon applied successfully!';
+        errorMessage.style.color = 'green';
+        loadCart(); // Reload cart to reflect discount
+      } else {
+        localStorage.removeItem('appliedCoupon');
+        errorMessage.textContent = 'Invalid coupon code.';
+        errorMessage.style.color = 'red';
+        loadCart(); // Reload to remove any previous discount
+      }
     }
 
     // Toggle alternate address
@@ -385,7 +455,13 @@
         }
       }
 
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100; // Convert to paise
+      let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      let discount = 0;
+      const appliedCoupon = localStorage.getItem('appliedCoupon');
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+        discount = subtotal * 0.10;
+      }
+      const total = (subtotal - discount) * 100; // Convert to paise
       const orderId = `ORD${Date.now()}`;
 
       try {
@@ -399,9 +475,10 @@
           description: `Order #${orderId}`,
           handler: async function (response) {
             try {
-              const orderId = await saveOrder('Razorpay', response.razorpay_payment_id);
+              const orderId = await saveOrder('Razorpay', response.razorpay_payment_id, appliedCoupon, discount);
               alert('Payment successful! Order placed.');
               localStorage.removeItem('cart');
+              localStorage.removeItem('appliedCoupon');
               window.location.href = `orderconfirmation.html?orderId=${orderId}`;
             } catch (error) {
               document.getElementById('error-message').textContent = 'Error saving order after payment. Please contact support.';
@@ -449,7 +526,13 @@
         }
       }
 
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      let discount = 0;
+      const appliedCoupon = localStorage.getItem('appliedCoupon');
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+        discount = subtotal * 0.10;
+      }
+      const total = subtotal - discount;
       const orderId = `ORD${Date.now()}`;
       const email = document.getElementById('user-email').textContent;
 
@@ -476,7 +559,9 @@
           pricing_type: 'fixed_price',
           metadata: {
             email,
-            orderId
+            orderId,
+            coupon: appliedCoupon || null,
+            discount: discount.toFixed(2)
           },
           redirect_url: `https://yourdomain.com/coinbasecallback.html?orderId=${orderId}`,
           cancel_url: 'https://yourdomain.com/paymentfailure.html'
@@ -515,7 +600,13 @@
         }
       }
 
-      const totalINR = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      let discount = 0;
+      const appliedCoupon = localStorage.getItem('appliedCoupon');
+      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
+        discount = subtotal * 0.10;
+      }
+      const totalINR = subtotal - discount;
       const orderId = `ORD${Date.now()}`;
       const email = document.getElementById('user-email').textContent;
 
@@ -560,7 +651,7 @@
             const payment = payments.records.find(p => 
               p.type === 'payment' &&
               p.asset_type === 'native' && // XLM
-              parseFloat(p.amount) >= parseFloat(totalXLM) &&
+              parseFloat(p.amount) >= parseFloat(totalXLM) * 0.95 && // Allow 5% margin for volatility
               p.to === merchantWallet &&
               (!p.transaction_attr?.memo || p.transaction_attr?.memo === orderId)
             );
@@ -568,9 +659,10 @@
             if (payment) {
               paymentConfirmed = true;
               const transactionId = payment.transaction_hash;
-              const orderId = await saveOrder('Stellar', transactionId);
+              const orderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
               alert('Payment successful! Order placed.');
               localStorage.removeItem('cart');
+              localStorage.removeItem('appliedCoupon');
               window.location.href = `orderconfirmation.html?orderId=${orderId}`;
               return;
             }
@@ -596,11 +688,12 @@
     }
 
     // Save order to orders bin
-    async function saveOrder(paymentMethod, paymentId = null) {
+    async function saveOrder(paymentMethod, paymentId = null, couponCode = null, discount = 0) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const email = document.getElementById('user-email').textContent;
       const orderId = `ORD${Date.now()}`;
-      const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const totalAmount = subtotal - discount;
       const orderDate = new Date().toISOString();
       const deliveryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -628,11 +721,14 @@
         })),
         orderDate,
         deliveryDate,
+        subtotal,
+        discount,
         totalAmount,
         orderStatus: 'Pending',
         paymentMethod,
         paymentStatus: paymentMethod === 'Razorpay' || paymentMethod === 'Stellar' ? 'Paid' : 'Pending',
-        paymentId
+        paymentId,
+        couponCode: couponCode || null
       };
 
       try {
