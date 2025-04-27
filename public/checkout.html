@@ -82,6 +82,7 @@
     .loading {
       text-align: center;
       margin: 20px 0;
+      display: none;
     }
   </style>
 </head>
@@ -171,7 +172,7 @@
     <div class="cart-section">
       <h3>Cart Summary</h3>
       <ul id="cart-items"></ul>
-      <div class="cart-total" id="cart-total">Total: $0.00</div>
+      <div class="cart-total" id="cart-total">Total: ₹0.00</div>
     </div>
 
     <!-- Payment Options -->
@@ -254,8 +255,8 @@
     const auth = firebase.auth();
 
     // JSONBin Configuration
-    const usersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Replace with your users bin ID
-    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116'; // Replace with your orders bin ID
+    const usersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80';
+    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
     // Check auth state and fetch user data
@@ -310,19 +311,19 @@
 
       if (cart.length === 0) {
         cartItems.innerHTML = '<li>Your cart is empty.</li>';
-        cartTotal.textContent = 'Total: $0.00';
+        cartTotal.textContent = 'Total: ₹0.00';
         return;
       }
 
       cartItems.innerHTML = '';
       cart.forEach(item => {
         const li = document.createElement('li');
-        li.textContent = `${item.name} - Quantity: ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`;
+        li.textContent = `${item.name} - Quantity: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`;
         cartItems.appendChild(li);
         total += item.price * item.quantity;
       });
 
-      cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+      cartTotal.textContent = `Total: ₹${total.toFixed(2)}`;
     }
 
     // Toggle alternate address
@@ -343,33 +344,38 @@
         return;
       }
 
+      // Validate required fields
+      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
+      for (const field of requiredFields) {
+        const value = document.getElementById(field).value.trim();
+        if (!value) {
+          document.getElementById('error-message').textContent = `Please fill in the ${field.replace('user-', '')} field.`;
+          return;
+        }
+      }
+
       const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100; // Convert to paise
+      const orderId = `ORD${Date.now()}`;
 
       try {
-        // Simulated server call to create Razorpay order
-        const response = await axios.post('https://api.razorpay.com/v1/orders', {
-          amount: total,
-          currency: 'INR',
-          receipt: `receipt_${Date.now()}`
-        }, {
-          auth: {
-            username: 'rzp_test_2Z0bGlFe6nKd9T',
-            password: 'Rycc45LaazsdmTyGVOdEjuDl'
-          }
-        });
+        document.getElementById('loading').style.display = 'block';
 
         const options = {
-          key: 'rzp_test_2Z0bGlFe6nKd9T',
-          amount: total,
+          key: 'rzp_test_2Z0bGlFe6nKd9T', // Test Mode Key ID
+          amount: total, // Amount in paise
           currency: 'INR',
           name: 'Rootsy Grocery Store',
-          description: 'Order Payment',
-          order_id: response.data.id,
+          description: `Order #${orderId}`,
           handler: async function (response) {
-            const orderId = await saveOrder('Razorpay');
-            alert('Payment successful! Order placed.');
-            localStorage.removeItem('cart');
-            window.location.href = `orderconfirmation.html?orderId=${orderId}`;
+            try {
+              const orderId = await saveOrder('Razorpay', response.razorpay_payment_id);
+              alert('Payment successful! Order placed.');
+              localStorage.removeItem('cart');
+              window.location.href = `orderconfirmation.html?orderId=${orderId}`;
+            } catch (error) {
+              document.getElementById('error-message').textContent = 'Error saving order after payment. Please contact support.';
+              console.error('Order save error:', error);
+            }
           },
           prefill: {
             name: document.getElementById('user-name').value,
@@ -381,10 +387,16 @@
         };
 
         const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+          document.getElementById('error-message').textContent = `Payment failed: ${response.error.description}`;
+          console.error('Payment failed:', response.error);
+        });
         rzp.open();
       } catch (error) {
         document.getElementById('error-message').textContent = 'Error initiating Razorpay payment. Please try again.';
         console.error('Razorpay error:', error);
+      } finally {
+        document.getElementById('loading').style.display = 'none';
       }
     }
 
@@ -396,21 +408,43 @@
         return;
       }
 
+      // Validate required fields
+      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
+      for (const field of requiredFields) {
+        const value = document.getElementById(field).value.trim();
+        if (!value) {
+          document.getElementById('error-message').textContent = `Please fill in the ${field.replace('user-', '')} field.`;
+          return;
+        }
+      }
+
       const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const orderId = `ORD${Date.now()}`;
+      const email = document.getElementById('user-email').textContent;
+
+      // Store user data in localStorage for coinbasecallback.html
+      localStorage.setItem('userName', document.getElementById('user-name').value);
+      localStorage.setItem('userPhone', document.getElementById('user-phone').value || '');
+      localStorage.setItem('userStreet', document.getElementById('user-street').value);
+      localStorage.setItem('userCity', document.getElementById('user-city').value);
+      localStorage.setItem('userState', document.getElementById('user-state').value || '');
+      localStorage.setItem('userPostalCode', document.getElementById('user-postal-code').value);
+      localStorage.setItem('userCountry', document.getElementById('user-country').value);
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('lastOrderId', orderId);
 
       try {
-        // Simulated Coinbase Commerce charge creation
+        document.getElementById('loading').style.display = 'block';
         const response = await axios.post('https://api.commerce.coinbase.com/charges', {
           name: 'Rootsy Grocery Store Order',
-          description: 'Order Payment',
+          description: `Order #${orderId}`,
           local_price: {
             amount: total.toFixed(2),
-            currency: 'USD'
+            currency: 'INR'
           },
           pricing_type: 'fixed_price',
           metadata: {
-            email: document.getElementById('user-email').textContent,
+            email,
             orderId
           },
           redirect_url: `https://yourdomain.com/coinbasecallback.html?orderId=${orderId}`,
@@ -423,22 +457,23 @@
         });
 
         const checkoutUrl = response.data.data.hosted_url;
-        localStorage.setItem('lastOrderId', orderId);
         window.location.href = checkoutUrl;
       } catch (error) {
         document.getElementById('error-message').textContent = 'Error initiating Coinbase payment. Please try again.';
-        console.error('Coinbase error:', error);
+        console.error('Coinbase error:', error.response?.data || error.message);
+      } finally {
+        document.getElementById('loading').style.display = 'none';
       }
     }
 
     // Save order to orders bin
-    async function saveOrder(paymentMethod) {
+    async function saveOrder(paymentMethod, paymentId = null) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const email = document.getElementById('user-email').textContent;
       const orderId = `ORD${Date.now()}`;
       const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const orderDate = new Date().toISOString();
-      const deliveryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days from now
+      const deliveryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const order = {
         orderId,
@@ -467,7 +502,8 @@
         totalAmount,
         orderStatus: 'Pending',
         paymentMethod,
-        paymentStatus: paymentMethod === 'Razorpay' ? 'Paid' : 'Pending' // Coinbase payment status updated later
+        paymentStatus: paymentMethod === 'Razorpay' ? 'Paid' : 'Pending',
+        paymentId // Store Razorpay payment ID for reference
       };
 
       try {
