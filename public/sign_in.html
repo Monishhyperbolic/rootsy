@@ -1,130 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Page</title>
+  <link rel="stylesheet" href="sign_in.css" />
 
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Login Page</title>
-    <link rel="stylesheet" href="sign_in.css" />
-  
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <link rel="stylesheet" href="sign_in.css" />
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-  
-  
-    <script>
-      // Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
-        authDomain: "rootsy-ec110.firebaseapp.com",
-        projectId: "rootsy-ec110",
-        storageBucket: "rootsy-ec110.appspot.com",
-        messagingSenderId: "120254624474",
-        appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
-        measurementId: "G-0Y636N5BPV"
-      };
-  
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-  
-      const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Replace with your bin ID
-      const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Replace with your API key (Master Key)
-  
-      async function checkUserInJsonBin(email) {
-        try {
-          const response = await fetch(jsonBinUrl, {
-            method: 'GET',
-            headers: {
-              'X-Master-Key': apiKey
-            }
-          });
-  
-          const data = await response.json();
-          // Loop through the data and check if the email exists
-          const userExists = data.find(user => user.email === email);
-          return userExists;
-        } catch (error) {
-          console.error('Error fetching data from JSONBin:', error);
-        }
-      }
-  
-      async function handleSignIn(event) {
-        event.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-  
-        try {
-          // Sign in the user with Firebase Auth
-          await auth.signInWithEmailAndPassword(email, password);
-  
-          // Check if user exists in JSONBin
-          const userExists = await checkUserInJsonBin(email);
-  
-          if (userExists) {
-            // If user exists in JSONBin, redirect to shop.html
-            window.location.href = "shop.html";
-          } else {
-            // If user doesn't exist, redirect to sign up page
-            window.location.href = "sign_up.html";
-          }
-        } catch (error) {
-          alert(error.message);
-        }
-      }
-  
-      async function signInWithGoogle() {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        try {
-          await auth.signInWithPopup(provider);
-  
-          const userEmail = auth.currentUser.email;
-          // Check if user exists in JSONBin
-          const userExists = await checkUserInJsonBin(userEmail);
-  
-          if (userExists) {
-            window.location.href = "shop.html";
-          } else {
-            window.location.href = "sign_up.html";
-          }
-        } catch (error) {
-          alert(error.message);
-        }
-      }
-    </script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="login-section">
-        <h2>Welcome Back 👋</h2>
-        <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
-  
-        <form onsubmit="handleSignIn(event)">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="Example@email.com" required />
-  
-          <label>Password</label>
-          <input type="password" id="password" placeholder="at least 8 characters" required />
-          <div class="forgot"><a href="forgot_password.html">Forgot Password?</a></div>
-  
-          <button type="submit">Sign in</button>
-        </form>
-  
-        <div class="divider">Or</div>
-  
-        <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    async function handleSignIn(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        // Sign in the user with Firebase Auth
+        await auth.signInWithEmailAndPassword(email, password);
         
-        <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
-  
-        <footer>© 2023 ALL RIGHTS RESERVED</footer>
-      </div>
-  
-      <div class="image-section">
-        <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
-      </div>
+        // Redirect directly to shop.html after successful login
+        window.location.href = "shop.html";
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+        
+        // Redirect directly to shop.html after successful Google login
+        window.location.href = "shop.html";
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="login-section">
+      <h2>Welcome Back 👋</h2>
+      <p class="subtitle">Today is a new day. It's your day. You shape it.<br>Sign in to start managing your projects.</p>
+
+      <form onsubmit="handleSignIn(event)">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="Example@email.com" required />
+
+        <label>Password</label>
+        <input type="password" id="password" placeholder="at least 8 characters" required />
+        <div class="forgot"><a href="forgot_password.html">Forgot Password?</a></div>
+
+        <button type="submit">Sign in</button>
+      </form>
+
+      <div class="divider">Or</div>
+
+      <button class="google-btn" type="button" onclick="signInWithGoogle()">Sign in with Google</button>
+      
+      <p class="signup">Don't you have an account? <a href="sign_up.html">Sign up</a></p>
+
+      <footer>© 2023 ALL RIGHTS RESERVED</footer>
     </div>
-  </body>
-  </html>
-  
+
+    <div class="image-section">
+      <img src="https://i.postimg.cc/ZqGVnmyK/thumbnail.avif" alt="Artistic Poster" />
+    </div>
+  </div>
+</body>
+</html>
