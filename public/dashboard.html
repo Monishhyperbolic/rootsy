@@ -5,17 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard - Rootsy</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <!-- Axios for API calls -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
-
-<!-- Header -->
 <header class="flex items-center justify-between p-4 bg-white shadow">
   <div class="flex items-center gap-2">
     <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;" alt="Logo" class="h-8">
@@ -28,11 +23,7 @@
     </div>
   </div>
 </header>
-
-<!-- Sidebar + Main -->
 <div class="flex">
-
-  <!-- Sidebar -->
   <aside class="w-64 bg-white p-6 min-h-screen shadow">
     <nav class="flex flex-col gap-6">
       <a href="#" class="flex items-center gap-2 text-blue-600 font-bold">
@@ -49,23 +40,16 @@
       </a>
     </nav>
   </aside>
-
-  <!-- Main Content -->
   <main class="flex-1 p-6">
     <div class="mb-6">
       <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
       <p class="text-gray-500">Welcome back! Here's an overview of your shop</p>
     </div>
-
-    <!-- Loading State -->
     <div id="dashboard-loading" class="text-center py-8">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       <p class="mt-2 text-gray-600">Loading dashboard data...</p>
     </div>
-
-    <!-- Dashboard Content -->
     <div id="dashboard-content" class="hidden">
-      <!-- Time Period Filter Card -->
       <div class="bg-white rounded-xl shadow p-6 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <h3 class="text-lg font-semibold">Sales Overview</h3>
@@ -85,8 +69,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div class="bg-white rounded-xl shadow p-6">
           <div class="flex justify-between items-center mb-6">
@@ -98,31 +80,24 @@
             <span class="text-gray-500 text-sm mb-1">units</span>
           </div>
           <p class="text-gray-500 text-sm mt-2" id="time-period-label">In the last 30 days</p>
-          
-          <!-- Products Sold Chart -->
           <div class="h-48 mt-4">
             <canvas id="products-chart"></canvas>
           </div>
         </div>
-
         <div class="bg-white rounded-xl shadow p-6">
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-semibold">Total Revenue</h3>
             <div id="revenue-trend" class="bg-green-100 text-green-700 p-1 px-2 rounded text-xs">+0% ↔</div>
           </div>
           <div class="flex items-end gap-2">
-            <span id="total-revenue" class="text-4xl font-bold">$0.00</span>
+            <span id="total-revenue" class="text-4xl font-bold">₹0.00</span>
           </div>
           <p class="text-gray-500 text-sm mt-2" id="revenue-time-period-label">In the last 30 days</p>
-          
-          <!-- Revenue Chart -->
           <div class="h-48 mt-4">
             <canvas id="revenue-chart"></canvas>
           </div>
         </div>
       </div>
-
-      <!-- Top Selling Products -->
       <div class="bg-white rounded-xl shadow p-6">
         <h3 class="text-lg font-semibold mb-4">Top Selling Products</h3>
         <div class="overflow-x-auto">
@@ -135,7 +110,6 @@
               </tr>
             </thead>
             <tbody id="top-products-table-body" class="text-gray-700">
-              <!-- Top products will be inserted here -->
             </tbody>
           </table>
         </div>
@@ -143,12 +117,8 @@
     </div>
   </main>
 </div>
-
-<!-- FontAwesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
 <script>
-  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
     authDomain: "rootsy-ec110.firebaseapp.com",
@@ -158,17 +128,11 @@
     appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
     measurementId: "G-0Y636N5BPV"
   };
-
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-
-  // JSONBin Configuration
   const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
   const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
   const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
-
-  // DOM Elements
   const dashboardLoading = document.getElementById('dashboard-loading');
   const dashboardContent = document.getElementById('dashboard-content');
   const logoutButton = document.getElementById('logout-button');
@@ -183,34 +147,25 @@
   const topProductsTableBody = document.getElementById('top-products-table-body');
   const productsTrendElement = document.getElementById('products-trend');
   const revenueTrendElement = document.getElementById('revenue-trend');
-  
-  // Global variables
   let currentSeller = null;
   let productsChart = null;
   let revenueChart = null;
   let previousProductsSold = 0;
   let previousRevenue = 0;
-
-  // Authentication check
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       try {
-        // Fetch seller details from JSONBin.io
         const sellerResponse = await axios.get(sellersBinUrl, {
           headers: { 'X-Master-Key': apiKey }
         });
         const sellers = sellerResponse.data.record?.sellerdetails || [];
         const seller = sellers.find(s => s.email === user.email);
-
         if (seller) {
           currentSeller = seller;
           sellerNameElement.textContent = seller.name;
           userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
-          
-          // Load stats data
           loadStatsData();
         } else {
-          // Redirect to login
           window.location.href = 'sign_in.html';
         }
       } catch (error) {
@@ -218,115 +173,76 @@
         alert('Error loading seller information. Please try again later.');
       }
     } else {
-      // Redirect to login
       window.location.href = 'sign_in.html';
     }
   });
-
-  // Load stats data based on selected time period
   async function loadStatsData() {
     if (!currentSeller) return;
-    
     try {
       dashboardLoading.classList.remove('hidden');
       dashboardContent.classList.add('hidden');
-      
       const timePeriod = timePeriodSelect.value === 'all' ? 'all' : parseInt(timePeriodSelect.value);
       const isAllTime = timePeriod === 'all';
-      
-      // Update time period labels
       const timeLabel = isAllTime ? 'All time' : `In the last ${timePeriod} days`;
       timePeriodLabel.textContent = timeLabel;
       revenueTimePeriodLabel.textContent = timeLabel;
-      
-      // Fetch orders from JSONBin.io
       const ordersResponse = await axios.get(ordersBinUrl, {
         headers: { 'X-Master-Key': apiKey }
       });
       const orders = ordersResponse.data.record?.orders || [];
-
-      // Calculate date ranges
       let previousPeriodStart, previousPeriodEnd;
       let currentPeriodStart, currentPeriodEnd;
-      
       currentPeriodEnd = new Date();
       if (isAllTime) {
-        currentPeriodStart = new Date(0); // Beginning of time
+        currentPeriodStart = new Date(0);
       } else {
         currentPeriodStart = new Date();
         currentPeriodStart.setDate(currentPeriodStart.getDate() - timePeriod);
-        
-        // Calculate previous period for comparison
         previousPeriodEnd = new Date(currentPeriodStart);
         previousPeriodStart = new Date(previousPeriodEnd);
         previousPeriodStart.setDate(previousPeriodStart.getDate() - timePeriod);
       }
-      
-      // Filter orders for current and previous periods
       const currentOrders = orders.filter(order => {
         const orderDate = new Date(order.orderDate);
         return orderDate >= currentPeriodStart && orderDate <= currentPeriodEnd &&
                order.products.some(p => p.seller.name === currentSeller.name);
       });
-      
       const previousOrders = isAllTime ? [] : orders.filter(order => {
         const orderDate = new Date(order.orderDate);
         return orderDate >= previousPeriodStart && orderDate <= previousPeriodEnd &&
                order.products.some(p => p.seller.name === currentSeller.name);
       });
-      
-      // Calculate stats
       const currentStats = calculateStats(currentOrders);
       const previousStats = calculateStats(previousOrders);
-      
-      // Update global variables for trends
       previousProductsSold = previousStats.totalProductsSold;
       previousRevenue = previousStats.totalRevenue;
-      
-      // Calculate trends
       let productsTrend = 0;
       let revenueTrend = 0;
-      
       if (previousProductsSold > 0) {
         productsTrend = ((currentStats.totalProductsSold - previousProductsSold) / previousProductsSold) * 100;
       }
-      
       if (previousRevenue > 0) {
         revenueTrend = ((currentStats.totalRevenue - previousRevenue) / previousRevenue) * 100;
       }
-      
-      // Update UI with trends
       updateTrendDisplay(productsTrendElement, productsTrend);
       updateTrendDisplay(revenueTrendElement, revenueTrend);
-      
-      // Process data for charts and top products
       const salesByDate = processSalesByDate(currentOrders, timePeriod);
       const topProducts = processTopProducts(currentOrders);
-      
-      // Update UI with data
       totalProductsSoldElement.textContent = currentStats.totalProductsSold;
-      totalRevenueElement.textContent = `$${currentStats.totalRevenue.toFixed(2)}`;
-      
-      // Render charts and tables
+      totalRevenueElement.textContent = `₹${currentStats.totalRevenue.toFixed(2)}`;
       renderProductsChart(salesByDate.dates, salesByDate.counts);
       renderRevenueChart(salesByDate.dates, salesByDate.amounts);
       renderTopProductsTable(topProducts);
-      
-      // Hide loading, show content
       dashboardLoading.classList.add('hidden');
       dashboardContent.classList.remove('hidden');
-      
     } catch (error) {
       console.error('Error loading stats data:', error);
       alert('Error loading stats data. Please try again later.');
     }
   }
-  
-  // Calculate stats from orders
   function calculateStats(orders) {
     let totalProductsSold = 0;
     let totalRevenue = 0;
-    
     orders.forEach(order => {
       order.products.forEach(product => {
         if (product.seller.name === currentSeller.name) {
@@ -335,24 +251,18 @@
         }
       });
     });
-    
     return {
       totalProductsSold,
       totalRevenue
     };
   }
-  
-  // Process sales data by date
   function processSalesByDate(orders, timePeriod) {
     const salesByDate = {};
     const dates = [];
     const counts = [];
     const amounts = [];
-    
-    // Create empty data points for all dates in the range
     const isAllTime = timePeriod === 'all';
     const numDays = isAllTime ? Math.min(30, Math.ceil((new Date() - new Date(orders[0]?.orderDate || new Date())) / (1000 * 60 * 60 * 24))) : timePeriod;
-    
     for (let i = numDays - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -360,8 +270,6 @@
       salesByDate[dateString] = { count: 0, amount: 0 };
       dates.push(dateString);
     }
-    
-    // Fill in actual data
     orders.forEach(order => {
       const dateString = new Date(order.orderDate).toISOString().split('T')[0];
       if (salesByDate[dateString]) {
@@ -373,30 +281,22 @@
         });
       }
     });
-    
-    // Convert to arrays for charts
     dates.forEach(date => {
       counts.push(salesByDate[date].count);
       amounts.push(salesByDate[date].amount);
     });
-    
-    // Format dates for display
     const formattedDates = dates.map(date => {
       const d = new Date(date);
       return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
-    
     return {
       dates: formattedDates,
       counts: counts,
       amounts: amounts
     };
   }
-  
-  // Process top products data
   function processTopProducts(orders) {
     const productMap = {};
-    
     orders.forEach(order => {
       order.products.forEach(product => {
         if (product.seller.name === currentSeller.name) {
@@ -413,19 +313,14 @@
         }
       });
     });
-    
-    // Convert to array and sort by count
     return Object.values(productMap)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5); // Top 5 products
+      .slice(0, 5);
   }
-  
-  // Update trend display
   function updateTrendDisplay(element, trendValue) {
     const formattedTrend = trendValue.toFixed(1);
     const isPositive = trendValue > 0;
     const isNeutral = trendValue === 0;
-    
     if (isNeutral) {
       element.className = 'bg-gray-100 text-gray-700 p-1 px-2 rounded text-xs';
       element.innerHTML = 'No change';
@@ -436,15 +331,11 @@
       element.innerHTML = `${isPositive ? '+' : ''}${formattedTrend}% ${isPositive ? '↑' : '↓'}`;
     }
   }
-
-  // Render products chart
   function renderProductsChart(labels, data) {
     const ctx = document.getElementById('products-chart').getContext('2d');
-    
     if (productsChart) {
       productsChart.destroy();
     }
-    
     productsChart = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -476,21 +367,17 @@
       }
     });
   }
-
-  // Render revenue chart
   function renderRevenueChart(labels, data) {
     const ctx = document.getElementById('revenue-chart').getContext('2d');
-    
     if (revenueChart) {
       revenueChart.destroy();
     }
-    
     revenueChart = new Chart(ctx, {
       type: 'line',
       data: {
         labels: labels,
         datasets: [{
-          label: 'Revenue ($)',
+          label: 'Revenue (₹)',
           data: data,
           fill: true,
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -507,7 +394,12 @@
         scales: {
           y: {
             beginAtZero: true,
-            grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' }
+            grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: function(value) {
+                return '₹' + value;
+              }
+            }
           },
           x: {
             grid: { display: false },
@@ -517,33 +409,25 @@
       }
     });
   }
-
-  // Render top products table
   function renderTopProductsTable(products) {
     topProductsTableBody.innerHTML = '';
-    
     if (products.length === 0) {
       const emptyRow = document.createElement('tr');
       emptyRow.innerHTML = `<td colspan="3" class="py-4 px-6 text-center text-gray-500">No products sold in this period</td>`;
       topProductsTableBody.appendChild(emptyRow);
       return;
     }
-    
     products.forEach(product => {
       const row = document.createElement('tr');
       row.className = 'border-b';
-      
       row.innerHTML = `
         <td class="py-4 px-6">${product.name}</td>
         <td class="py-4 px-6 text-center">${product.count}</td>
-        <td class="py-4 px-6 text-right">$${product.revenue.toFixed(2)}</td>
+        <td class="py-4 px-6 text-right">₹${product.revenue.toFixed(2)}</td>
       `;
-      
       topProductsTableBody.appendChild(row);
     });
   }
-
-  // Logout functionality
   async function logout() {
     try {
       await auth.signOut();
@@ -553,12 +437,9 @@
       alert('Error signing out. Please try again.');
     }
   }
-
-  // Add event listeners
   timePeriodSelect.addEventListener('change', loadStatsData);
   refreshStatsButton.addEventListener('click', loadStatsData);
   logoutButton.addEventListener('click', logout);
 </script>
-
 </body>
 </html>
