@@ -3,14 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>User Profile | Grocery Store</title>
+  <title>Order History | Grocery Store</title>
   <link rel="stylesheet" href="shop.css">
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <style>
+    .order-history-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .order-history-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      background-color: #fff;
+    }
+    .order-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.5em;
+    }
+    .order-card p {
+      margin: 5px 0;
+    }
+    .product-list {
+      margin-top: 15px;
+      padding-left: 20px;
+    }
+    .product-item {
+      margin-bottom: 10px;
+    }
+    .error-message {
+      color: red;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .loading {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Header similar to shop.html -->
+  <!-- Header -->
   <header>
     <div class="top-banner">
         <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
@@ -46,8 +87,9 @@
             <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
         <div class="navbar-right">
-            <a href="orderhistory.html"story class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
-            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a id="account-link" href="profile.html" class="account">
+                <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+              </a>            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
             <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
         </div>
     </nav>
@@ -63,34 +105,12 @@
     </div>
   </header>
 
-  <!-- Profile Content -->
-  <div class="profile-container">
-    <h2>My Profile</h2>
-
-    <div id="user-info">
-      <p><strong>Email: </strong><span id="user-email"></span></p>
-
-      <!-- Editable User Data Form -->
-      <label for="user-name">Name: </label>
-      <input type="text" id="user-name" placeholder="Enter your name" />
-
-      <label for="user-street">Street: </label>
-      <input type="text" id="user-street" placeholder="Enter street address" />
-
-      <label for="user-city">City: </label>
-      <input type="text" id="user-city" placeholder="Enter city" />
-
-      <label for="user-postal-code">Postal Code: </label>
-      <input type="text" id="user-postal-code" placeholder="Enter postal code" />
-
-      <label for="user-country">Country: </label>
-      <input type="text" id="user-country" placeholder="Enter country" />
-
-      <button onclick="updateUserData()">Update Info</button>
-    </div>
-
-    <button onclick="resetPassword()">Reset Password</button>
-    <button onclick="logout()">Logout</button>
+  <!-- Order History Content -->
+  <div class="order-history-container">
+    <h2>My Order History</h2>
+    <div id="order-list"></div>
+    <div id="loading" class="loading">Loading...</div>
+    <div id="error-message" class="error-message"></div>
   </div>
 
   <!-- Footer -->
@@ -160,22 +180,24 @@
     const auth = firebase.auth();
 
     // JSONBin Configuration
-    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80';
+    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
-    // Check auth state and fetch user data
+    // Check auth state and fetch order history
     firebase.auth().onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "sign_in.html";
       } else {
-        document.getElementById('user-email').textContent = user.email;
-        fetchUserData(user.email);
+        fetchOrderHistory(user.email);
       }
     });
 
-    // Fetch user data from JSONBin
-    async function fetchUserData(email) {
+    // Fetch order history from JSONBin
+    async function fetchOrderHistory(email) {
       try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('error-message').textContent = '';
+
         const response = await fetch(jsonBinUrl, {
           method: 'GET',
           headers: {
@@ -183,76 +205,56 @@
           }
         });
         const data = await response.json();
-        const users = data.record?.users || [];
+        const orders = data.record?.orders || [];
 
-        const user = users.find(user => user.email === email);
+        const userOrders = orders.filter(order => order.user.email === email);
 
-        if (user) {
-          document.getElementById('user-name').value = user.name || '';
-          document.getElementById('user-street').value = user.address?.street || '';
-          document.getElementById('user-city').value = user.address?.city || '';
-          document.getElementById('user-postal-code').value = user.address?.postal_code || '';
-          document.getElementById('user-country').value = user.address?.country || '';
+        document.getElementById('loading').style.display = 'none';
+
+        if (userOrders.length === 0) {
+          document.getElementById('order-list').innerHTML = '<p>No orders found.</p>';
+          return;
         }
+
+        displayOrders(userOrders);
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-message').textContent = 'Error fetching order history. Please try again.';
+        console.error('Error fetching order history:', error);
       }
     }
 
-    // Update or add user data
-    async function updateUserData() {
-      const email = document.getElementById('user-email').textContent;
-      const updatedUserData = {
-        email: email,
-        name: document.getElementById('user-name').value,
-        address: {
-          street: document.getElementById('user-street').value,
-          city: document.getElementById('user-city').value,
-          postal_code: document.getElementById('user-postal-code').value,
-          country: document.getElementById('user-country').value
-        }
-      };
+    // Display orders
+    function displayOrders(orders) {
+      const orderList = document.getElementById('order-list');
+      orderList.innerHTML = '';
 
-      try {
-        // Fetch current data
-        const response = await fetch(jsonBinUrl, {
-          method: 'GET',
-          headers: {
-            'X-Master-Key': apiKey
-          }
-        });
-        const data = await response.json();
-        let users = data.record?.users || [];
+      orders.forEach(order => {
+        const orderCard = document.createElement('div');
+        orderCard.className = 'order-card';
 
-        const existingUserIndex = users.findIndex(user => user.email === email);
+        orderCard.innerHTML = `
+          <h3>Order ID: ${order.orderId}</h3>
+          <p><strong>Customer Name:</strong> ${order.user.name}</p>
+          <p><strong>Email:</strong> ${order.user.email}</p>
+          <p><strong>Phone:</strong> ${order.user.phone}</p>
+          <p><strong>Shipping Address:</strong> ${order.user.shippingAddress.addressLine1}, ${order.user.shippingAddress.city}, ${order.user.shippingAddress.state}, ${order.user.shippingAddress.postalCode}, ${order.user.shippingAddress.country}</p>
+          <h4>Products:</h4>
+          <div class="product-list">
+            ${order.products.map(product => `
+              <div class="product-item">
+                <p><strong>Product:</strong> ${product.name}</p>
+                <p><strong>Quantity:</strong> ${product.quantity}</p>
+                <p><strong>Price:</strong> $${product.price.toFixed(2)}</p>
+                <p><strong>Total:</strong> $${product.totalPrice.toFixed(2)}</p>
+                <p><strong>Seller:</strong> ${product.seller.name}</p>
+              </div>
+            `).join('')}
+          </div>
+        `;
 
-        if (existingUserIndex !== -1) {
-          // Update existing user
-          users[existingUserIndex] = updatedUserData;
-          alert("User data updated successfully!");
-        } else {
-          // Add new user
-          users.push(updatedUserData);
-          alert("User added successfully!");
-        }
-
-        // Update JSONBin
-        const updateResponse = await fetch(jsonBinUrl, {
-          method: 'PUT',
-          headers: {
-            'X-Master-Key': apiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ users })
-        });
-
-        if (!updateResponse.ok) {
-          throw new Error('Failed to update JSONBin');
-        }
-      } catch (error) {
-        console.error('Error updating user data:', error);
-        alert("Error updating user data. Please try again.");
-      }
+        orderList.appendChild(orderCard);
+      });
     }
 
     // Logout User
@@ -262,20 +264,6 @@
       }).catch((error) => {
         console.error('Error signing out:', error);
       });
-    }
-
-    // Reset Password
-    function resetPassword() {
-      const user = firebase.auth().currentUser;
-      if (user) {
-        firebase.auth().sendPasswordResetEmail(user.email)
-          .then(() => {
-            alert("Password reset email sent.");
-          })
-          .catch((error) => {
-            console.error('Error sending password reset email:', error);
-          });
-      }
     }
   </script>
 </body>
