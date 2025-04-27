@@ -1,46 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="index.css">
-  <script src="index.js"></script>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rootsy</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" href="index.css">
     <!-- Firebase App (the core Firebase SDK) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <!-- Firebase Auth SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <!-- Botpress Webchat -->
+    <script src="https://cdn.botpress.cloud/webchat/v2.4/inject.js"></script>
+    <script src="https://files.bpcontent.cloud/2025/04/27/16/20250427165022-EYO0KKO6.js"></script>
     <script>
-      window.addEventListener('DOMContentLoaded', function () {
-        initGeolocation();
-      });
+        window.addEventListener('DOMContentLoaded', function () {
+            initGeolocation();
+            // Initialize Botpress Webchat
+            window.botpressWebChat.init({
+                composerPlaceholder: "Ask Rootsy Assistant...",
+                botName: "Rootsy Assistant",
+                botAvatar: "https://i.postimg.cc/44q6yn32/RRootsy.png",
+                primaryColor: "#2563EB", // Matches Tailwind bg-blue-600
+                secondaryColor: "#F3F4F6", // Matches Tailwind bg-gray-50
+                showConversationsButton: true,
+                enableReset: true,
+                configUrl: "https://files.bpcontent.cloud/2025/04/27/16/20250427165022-GNZDXQ1V.json"
+            });
+        });
     </script>
- 
 </head>
 <body>
-        <header>
+    <header>
         <div class="top-banner">
-            
             <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
             <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
         </div>
         <div class="top-header">
             <div class="left-section">
-              <a href="about.html">About Us</a>
-              <a href="profile.html">My account</a>
-              <a href="wishlist.html">Wishlist</a>
-              <span class="divider"></span>
-              <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+                <a href="about.html">About Us</a>
+                <a href="profile.html">My account</a>
+                <a href="wishlist.html">Wishlist</a>
+                <span class="divider"></span>
+                <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
             </div>
             <div class="right-section">
-              <div id="google_translate_element"></div>
-             <a href="seller_login.html">  <button class="seller-btn">Seller Login</button></a>
-              <a href="#">Order Tracking</a>
+                <div id="google_translate_element"></div>
+                <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+                <a href="#">Order Tracking</a>
             </div>
-          </div>
+        </div>
         <nav class="navbar">
             <div class="navbar-left">
                 <a href="#" class="logo">
@@ -50,7 +59,6 @@
                 <div class="delivery">
                     <span>Deliver to</span>
                     <div id="user-location">Fetching location...</div>
-                    
                 </div>
             </div>
             <div class="navbar-center">
@@ -59,7 +67,6 @@
             </div>
             <div class="navbar-right">
                 <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
-              
             </div>
         </nav>
         <div class="navbar-links">
@@ -75,275 +82,257 @@
     </header>
 
     <div class="promo-banner">
-        
         <div class="promo-content">
-            
             <p class="discount-label">Weekend Discount</p>
             <h1 class="banner-title">Shop with rootsy</h1>
             <p class="banner-description">We have prepared special discounts for you on grocery products. Don't miss these opportunities...</p>
             <button class="shop-now">Shop Now</button>
-            
             <p class="limited-time">Don't miss this limited-time offer!</p>
         </div>
         <div class="promo-image">
-          <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
-<spline-viewer url="https://prod.spline.design/g30ROO6dkOtwndj0/scene.splinecode"></spline-viewer>
+            <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+            <spline-viewer url="https://prod.spline.design/g30ROO6dkOtwndj0/scene.splinecode"></spline-viewer>
         </div>
     </div>
 
     <div class="category-wrapper">
-      <button class="scroll-btn left" onclick="scrollcategory(-300)">&#10094;</button>
-      <div class="category-container" id="categoryContainer">
-        <div class="category-tab">
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/5NX3H76q/fruits-images.png" alt="Fruits & Vegetables">
-              <p>Fruits & Vegetables</p>
+        <button class="scroll-btn left" onclick="scrollcategory(-300)">❮</button>
+        <div class="category-container" id="categoryContainer">
+            <div class="category-tab">
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/5NX3H76q/fruits-images.png" alt="Fruits & Vegetables">
+                        <p>Fruits & Vegetables</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/tgsVqTDX/stationary.png" alt="stationary">
+                        <p>stationary</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/mkyPXFZS/beverages.png" alt="Beverages">
+                        <p>Beverages</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/4xqx11bg/meats.png" alt="Meats & Seafood">
+                        <p>Meats & Seafood</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/g2HPxqSs/cookies.png" alt="Biscuits & Snacks">
+                        <p>Biscuits & Snacks</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/Y268Knhd/bread.png" alt="Breads & Bakery">
+                        <p>Breads & Bakery</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/q76XmQPX/dairy.webp" alt="Breakfast & Dairy">
+                        <p>Breakfast & Dairy</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/4ys6xGmB/handicrafts.png" alt="Handicrafts">
+                        <p>Handicrafts</p>
+                    </div>
+                </a>
+                <a href="shop.html">
+                    <div class="category">
+                        <img src="https://i.postimg.cc/9QZQJ7xw/blankets.png" alt="textiles">
+                        <p>Garments</p>
+                    </div>
+                </a>
             </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/tgsVqTDX/stationary.png" alt="stationary">
-              <p>stationary</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/mkyPXFZS/beverages.png" alt="Beverages">
-              <p>Beverages</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/4xqx11bg/meats.png" alt="Meats & Seafood">
-              <p>Meats & Seafood</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/g2HPxqSs/cookies.png" alt="Biscuits & Snacks">
-              <p>Biscuits & Snacks</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/Y268Knhd/bread.png" alt="Breads & Bakery">
-              <p>Breads & Bakery</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/q76XmQPX/dairy.webp" alt="Breakfast & Dairy">
-              <p>Breakfast & Dairy</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/4ys6xGmB/handicrafts.png" alt="Handicrafts">
-              <p>Handicrafts</p>
-            </div>
-          </a>
-          <a href="shop.html">
-            <div class="category">
-              <img src="https://i.postimg.cc/9QZQJ7xw/blankets.png" alt="textiles">
-              <p>Garments</p>
-            </div>
-          </a>          
-            
         </div>
-       
+        <button class="scroll-btn right" onclick="scrollcategory(300)">❯</button>
     </div>
-    <button class="scroll-btn right" onclick="scrollcategory(300)">&#10095;</button>
-</div>
-    
 
-
-    
-
-      <div class="header">Editor's Pick</div>
-      <div class="view-all-wrapper">
-          <button class="view-all-btn">View All <span class="arrow">→</span></button>
-        </div>
-        <div class="dashboard">
-          <div class="card">
+    <div class="header">Editor's Pick</div>
+    <div class="view-all-wrapper">
+        <button class="view-all-btn">View All <span class="arrow">→</span></button>
+    </div>
+    <div class="dashboard">
+        <div class="card">
             <div class="discount-badge">25%</div>
             <img src="https://i.postimg.cc/DZHzxPKs/apple-juice.png" class="product-image" alt="Apple Juice">
             <div class="tag">ORGANIC</div>
             <div class="product-info">
-              <div class="title">100 Percent Apple Juice </div>
-              <div class="quantity">500ml</div>
-              <div class="price">₹49 <span class="original-price">₹65</span></div>
+                <div class="title">100 Percent Apple Juice </div>
+                <div class="quantity">500ml</div>
+                <div class="price">₹49 <span class="original-price">₹65</span></div>
             </div>
-          </div>
-        
-          <div class="card">
+        </div>
+        <div class="card">
             <div class="discount-badge">20%</div>
             <img src="https://i.postimg.cc/26ZYSpPb/fried-chicken.png" class="product-image" alt="Rising Pizza">
             <div class="product-info">
-              <div class="title"> Flamingo Southern crispy chicken</div>
-              <div class="quantity">1 pack of 250gm</div>
-              <div class="price">₹128 <span class="original-price">₹160</span></div>
+                <div class="title"> Flamingo Southern crispy chicken</div>
+                <div class="quantity">1 pack of 250gm</div>
+                <div class="price">₹128 <span class="original-price">₹160</span></div>
             </div>
-          </div>
-        
-          <div class="card">
+        </div>
+        <div class="card">
             <div class="discount-badge">30%</div>
             <img src="https://i.postimg.cc/xjGrxPY2/orange-pulp.png" class="product-image" alt="Orange Juice">
             <div class="product-info">
-              <div class="title">Simply Orange Pulp Free Juice - 1L</div>
-              <div class="quantity">1L</div>
-              <div class="price">₹112 <span class="original-price">₹160</span></div>
+                <div class="title">Simply Orange Pulp Free Juice - 1L</div>
+                <div class="quantity">1L</div>
+                <div class="price">₹112 <span class="original-price">₹160</span></div>
             </div>
-          </div>
-        
-          <div class="card">
+        </div>
+        <div class="card">
             <div class="discount-badge">20%</div>
             <img src="https://i.postimg.cc/RhSgbKQS/brown-bread.png" class="product-image" alt="California Pizza">
             <div class="tag">ORGANIC</div>
             <div class="product-info">
-              <div class="title">Freshly baked brown bread-250gm</div>
-              <div class="quantity">1 pack of 250gm</div>
-              <div class="price">₹40<span class="original-price">₹50</span></div>
+                <div class="title">Freshly baked brown bread-250gm</div>
+                <div class="quantity">1 pack of 250gm</div>
+                <div class="price">₹40<span class="original-price">₹50</span></div>
             </div>
-          </div>
-        
-          <div class="card">
+        </div>
+        <div class="card">
             <div class="discount-badge">30%</div>
             <img src="https://i.postimg.cc/tCmB211b/melon.png" class="product-image" alt="Melon">
             <div class="tag">ORGANIC</div>
             <div class="product-info">
-              <div class="title">Cantaloupe Fresh Organic Melon</div>
-              <div class="quantity">1 - 1.5kg</div>
-              <div class="price">₹49<span class="original-price">	₹70</span></div>
+                <div class="title">Cantaloupe Fresh Organic Melon</div>
+                <div class="quantity">1 - 1.5kg</div>
+                <div class="price">₹49<span class="original-price">₹70</span></div>
             </div>
-          </div>
-        
-          <div class="card">
-            <div class="discount-badge">	20%</div>
+        </div>
+        <div class="card">
+            <div class="discount-badge">20%</div>
             <img src="https://i.postimg.cc/023C7L32/cornflakes.png" class="product-image" alt="cornflakes">
             <div class="product-info">
-              <div class="title">Always Organic- fruit juice corn flakes- 500gm</div>
-              <div class="quantity">1 pack of 500gm</div>
-              <div class="price">₹200 <span class="original-price">₹250</span></div>
+                <div class="title">Always Organic- fruit juice corn flakes- 500gm</div>
+                <div class="quantity">1 pack of 500gm</div>
+                <div class="price">₹200 <span class="original-price">₹250</span></div>
             </div>
-          </div>
-        
-          <div class="card">
+        </div>
+        <div class="card">
             <div class="discount-badge">40%</div>
             <img src="https://i.postimg.cc/j5CgMX8C/berries.webp" class="product-image" alt="Melon">
             <div class="tag">ORGANIC</div>
             <div class="product-info">
-              <div class="title">Grandeur- Berrries Mix</div>
-              <div class="quantity">1 pack of 250gm</div>
-              <div class="price">₹132<span class="original-price">₹220</span></div>
+                <div class="title">Grandeur- Berrries Mix</div>
+                <div class="quantity">1 pack of 250gm</div>
+                <div class="price">₹132<span class="original-price">₹220</span></div>
             </div>
-          </div>
-        
-          <div class="card">
+        </div>
+        <div class="card">
             <div class="discount-badge">25%</div>
             <img src="https://i.postimg.cc/TwCV1Sgx/pancake-mix.webp" class="product-image" alt="Toilet Paper">
             <div class="product-info">
-              <div class="title">Better Batter waffle & pancake mix</div>
-              <div class="quantity">1 pack of 250gm</div>
-              <div class="price">₹225 <span class="original-price">	₹300</span></div>
+                <div class="title">Better Batter waffle & pancake mix</div>
+                <div class="quantity">1 pack of 250gm</div>
+                <div class="price">₹225 <span class="original-price">₹300</span></div>
             </div>
-          </div>
         </div>
-        
-        <div class="header">Category Products</div>
-        <div class="view-all-wrapper">
-          <button class="view-all-btn">View All <span class="arrow">→</span></button>
-        </div>
-        
-        <div class="banner-container">
-          <div class="banner-box" id="banner1">
+    </div>
+
+    <div class="header">Category Products</div>
+    <div class="view-all-wrapper">
+        <button class="view-all-btn">View All <span class="arrow">→</span></button>
+    </div>
+
+    <div class="banner-container">
+        <div class="banner-box" id="banner1">
             <div class="banner-slide active">
-              <img src="https://i.postimg.cc/26YybRZt/banner-1.jpg" width="100%" height="100%" style="object-fit: cover;">
-              <div class="banner-content">
-                <div class="banner-tag">Only This Week</div>
-                <div class="banner-title">Make your grocery shopping easy with us</div>
-                <div class="banner-subtitle">Feed your family the best</div>
-                <div class="shop-btn">Shop Now →</div>
-              </div>
+                <img src="https://i.postimg.cc/26YybRZt/banner-1.jpg" width="100%" height="100%" style="object-fit: cover;">
+                <div class="banner-content">
+                    <div class="banner-tag">Only This Week</div>
+                    <div class="banner-title">Make your grocery shopping easy with us</div>
+                    <div class="banner-subtitle">Feed your family the best</div>
+                    <div class="shop-btn">Shop Now →</div>
+                </div>
             </div>
             <div class="banner-slide">
-              <img src="https://i.postimg.cc/MKHTjYnz/banner-2.png " width="100%" height="100%" style="object-fit: cover;">
-              <div class="banner-content">
-                <div class="banner-tag">Only This Week</div>
-                <div class="banner-title">Fresh picks at great prices</div>
-                <div class="banner-subtitle">Your weekly essentials sorted</div>
-                <div class="shop-btn">Shop Now →</div>
-              </div>
+                <img src="https://i.postimg.cc/MKHTjYnz/banner-2.png" width="100%" height="100%" style="object-fit: cover;">
+                <div class="banner-content">
+                    <div class="banner-tag">Only This Week</div>
+                    <div class="banner-title">Fresh picks at great prices</div>
+                    <div class="banner-subtitle">Your weekly essentials sorted</div>
+                    <div class="shop-btn">Shop Now →</div>
+                </div>
             </div>
-          </div>
-          <div class="banner-box" id="banner2">
+        </div>
+        <div class="banner-box" id="banner2">
             <div class="banner-slide active">
-              <img src="https://i.postimg.cc/q7sMdb5x/banner-4.jpg" width="100%" height="100%" style="object-fit: cover;">
-              <div class="banner-content">
-                <div class="banner-tag">Only This Week</div>
-                <div class="banner-title">Get your everyday needs here with us</div>
-                <div class="banner-subtitle">A different kind of grocery store</div>
-                <div class="shop-btn">Shop Now →</div>
-              </div>
+                <img src="https://i.postimg.cc/q7sMdb5x/banner-4.jpg" width="100%" height="100%" style="object-fit: cover;">
+                <div class="banner-content">
+                    <div class="banner-tag">Only This Week</div>
+                    <div class="banner-title">Get your everyday needs here with us</div>
+                    <div class="banner-subtitle">A different kind of grocery store</div>
+                    <div class="shop-btn">Shop Now →</div>
+                </div>
             </div>
             <div class="banner-slide">
-              <img src="https://i.postimg.cc/FzBhx2YN/banner4.webp" width="100%" height="100%" style="object-fit: cover;">
-              <div class="banner-content">
-                <div class="banner-tag">Only This Week</div>
-                <div class="banner-title">Tasty treats & sweets picks</div>
-                <div class="banner-subtitle">Discover and save big</div>
-                <div class="shop-btn">Shop Now →</div>
-              </div>
+                <img src="https://i.postimg.cc/FzBhx2YN/banner4.webp" width="100%" height="100%" style="object-fit: cover;">
+                <div class="banner-content">
+                    <div class="banner-tag">Only This Week</div>
+                    <div class="banner-title">Tasty treats & sweets picks</div>
+                    <div class="banner-subtitle">Discover and save big</div>
+                    <div class="shop-btn">Shop Now →</div>
+                </div>
             </div>
-          </div>
         </div>
-        
-        <div class="cat-container">
-          <div class="ccard">
+    </div>
+
+    <div class="cat-container">
+        <div class="ccard">
             <img src="https://i.postimg.cc/BbrpM4Rc/kitchen-set.png" alt="Product 1">
             <h3>mud utensils set of 3</h3>
             <p class="quantity">set of 3</p>
             <p class="price">₹299 <span class="original-price">₹399</span></p>
             <p class="discount">25% Off</p>
-          </div>
-          <div class="ccard">
+        </div>
+        <div class="ccard">
             <img src="https://i.postimg.cc/L5TMLQJT/lays.png" alt="Product 2">
             <h3>barbecue flavour lays</h3>
             <p class="quantity">pack of 1 - 28gm</p>
             <p class="price">₹20 <span class="original-price">₹25</span></p>
             <p class="discount">20% Off</p>
-          </div>
-          <div class="ccard">
+        </div>
+        <div class="ccard">
             <img src="https://i.postimg.cc/ZKWbqKQR/brown-eggs.webp" alt="Product 3">
             <h3>Organic Brown Eggs</h3>
             <p class="quantity">Pack of 6</p>
             <p class="price">₹90 <span class="original-price">₹120</span></p>
             <p class="discount">25% Off</p>
-          </div>
-          <div class="ccard">
+        </div>
+        <div class="ccard">
             <img src="https://i.postimg.cc/GpnJ5vdW/strawberries.webp" alt="Product 4">
             <h3>Fresh Strawberries</h3>
             <p class="quantity">200g</p>
             <p class="price">₹110 <span class="original-price">₹150</span></p>
             <p class="discount">27% Off</p>
-          </div>
-          <div class="ccard">
+        </div>
+        <div class="ccard">
             <img src="https://i.postimg.cc/7YSxzQx8/rice.png" alt="Product 5">
             <h3>Shiaya Basmati rice</h3>
             <p class="quantity">2kg</p>
             <p class="price">₹180 <span class="original-price">₹240</span></p>
             <p class="discount">25% Off</p>
-          </div>
-          <div class="ccard">
+        </div>
+        <div class="ccard">
             <img src="https://i.postimg.cc/TYDSDYsP/shaul.png" alt="Product 6">
             <h3>Mens solid wool shawl</h3>
             <p class="quantity">1 piece</p>
             <p class="price">₹799 <span class="original-price">₹999</span></p>
             <p class="discount">20% Off</p>
-          </div>
         </div>
-        
-    
+    </div>
 
     <div class="banner2">
         <div>
@@ -405,60 +394,58 @@
             <a href="#">Order Tracking</a>
         </div>
     </footer>
-<script src="script.js"></script>
-<script type="text/javascript">
-  function setLanguagePreference(lang) {
-    localStorage.setItem('preferredLanguage', lang);
-  }
-
-  function getLanguagePreference() {
-    return localStorage.getItem('preferredLanguage');
-  }
-
-  function loadGoogleTranslate() {
-    new google.translate.TranslateElement({
-      pageLanguage: 'en',
-      includedLanguages: 'en,es,fr,de,hi,zh-CN',
-      layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-      autoDisplay: false
-    }, 'google_translate_element');
-  }
-
-  // Store selected language
-  function handleTranslateChange() {
-    const interval = setInterval(() => {
-      const select = document.querySelector(".goog-te-combo");
-      if (select) {
-        select.addEventListener("change", () => {
-          setLanguagePreference(select.value);
-        });
-
-        // Apply stored preference
-        const savedLang = getLanguagePreference();
-        if (savedLang) {
-          select.value = savedLang;
-          select.dispatchEvent(new Event('change'));
+    <script src="script.js"></script>
+    <script src="index.js"></script>
+    <script type="text/javascript">
+        function setLanguagePreference(lang) {
+            localStorage.setItem('preferredLanguage', lang);
         }
 
-        clearInterval(interval);
-      }
-    }, 500);
-  }
+        function getLanguagePreference() {
+            return localStorage.getItem('preferredLanguage');
+        }
 
-  function initTranslate() {
-    loadGoogleTranslate();
-    handleTranslateChange();
-  }
+        function loadGoogleTranslate() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,es,fr,de,hi,zh-CN',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    initTranslate();
-  });
+        function handleTranslateChange() {
+            const interval = setInterval(() => {
+                const select = document.querySelector(".goog-te-combo");
+                if (select) {
+                    select.addEventListener("change", () => {
+                        setLanguagePreference(select.value);
+                    });
 
-  function googleTranslateElementInit() {
-    new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
-  }
-  </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-  
+                    const savedLang = getLanguagePreference();
+                    if (savedLang) {
+                        select.value = savedLang;
+                        select.dispatchEvent(new Event('change'));
+                    }
+
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
+
+        function initTranslate() {
+            loadGoogleTranslate();
+            handleTranslateChange();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initTranslate();
+        });
+
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
