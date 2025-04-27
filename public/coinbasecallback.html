@@ -41,7 +41,7 @@
     };
     firebase.initializeApp(firebaseConfig);
 
-    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc81'; // Replace with your orders bin ID
+    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116'; // Replace with your orders bin ID
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
     async function verifyCoinbasePayment() {
@@ -56,7 +56,7 @@
       try {
         // Verify payment via Coinbase API (replace with actual charge ID from redirect or webhook)
         const response = await axios.get(`https://api.commerce.coinbase.com/charges/${orderId}`, {
-          headers: { 'X-CC-Api-Key': 'YOUR_COINBASE_API_KEY', 'X-CC-Version': '2018-03-22' }
+          headers: { 'X-CC-Api-Key': '01d47b4b-7d71-4ebd-be26-ac59992703a0', 'X-CC-Version': '2018-03-22' }
         });
 
         if (response.data.data.payments.length > 0 && response.data.data.payments[0].status === 'CONFIRMED') {
