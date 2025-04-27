@@ -9,7 +9,8 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="bg-[#f9f9f9] flex flex-col items-center justify-center min-h-screen font-sans">
   <div class="navbar w-full">
@@ -99,39 +100,49 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    const jsonBinAPI = "https://api.jsonbin.io/v3/b/680d42328960c979a58dd989"; // Replace with your JSONBin.io bin API
+    // JSONBin Configuration
+    const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
     // Get status elements
     const loginStatus = document.getElementById('login-status');
     const loginError = document.getElementById('login-error');
+    const pincodeStatus = document.getElementById('pincode-status');
+    const coordinatesDisplay = document.getElementById('coordinates-display');
+    const latDisplay = document.getElementById('lat-display');
+    const lngDisplay = document.getElementById('lng-display');
 
     // Check if user is already logged in
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
+          loginStatus.classList.remove('hidden');
           // Fetch seller profile from JSONBin.io
-          const response = await fetch(jsonBinAPI, {
-            method: "GET",
+          const response = await fetch(sellersBinUrl, {
+            method: 'GET',
             headers: {
-              "Authorization": "$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV." // Replace with your JSONBin.io API key
+              'X-Master-Key': apiKey
             }
           });
           const data = await response.json();
+          const sellers = data.record?.sellerdetails || [];
 
-          // Check if the seller's email exists in the data
-          const seller = data.find(seller => seller.email === user.email);
+          // Check if the seller's email exists in sellerdetails
+          const seller = sellers.find(seller => seller.email === user.email);
 
           if (seller) {
             // Seller exists, redirect to dashboard
-            window.location.href = "/dashboard.html";
+            window.location.href = 'dashboard.html';
           } else {
             // Seller does not exist, show the profile form
-            document.getElementById("login-section").classList.add("hidden");
-            document.getElementById("form-section").classList.remove("hidden");
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
           }
         } catch (error) {
-          console.error("Error fetching seller data from JSONBin:", error);
-          showLoginError("Error fetching data: " + error.message);
+          console.error('Error fetching seller data from JSONBin:', error);
+          showLoginError('Error fetching data: ' + error.message);
+        } finally {
+          loginStatus.classList.add('hidden');
         }
       }
     });
@@ -151,43 +162,95 @@
 
           try {
             // Fetch seller profile from JSONBin.io
-            const response = await fetch(jsonBinAPI, {
-              method: "GET",
+            const response = await fetch(sellersBinUrl, {
+              method: 'GET',
               headers: {
-                "Authorization": "Bearer your-jsonbin-api-key" // Replace with your JSONBin.io API key
+                'X-Master-Key': apiKey
               }
             });
             const data = await response.json();
+            const sellers = data.record?.sellerdetails || [];
 
-            const seller = data.find(seller => seller.email === user.email);
+            const seller = sellers.find(seller => seller.email === user.email);
 
             if (seller) {
               // Seller exists, redirect to dashboard
-              window.location.href = "/dashboard.html";
+              window.location.href = 'dashboard.html';
             } else {
               // Seller does not exist, show the profile form
-              document.getElementById("login-section").classList.add("hidden");
-              document.getElementById("form-section").classList.remove("hidden");
+              document.getElementById('login-section').classList.add('hidden');
+              document.getElementById('form-section').classList.remove('hidden');
             }
           } catch (error) {
-            console.error("Error fetching seller data from JSONBin:", error);
-            showLoginError("Error fetching data: " + error.message);
+            console.error('Error fetching seller data from JSONBin:', error);
+            showLoginError('Error fetching data: ' + error.message);
           }
         })
         .catch((error) => {
-          console.error("Error during Google login: ", error);
-          showLoginError("Login failed: " + error.message);
+          console.error('Error during Google login: ', error);
+          showLoginError('Login failed: ' + error.message);
         })
         .finally(() => {
           loginStatus.classList.add('hidden');
         });
     });
 
-    function showLoginError(message) {
-      loginError.textContent = message;
-      loginError.classList.remove('hidden');
-      loginStatus.classList.add('hidden');
-    }
+    // PIN Code Verification
+    document.getElementById('fetch-location').addEventListener('click', async () => {
+      const pincode = document.getElementById('pincode').value.trim();
+      pincodeStatus.classList.remove('hidden');
+
+      if (!/^\d{6}$/.test(pincode)) {
+        pincodeStatus.textContent = 'Please enter a valid 6-digit PIN code.';
+        pincodeStatus.classList.add('text-red-500');
+        return;
+      }
+
+      pincodeStatus.textContent = 'Verifying PIN code...';
+      pincodeStatus.classList.remove('text-red-500');
+
+      try {
+        // Use OpenStreetMap Nominatim to fetch location data
+        const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+          params: {
+            postalcode: pincode,
+            country: 'India',
+            format: 'json',
+            addressdetails: 1,
+            limit: 1
+          },
+          headers: {
+            'User-Agent': 'RootsyGrocery/1.0 (support@rootsy.com)'
+          }
+        });
+
+        if (response.data.length === 0) {
+          pincodeStatus.textContent = 'Invalid PIN code or location not found.';
+          pincodeStatus.classList.add('text-red-500');
+          return;
+        }
+
+        const result = response.data[0];
+        const location = result.display_name;
+        const latitude = parseFloat(result.lat);
+        const longitude = parseFloat(result.lon);
+
+        // Update form fields
+        document.getElementById('location').value = location;
+        document.getElementById('location-latitude').value = latitude;
+        document.getElementById('location-longitude').value = longitude;
+        latDisplay.textContent = latitude.toFixed(4);
+        lngDisplay.textContent = longitude.toFixed(4);
+        coordinatesDisplay.classList.remove('hidden');
+
+        pincodeStatus.textContent = 'PIN code verified successfully!';
+        pincodeStatus.classList.add('text-green-500');
+      } catch (error) {
+        console.error('Error verifying PIN code:', error);
+        pincodeStatus.textContent = 'Error verifying PIN code: ' + error.message;
+        pincodeStatus.classList.add('text-red-500');
+      }
+    });
 
     // Handle form submission for creating a new seller profile
     document.getElementById('seller-form').addEventListener('submit', async (e) => {
@@ -201,6 +264,11 @@
 
       if (!name || !pincode || !location) {
         alert('Please fill in all required fields');
+        return;
+      }
+
+      if (!/^\d{6}$/.test(pincode)) {
+        alert('Please enter a valid 6-digit PIN code');
         return;
       }
 
@@ -222,35 +290,38 @@
           email: user.email, 
           location,
           location_latitude: parseFloat(latitude) || null,
-          location_longitude: parseFloat(longitude) || null
+          location_longitude: parseFloat(longitude) || null,
+          pincode
         };
 
-        // Fetch existing data from JSONBin.io and add new seller data
-        const response = await fetch(jsonBinAPI, {
-          method: "GET",
+        // Fetch existing data from JSONBin.io
+        const response = await fetch(sellersBinUrl, {
+          method: 'GET',
           headers: {
-            "Authorization": "Bearer your-jsonbin-api-key"
+            'X-Master-Key': apiKey
           }
         });
-
         const data = await response.json();
-        data.push(sellerData); // Add the new seller
+        const sellers = data.record?.sellerdetails || [];
 
-        // Update JSONBin with the new data
-        await fetch(jsonBinAPI, {
-          method: "PUT",
+        // Add the new seller
+        sellers.push(sellerData);
+
+        // Update JSONBin with the new sellerdetails array
+        await fetch(sellersBinUrl, {
+          method: 'PUT',
           headers: {
-            "Authorization": "Bearer your-jsonbin-api-key",
-            "Content-Type": "application/json"
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify({ sellerdetails: sellers })
         });
 
         alert('Profile saved successfully!');
         // Redirect to dashboard after successful submission
-        window.location.href = "/dashboard.html";
+        window.location.href = 'dashboard.html';
       } catch (error) {
-        console.error('Error saving data:', error);
+        console.error('Error saving seller data:', error);
         alert('Error saving profile: ' + error.message);
       } finally {
         // Reset button state
@@ -258,6 +329,12 @@
         submitButton.textContent = originalText;
       }
     });
+
+    function showLoginError(message) {
+      loginError.textContent = message;
+      loginError.classList.remove('hidden');
+      loginStatus.classList.add('hidden');
+    }
   </script>
 </body>
 </html>
