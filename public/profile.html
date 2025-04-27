@@ -159,162 +159,124 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Firebase and JSONBin Configuration
-  const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Your JSONBin URL
-  const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Your API Key (Master Key)
+    // JSONBin Configuration
+    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80';
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
-  // Fetch and display user data from JSONBin.io
-  firebase.auth().onAuthStateChanged((user) => {
-    if (!user) {
-      window.location.href = "sign_in.html";  // Redirect if user is not logged in
-    } else {
-      document.getElementById('user-email').textContent = user.email;  // Display email
-      fetchUserData(user.email);  // Fetch user data from JSONBin.io
-    }
-  });
-
-  // Fetch user data from JSONBin
-  async function fetchUserData(email) {
-    try {
-      const response = await fetch(jsonBinUrl, {
-        method: 'GET',
-        headers: {
-          'X-Master-Key': apiKey
-        }
-      });
-      const data = await response.json();
-      console.log('Fetched Data:', data); // Log the fetched data for debugging
-
-      const user = data.users.find(user => user.email === email);
-
-      if (user) {
-        // Fill the form with existing user data
-        document.getElementById('user-name').value = user.name || '';
-        document.getElementById('user-street').value = user.address.street || '';
-        document.getElementById('user-city').value = user.address.city || '';
-        document.getElementById('user-postal-code').value = user.address.postal_code || '';
-        document.getElementById('user-country').value = user.address.country || '';
+    // Check auth state and fetch user data
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "sign_in.html";
       } else {
-        // If user doesn't exist, allow them to fill in their details
-        document.getElementById('user-name').value = '';
-        document.getElementById('user-street').value = '';
-        document.getElementById('user-city').value = '';
-        document.getElementById('user-postal-code').value = '';
-        document.getElementById('user-country').value = '';
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error); // Log errors if any
-    }
-  }
-
-  // Update or Add User Data
-  async function fetchUserData(email) {
-  try {
-    const response = await fetch(jsonBinUrl, {
-      method: 'GET',
-      headers: {
-        'X-Master-Key': apiKey
+        document.getElementById('user-email').textContent = user.email;
+        fetchUserData(user.email);
       }
     });
-    const data = await response.json();
 
-    // Ensure we access the 'record' property
-    const users = data.record?.users;
-
-    if (!users) {
-      console.error('No users data found.');
-      return; // Return early if no users data exists
-    }
-
-    const user = users.find(user => user.email === email);
-
-    if (user) {
-      // Fill the form with user data
-      document.getElementById('user-name').value = user.name || '';
-      document.getElementById('user-street').value = user.address.street || '';
-      document.getElementById('user-city').value = user.address.city || '';
-      document.getElementById('user-postal-code').value = user.address.postal_code || '';
-      document.getElementById('user-country').value = user.address.country || '';
-    } else {
-      console.log('User not found.');
-    }
-  } catch (error) {
-    console.error('Error fetching user data:', error); // Log any errors
-  }
-}
-
-
-    console.log('Updating User Data:', updatedUserData); // Log the data being sent for debugging
-
-    try {
-      // Fetch current users data from JSONBin
-      const response = await fetch(jsonBinUrl, {
-        method: 'GET',
-        headers: {
-          'X-Master-Key': apiKey
-        }
-      });
-      const data = await response.json();
-      console.log('Current Data:', data); // Log current data from JSONBin
-
-      const existingUserIndex = data.users.findIndex(user => user.email === updatedUserData.email);
-
-      if (existingUserIndex !== -1) {
-        // If user exists, update their data
-        data.users[existingUserIndex] = updatedUserData;
-        alert("User data updated successfully!");
-      } else {
-        // If user does not exist, add them to the array
-        data.users.push(updatedUserData);
-        alert("User added successfully!");
-      }
-
-      // Update the entire users list in JSONBin
-      const updateResponse = await fetch(jsonBinUrl, {
-        method: 'PUT',
-        headers: {
-          'X-Master-Key': apiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (updateResponse.ok) {
-        console.log('User data updated successfully on JSONBin.');
-      } else {
-        console.error('Failed to update user data on JSONBin');
-      }
-
-    } catch (error) {
-      console.error('Error updating or adding user data:', error); // Log any errors
-    }
-  }
-
-  // Logout User
-  function logout() {
-    firebase.auth().signOut().then(() => {
-      window.location.href = "sign_in.html";  // Redirect to sign-in page after logout
-    }).catch((error) => {
-      console.error('Error signing out:', error);
-    });
-  }
-
-  // Reset Password (You can link this to Firebase auth's password reset function)
-  function resetPassword() {
-    const user = firebase.auth().currentUser;
-
-    if (user) {
-      firebase.auth().sendPasswordResetEmail(user.email)
-        .then(() => {
-          alert("Password reset email sent.");
-        })
-        .catch((error) => {
-          console.error('Error sending password reset email:', error);
+    // Fetch user data from JSONBin
+    async function fetchUserData(email) {
+      try {
+        const response = await fetch(jsonBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
         });
+        const data = await response.json();
+        const users = data.record?.users || [];
+
+        const user = users.find(user => user.email === email);
+
+        if (user) {
+          document.getElementById('user-name').value = user.name || '';
+          document.getElementById('user-street').value = user.address?.street || '';
+          document.getElementById('user-city').value = user.address?.city || '';
+          document.getElementById('user-postal-code').value = user.address?.postal_code || '';
+          document.getElementById('user-country').value = user.address?.country || '';
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
     }
-  }
 
+    // Update or add user data
+    async function updateUserData() {
+      const email = document.getElementById('user-email').textContent;
+      const updatedUserData = {
+        email: email,
+        name: document.getElementById('user-name').value,
+        address: {
+          street: document.getElementById('user-street').value,
+          city: document.getElementById('user-city').value,
+          postal_code: document.getElementById('user-postal-code').value,
+          country: document.getElementById('user-country').value
+        }
+      };
 
-</script>
+      try {
+        // Fetch current data
+        const response = await fetch(jsonBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        let users = data.record?.users || [];
+
+        const existingUserIndex = users.findIndex(user => user.email === email);
+
+        if (existingUserIndex !== -1) {
+          // Update existing user
+          users[existingUserIndex] = updatedUserData;
+          alert("User data updated successfully!");
+        } else {
+          // Add new user
+          users.push(updatedUserData);
+          alert("User added successfully!");
+        }
+
+        // Update JSONBin
+        const updateResponse = await fetch(jsonBinUrl, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ users })
+        });
+
+        if (!updateResponse.ok) {
+          throw new Error('Failed to update JSONBin');
+        }
+      } catch (error) {
+        console.error('Error updating user data:', error);
+        alert("Error updating user data. Please try again.");
+      }
+    }
+
+    // Logout User
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "sign_in.html";
+      }).catch((error) => {
+        console.error('Error signing out:', error);
+      });
+    }
+
+    // Reset Password
+    function resetPassword() {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        firebase.auth().sendPasswordResetEmail(user.email)
+          .then(() => {
+            alert("Password reset email sent.");
+          })
+          .catch((error) => {
+            console.error('Error sending password reset email:', error);
+          });
+      }
+    }
+  </script>
 </body>
 </html>
