@@ -189,6 +189,21 @@
 </footer>
 
 <script>
+  // Initialize Firebase (replace with your Firebase config)
+const firebaseConfig = {
+  // Your Firebase configuration goes here
+  apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+  authDomain: "rootsy-ec110.firebaseapp.com",
+  projectId: "rootsy-ec110",
+  storageBucket: "rootsy-ec110.appspot.com",
+  messagingSenderId: "120254624474",
+  appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+  measurementId: "G-0Y636N5BPV"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
 // Global variables
 let allProducts = []; // Will hold all products
 let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
@@ -763,6 +778,73 @@ function initGeolocation() {
     options
   );
 }
+
+// Function to check user authentication status and redirect if necessary
+function checkUserAuthStatus() {
+  firebase.auth().onAuthStateChanged(function(user) {
+    // Update UI elements based on auth state
+    const accountText = document.getElementById('account-text');
+    const accountLink = document.getElementById('account-link');
+    
+    if (user) {
+      // User is signed in
+      console.log('User is signed in:', user.email);
+      accountText.textContent = 'Your account';
+      accountLink.href = 'profile.html';
+      
+      // You can also fetch additional user data from Firestore if needed
+      // For example, to get user's name, profile image, etc.
+      // fetchUserData(user.uid);
+    } else {
+      // User is signed out
+      console.log('User is signed out');
+      accountText.textContent = 'Sign in account';
+      accountLink.href = 'sign_in.html';
+    }
+  });
+}
+
+// Sign out function (can be called from profile page)
+function signOut() {
+  firebase.auth().signOut().then(function() {
+    // Sign-out successful
+    console.log('User signed out successfully');
+    window.location.href = 'index.html'; // Redirect to home page
+  }).catch(function(error) {
+    // An error happened
+    console.error('Sign out error:', error);
+  });
+}
+
+// Additional Firebase auth functions that might be useful
+
+// Function to check if user is logged in (returns Promise)
+function isUserLoggedIn() {
+  return new Promise((resolve, reject) => {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        resolve(true); // User is signed in
+      } else {
+        resolve(false); // User is signed out
+      }
+    }, function(error) {
+      reject(error); // Error occurred
+    });
+  });
+}
+
+// Function to get current user details (if logged in)
+function getCurrentUser() {
+  return firebase.auth().currentUser;
+}
+
+// Call functions on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Firebase authentication listeners
+  checkUserAuthStatus();
+  
+  // Other initialization code...
+});
 
 
 
