@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- Stellar SDK and QR Code library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     .checkout-container {
       max-width: 1200px;
@@ -74,6 +77,10 @@
       background-color: #0667d0;
       color: white;
     }
+    .stellar-btn {
+      background-color: #00b7eb;
+      color: white;
+    }
     .error-message {
       color: red;
       text-align: center;
@@ -83,6 +90,18 @@
       text-align: center;
       margin: 20px 0;
       display: none;
+    }
+    #stellar-payment-details {
+      margin-top: 20px;
+      text-align: center;
+      display: none;
+    }
+    #stellar-qr-code {
+      margin: 10px auto;
+    }
+    #stellar-status {
+      margin-top: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -181,6 +200,14 @@
       <div class="payment-options">
         <button class="razorpay-btn" onclick="initiateRazorpayPayment()">Pay with Razorpay</button>
         <button class="coinbase-btn" onclick="initiateCoinbasePayment()">Pay with Coinbase</button>
+        <button class="stellar-btn" onclick="initiateStellarPayment()">Pay with Stellar</button>
+      </div>
+      <div id="stellar-payment-details">
+        <p>Send the exact amount to the Stellar wallet below:</p>
+        <p><strong>Amount:</strong> <span id="stellar-amount"></span> XLM</p>
+        <p><strong>Wallet Address:</strong> <span id="stellar-wallet"></span></p>
+        <div id="stellar-qr-code"></div>
+        <p id="stellar-status">Waiting for payment...</p>
       </div>
     </div>
 
@@ -258,6 +285,10 @@
     const usersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80';
     const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    // Stellar Configuration (Testnet for testing, replace with mainnet for production)
+    const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
+    const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD'; // e.g., GABC...
 
     // Check auth state and fetch user data
     firebase.auth().onAuthStateChanged((user) => {
@@ -361,8 +392,8 @@
         document.getElementById('loading').style.display = 'block';
 
         const options = {
-          key: 'rzp_test_2Z0bGlFe6nKd9T', // Test Mode Key ID
-          amount: total, // Amount in paise
+          key: 'rzp_test_2Z0bGlFe6nKd9T',
+          amount: total,
           currency: 'INR',
           name: 'Rootsy Grocery Store',
           description: `Order #${orderId}`,
@@ -466,6 +497,104 @@
       }
     }
 
+    // Stellar Payment
+    async function initiateStellarPayment() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        alert('Your cart is empty.');
+        return;
+      }
+
+      // Validate required fields
+      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
+      for (const field of requiredFields) {
+        const value = document.getElementById(field).value.trim();
+        if (!value) {
+          document.getElementById('error-message').textContent = `Please fill in the ${field.replace('user-', '')} field.`;
+          return;
+        }
+      }
+
+      const totalINR = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const orderId = `ORD${Date.now()}`;
+      const email = document.getElementById('user-email').textContent;
+
+      try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('error-message').textContent = '';
+
+        // Fetch INR to XLM conversion rate
+        const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=inr');
+        const xlmPerInr = response.data.stellar.inr;
+        const totalXLM = (totalINR / xlmPerInr).toFixed(6); // XLM with 6 decimal places
+
+        // Show Stellar payment details
+        const paymentDetails = document.getElementById('stellar-payment-details');
+        document.getElementById('stellar-amount').textContent = totalXLM;
+        document.getElementById('stellar-wallet').textContent = merchantWallet;
+        paymentDetails.style.display = 'block';
+
+        // Generate QR code
+        const qrCodeDiv = document.getElementById('stellar-qr-code');
+        qrCodeDiv.innerHTML = ''; // Clear previous QR code
+        new QRCode(qrCodeDiv, {
+          text: `stellar:${merchantWallet}?amount=${totalXLM}&memo=${orderId}`,
+          width: 200,
+          height: 200
+        });
+
+        // Monitor payment
+        let paymentConfirmed = false;
+        const startTime = Date.now();
+        const timeout = 10 * 60 * 1000; // 10 minutes timeout
+
+        while (!paymentConfirmed && Date.now() - startTime < timeout) {
+          try {
+            const payments = await stellarServer
+              .payments()
+              .forAccount(merchantWallet)
+              .limit(10)
+              .order('desc')
+              .call();
+
+            const payment = payments.records.find(p => 
+              p.type === 'payment' &&
+              p.asset_type === 'native' && // XLM
+              parseFloat(p.amount) >= parseFloat(totalXLM) &&
+              p.to === merchantWallet &&
+              (!p.transaction_attr?.memo || p.transaction_attr?.memo === orderId)
+            );
+
+            if (payment) {
+              paymentConfirmed = true;
+              const transactionId = payment.transaction_hash;
+              const orderId = await saveOrder('Stellar', transactionId);
+              alert('Payment successful! Order placed.');
+              localStorage.removeItem('cart');
+              window.location.href = `orderconfirmation.html?orderId=${orderId}`;
+              return;
+            }
+
+            // Wait 5 seconds before next check
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          } catch (error) {
+            console.error('Error checking payment:', error);
+            // Continue polling on error
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
+        }
+
+        // Timeout reached
+        document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
+        document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
+      } catch (error) {
+        document.getElementById('error-message').textContent = 'Error initiating Stellar payment. Please try again.';
+        console.error('Stellar error:', error);
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
     // Save order to orders bin
     async function saveOrder(paymentMethod, paymentId = null) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -502,8 +631,8 @@
         totalAmount,
         orderStatus: 'Pending',
         paymentMethod,
-        paymentStatus: paymentMethod === 'Razorpay' ? 'Paid' : 'Pending',
-        paymentId // Store Razorpay payment ID for reference
+        paymentStatus: paymentMethod === 'Razorpay' || paymentMethod === 'Stellar' ? 'Paid' : 'Pending',
+        paymentId
       };
 
       try {
