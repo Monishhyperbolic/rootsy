@@ -2,212 +2,270 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    .profile-container { max-width: 800px; margin: 2rem auto; padding: 2rem; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .field-group { margin-bottom: 1.5rem; }
-    label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-    input, select { width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border: 1px solid #ddd; }
-    button { background: #007bff; color: white; padding: 0.5rem 1rem; border: none; cursor: pointer; }
-    .edit-mode { border-color: #666; background: #f8f9fa; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Profile | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 <body>
+
+  <!-- Header similar to shop.html -->
+  <header>
+    <div class="top-banner">
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="sign_in.html" class="account"><i class="fa-solid fa-user"></i><span>Sign in account</span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+  </header>
+
+  <!-- Profile Content -->
   <div class="profile-container">
-    <h1>Your Profile</h1>
-    <button id="editBtn">Edit Profile</button>
-    <button id="resetPassBtn" type="button">Reset Password</button>
+    <h2>My Profile</h2>
 
-    <form id="profileForm">
-      <div class="field-group">
-        <label>Full Name</label>
-        <input type="text" id="name" disabled>
-      </div>
+    <div id="user-info">
+      <p><strong>Email: </strong><span id="user-email"></span></p>
 
-      <div class="field-group">
-        <label>Email</label>
-        <input type="email" id="email" disabled>
-      </div>
+      <!-- Editable User Data Form -->
+      <label for="user-name">Name: </label>
+      <input type="text" id="user-name" placeholder="Enter your name" />
 
-      <div class="field-group">
-        <label>Mobile</label>
-        <input type="tel" id="mobile" disabled>
-      </div>
+      <label for="user-street">Street: </label>
+      <input type="text" id="user-street" placeholder="Enter street address" />
 
-      <div class="field-group">
-        <label>Date of Birth</label>
-        <input type="date" id="dob" disabled>
-      </div>
+      <label for="user-city">City: </label>
+      <input type="text" id="user-city" placeholder="Enter city" />
 
-      <div class="field-group">
-        <label>Gender</label>
-        <select id="gender" disabled>
-          <option value="">Select</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
+      <label for="user-postal-code">Postal Code: </label>
+      <input type="text" id="user-postal-code" placeholder="Enter postal code" />
 
-      <div class="field-group">
-        <h3>Shipping Address</h3>
-        <input type="text" id="shipStreet" placeholder="Street" disabled>
-        <input type="text" id="shipCity" placeholder="City" disabled>
-        <input type="text" id="shipState" placeholder="State" disabled>
-        <input type="text" id="shipZip" placeholder="ZIP" disabled>
-        <input type="text" id="shipCountry" placeholder="Country" disabled>
-      </div>
+      <label for="user-country">Country: </label>
+      <input type="text" id="user-country" placeholder="Enter country" />
 
-      <div class="field-group">
-        <h3>Billing Address</h3>
-        <input type="text" id="billStreet" placeholder="Street" disabled>
-        <input type="text" id="billCity" placeholder="City" disabled>
-        <input type="text" id="billState" placeholder="State" disabled>
-        <input type="text" id="billZip" placeholder="ZIP" disabled>
-        <input type="text" id="billCountry" placeholder="Country" disabled>
-      </div>
+      <button onclick="updateUserData()">Update Info</button>
+    </div>
 
-      <div class="field-group">
-        <label>
-          <input type="checkbox" id="newsletter" disabled> Newsletter Subscription
-        </label>
-        <label>
-          <input type="checkbox" id="loyalty" disabled> Loyalty Program
-        </label>
-      </div>
-
-      <button type="submit" id="saveBtn" style="display: none;">Save Changes</button>
-    </form>
+    <button onclick="resetPassword()">Reset Password</button>
+    <button onclick="logout()">Logout</button>
   </div>
 
+  <!-- Footer -->
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
   <script>
+    // Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
-      authDomain: "rootsy-ec110.firebaseapp.com",
-      projectId: "rootsy-ec110",
-      storageBucket: "rootsy-ec110.appspot.com",
-      messagingSenderId: "120254624474",
-      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
     };
-
-    const supabaseUrl = 'https://takraoqafzlolecjgtgn.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRha3Jhb3FhZnpsb2xlY2pndGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ5MDc4NTMsImV4cCI6MjA2MDQ4Mzg1M30.XMVvPXRnI5Z_0R-3Pn9OHUAkAT6mzpQJc6pu0q3aegs'; // [TRUNCATED FOR SAFETY]
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    let supabase;
-    let isEditing = false;
 
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) return window.location.href = 'sign_in.html';
+    // JSONBin Configuration
+    const jsonBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Your JSONBin URL
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.'; // Your API key (Master Key)
 
-      const token = await user.getIdToken();
-      supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-        global: {
-          headers: { Authorization: `Bearer ${token}` }
+    // Fetch and display user data from JSONBin.io
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "sign_in.html";  // Redirect if user is not logged in
+      } else {
+        document.getElementById('user-email').textContent = user.email;  // Display email
+        fetchUserData(user.email);  // Fetch user data from JSONBin.io
+      }
+    });
+
+    // Fetch user data from JSONBin
+    async function fetchUserData(email) {
+      const response = await fetch(jsonBinUrl, {
+        method: 'GET',
+        headers: {
+          'X-Master-Key': apiKey
         }
       });
-
-      loadUserData(user.email);
-    });
-    document.getElementById('resetPassBtn').addEventListener('click', () => {
-        window.location.href = 'forget_password.html';
-        });
-
-
-    async function loadUserData(email) {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('email', email)
-          .single();
-
-        if (error) throw error;
-
-        document.getElementById('name').value = data.name || '';
-        document.getElementById('email').value = data.email || '';
-        document.getElementById('mobile').value = data.mobile || '';
-        document.getElementById('dob').value = data.date_of_birth || '';
-        document.getElementById('gender').value = data.gender || '';
-        document.getElementById('newsletter').checked = data.newsletter_opt_in;
-        document.getElementById('loyalty').checked = data.loyalty_opt_in;
-
-        const shipping = data.shipping_address || {};
-        document.getElementById('shipStreet').value = shipping.street || '';
-        document.getElementById('shipCity').value = shipping.city || '';
-        document.getElementById('shipState').value = shipping.state || '';
-        document.getElementById('shipZip').value = shipping.zip || '';
-        document.getElementById('shipCountry').value = shipping.country || '';
-
-        const billing = data.billing_address || {};
-        document.getElementById('billStreet').value = billing.street || '';
-        document.getElementById('billCity').value = billing.city || '';
-        document.getElementById('billState').value = billing.state || '';
-        document.getElementById('billZip').value = billing.zip || '';
-        document.getElementById('billCountry').value = billing.country || '';
-
-      } catch (err) {
-        console.error('Load error:', err);
-        alert('Could not load user data.');
+      const data = await response.json();
+      const user = data.users.find(user => user.email === email);
+      
+      if (user) {
+        // Fill the form with user data
+        document.getElementById('user-name').value = user.name || '';
+        document.getElementById('user-street').value = user.address.street || '';
+        document.getElementById('user-city').value = user.address.city || '';
+        document.getElementById('user-postal-code').value = user.address.postal_code || '';
+        document.getElementById('user-country').value = user.address.country || '';
+      } else {
+        // If no user data, fill the form with empty values
+        document.getElementById('user-name').value = '';
+        document.getElementById('user-street').value = '';
+        document.getElementById('user-city').value = '';
+        document.getElementById('user-postal-code').value = '';
+        document.getElementById('user-country').value = '';
       }
     }
 
-    document.getElementById('editBtn').addEventListener('click', () => {
-      isEditing = !isEditing;
-      document.querySelectorAll('input, select').forEach(el => {
-        el.disabled = !isEditing;
-        el.classList.toggle('edit-mode', isEditing);
-      });
-      document.getElementById('saveBtn').style.display = isEditing ? 'block' : 'none';
-      document.getElementById('editBtn').textContent = isEditing ? 'Cancel' : 'Edit Profile';
-    });
-
-    document.getElementById('profileForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-
-      const updateData = {
-        name: document.getElementById('name').value,
-        mobile: document.getElementById('mobile').value,
-        date_of_birth: document.getElementById('dob').value,
-        gender: document.getElementById('gender').value,
-        newsletter_opt_in: document.getElementById('newsletter').checked,
-        loyalty_opt_in: document.getElementById('loyalty').checked,
-        shipping_address: {
-          street: document.getElementById('shipStreet').value,
-          city: document.getElementById('shipCity').value,
-          state: document.getElementById('shipState').value,
-          zip: document.getElementById('shipZip').value,
-          country: document.getElementById('shipCountry').value,
-        },
-        billing_address: {
-          street: document.getElementById('billStreet').value,
-          city: document.getElementById('billCity').value,
-          state: document.getElementById('billState').value,
-          zip: document.getElementById('billZip').value,
-          country: document.getElementById('billCountry').value,
+    // Update user data
+    async function updateUserData() {
+      const user = firebase.auth().currentUser;
+      const updatedUserData = {
+        name: document.getElementById('user-name').value,
+        email: user.email, // Ensure we store the email for new users
+        address: {
+          street: document.getElementById('user-street').value,
+          city: document.getElementById('user-city').value,
+          postal_code: document.getElementById('user-postal-code').value,
+          country: document.getElementById('user-country').value
         }
       };
 
-      try {
-        const { error } = await supabase
-          .from('users')
-          .update(updateData)
-          .eq('email', email);
+      // Fetch existing data from JSONBin
+      const response = await fetch(jsonBinUrl, {
+        method: 'GET',
+        headers: {
+          'X-Master-Key': apiKey
+        }
+      });
+      const data = await response.json();
+      const userExists = data.users.some(user => user.email === updatedUserData.email);
 
-        if (error) throw error;
-        alert('Profile updated successfully!');
-        location.reload();
-      } catch (err) {
-        console.error('Update error:', err);
-        alert('Error updating profile: ' + err.message);
+      if (userExists) {
+        // If user exists, update data
+        const updateResponse = await fetch(jsonBinUrl, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            users: data.users.map(user => {
+              if (user.email === updatedUserData.email) {
+                return updatedUserData; // Replace existing user data with updated data
+              }
+              return user; // Keep other users unchanged
+            })
+          })
+        });
+        if (updateResponse.ok) {
+          alert("Your profile has been updated successfully.");
+        } else {
+          alert("There was an error updating your profile.");
+        }
+      } else {
+        // If user doesn't exist, add new user data
+        const addUserResponse = await fetch(jsonBinUrl, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            users: [...data.users, updatedUserData] // Add new user data
+          })
+        });
+        if (addUserResponse.ok) {
+          alert("Welcome! Your profile has been created.");
+        } else {
+          alert("There was an error creating your profile.");
+        }
       }
-    });
+    }
   </script>
 </body>
 </html>
