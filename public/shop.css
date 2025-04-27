@@ -475,3 +475,12 @@ body {
     text-decoration: none;
     margin: 0 10px;
   }
+  #profile-image {
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  #profile-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  }
+  
