@@ -12,206 +12,172 @@
 
   <header>
     <div class="top-banner">
-        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
-        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+      <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+      <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
     </div>
     <div class="top-header">
-        <div class="left-section">
-          <a href="about.html">About Us</a>
-          <a href="profile.html">My account</a>
-          <a href="wishlist.html">Wishlist</a>
-          <span class="divider"></span>
-          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
-        </div>
-        <div class="right-section">
-          <div id="google_translate_element"></div>
-         <a href="seller_login.html">  <button class="seller-btn">Seller Login</button></a>
-          <a href="#">Order Tracking</a>
+      <div class="left-section">
+        <a href="about.html">About Us</a>
+        <a href="profile.html">My account</a>
+        <a href="wishlist.html">Wishlist</a>
+        <span class="divider"></span>
+        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+      </div>
+      <div class="right-section">
+        <div id="google_translate_element"></div>
+        <a href="seller_login.html">  <button class="seller-btn">Seller Login</button></a>
+        <a href="#">Order Tracking</a>
+      </div>
+    </div>
+    <nav class="navbar">
+      <div class="navbar-left">
+        <a href="#" class="logo">
+          <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+          <span id="brand"></span>
+        </a>
+        <div class="delivery">
+          <span>Deliver to</span>
+          <span>all</span>
         </div>
       </div>
-    <nav class="navbar">
-        <div class="navbar-left">
-            <a href="#" class="logo">
-                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
-                <span id="brand"></span>
-            </a>
-            <div class="delivery">
-                <span>Deliver to</span>
-                <span>all</span>
-            </div>
-        </div>
-        <div class="navbar-center">
-            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
-            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </div>
-        <div class="navbar-right">
-            <a id="account-link" href="profile.html" class="account">
-                <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
-              </a>            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-        </div>
+      <div class="navbar-center">
+        <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </div>
+      <div class="navbar-right">
+        <a id="account-link" href="profile.html" class="account">
+          <img id="profile-image" src="default-profile.png" alt="Profile" style="width:40px; height:40px; border-radius:50%;">
+        </a>
+        <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+        <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+      </div>
     </nav>
     <div class="navbar-links">
-        <a href="index.html">Home</a>
-        <a href="shop.html">Shop</a>
-        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
-        <a href="beverages.html">Beverages</a>
-        <a href="blog.html">Blog</a>
-        <a href="contact.html">Contact</a>
-        <a href="trendingproduct.html">Trending Products</a>
-        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+      <a href="beverages.html">Beverages</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+      <a href="trendingproduct.html">Trending Products</a>
+      <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
     </div>
-</header>
+  </header>
 
-<div class="shop-page">
-  <aside class="sidebar">
-    <nav>
-      <p class="breadcrumb"><a href="index.html">Home</a>> <a href="shop.html">shop</a></p>
-    </nav>
-  </aside>
-
-  <main class="wishlist-main">
+  <div class="wishlist-page">
     <h2>Your Wishlist</h2>
-
-    <!-- Wishlist Items -->
     <div id="wishlist-items-container">
-      <!-- Wishlist Item -->
-      <div class="wishlist-item">
-        <span>Product Name</span>
-        <span>₹20.99</span>
-        <div class="wishlist-actions">
-          <button class="add-to-cart-btn">Add to Cart</button>
-          <button class="remove-btn">Remove</button>
-        </div>
-      </div>
-      <!-- Repeat above block for each wishlist item -->
+      <!-- Wishlist items will be dynamically added here -->
     </div>
 
-    <!-- Checkout/Go to Cart Button -->
-    <a href="cart.html">
-      <button class="checkout-btn">Go to Cart</button>
-    </a>
-  </main>
+    <div id="wishlist-summary">
+      <p>Total Items: <span id="total-items">0</span></p>
+    </div>
 
-</div>
-
-<footer>
-  <div class="newsletter">
-      <p>Join our newsletter for exclusive discounts!</p>
-      <form>
-          <input type="email" placeholder="Enter your email">
-          <button type="submit">Subscribe</button>
-      </form>
+    <button id="continue-shopping-btn" class="continue-btn">Continue Shopping</button>
   </div>
-  <div class="footer-content">
-      <div class="column">
-          <h3>Need Help?</h3>
-          <p>Contact our support team: support@rootsy.com</p>
-          <p>Call us: 0800 19019028</p>
-      </div>
-      <div class="column">
-          <h3>Company Info</h3>
-          <ul>
-              <li><a href="#">About Us</a></li>
-              <li><a href="#">Careers</a></li>
-          </ul>
-      </div>
-      <div class="column">
-          <h3>Follow Us</h3>
-          <div class="social-media">
-              <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
-              <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
-              <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
-          </div>
-      </div>
-      <div class="column">
-          <h3>Payment Methods</h3>
-          <div class="payment-methods">
-              <i class="fa-brands fa-cc-visa"></i>
-              <i class="fa-brands fa-cc-mastercard"></i>
-              <i class="fa-brands fa-cc-paypal"></i>
-          </div>
-      </div>
-  </div>
-  <div class="copyright">
-      Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
-  </div>
-  <div class="links">
-      <a href="#">Terms and Conditions</a> |
-      <a href="#">Privacy Policy</a> |
-      <a href="#">Order Tracking</a>
-  </div>
-</footer>
 
-<script>
-// Function to get the current wishlist from localStorage
-function getWishlist() {
-    return JSON.parse(localStorage.getItem('wishlist')) || [];
-}
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
 
-// Function to get the current cart from localStorage
-function getCart() {
-    return JSON.parse(localStorage.getItem('cart')) || [];
-}
+  <script>
+    let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    let wishlistItems = JSON.parse(localStorage.getItem('wishlist')) || [];
 
-// Function to save the updated wishlist to localStorage
-function saveWishlist(wishlist) {
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-}
-
-// Function to save the updated cart to localStorage
-function saveCart(cart) {
-    localStorage.setItem('cart', JSON.stringify(cart));
-}
-
-// Function to remove an item from the wishlist
-function removeFromWishlist(productId) {
-    let wishlist = getWishlist();
-    wishlist = wishlist.filter(item => item.id !== productId); // Remove the item by ID
-    saveWishlist(wishlist);
-    updateWishlist(); // Update the wishlist display
-}
-
-// Function to add an item to the cart
-function addToCart(product) {
-    let cart = getCart();
-    cart.push(product); // Add the item to the cart array
-    saveCart(cart);
-
-    // Optionally, remove the item from the wishlist after adding it to the cart
-    removeFromWishlist(product.id);
-}
-
-// Function to update the wishlist display
-function updateWishlist() {
-    const wishlistContainer = document.getElementById('wishlist-items-container');
-    const wishlist = getWishlist();
-
-    wishlistContainer.innerHTML = ''; // Clear current wishlist
-
-    wishlist.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.classList.add('wishlist-item');
-        itemElement.innerHTML = `
+    function updateWishlistDisplay() {
+      const wishlistContainer = document.getElementById('wishlist-items-container');
+      const totalItems = document.getElementById('total-items');
+      
+      wishlistContainer.innerHTML = '';
+      
+      if (wishlistItems.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.classList.add('empty-wishlist');
+        emptyMessage.innerHTML = `
+          <p>Your wishlist is empty.</p>
+          <p>Add items to your wishlist to save them for later!</p>
+        `;
+        wishlistContainer.appendChild(emptyMessage);
+      } else {
+        wishlistItems.forEach((item, index) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.classList.add('wishlist-item');
+          itemDiv.innerHTML = `
             <span>${item.name}</span>
             <span>₹${item.price}</span>
-            <div class="wishlist-actions">
-                <button class="add-to-cart-btn" onclick="addToCart(${JSON.stringify(item)})">Add to Cart</button>
-                <button class="remove-btn" onclick="removeFromWishlist(${item.id})">Remove</button>
-            </div>
-        `;
-        wishlistContainer.appendChild(itemElement);
+            <button onclick="addToCart(${index})">Add to Cart</button>
+            <button onclick="removeFromWishlist(${index})">Remove</button>
+          `;
+          wishlistContainer.appendChild(itemDiv);
+        });
+      }
+
+      totalItems.textContent = wishlistItems.length;
+    }
+
+    function addToCart(index) {
+      const item = wishlistItems[index];
+      cartItems.push(item);
+      localStorage.setItem('cart', JSON.stringify(cartItems));
+      alert('Item added to cart');
+    }
+
+    function removeFromWishlist(index) {
+      wishlistItems.splice(index, 1);
+      localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
+      updateWishlistDisplay();
+    }
+
+    document.getElementById('continue-shopping-btn').addEventListener('click', () => {
+      window.location.href = 'shop.html';
     });
 
-    // If wishlist is empty, show a message
-    if (wishlist.length === 0) {
-        wishlistContainer.innerHTML = '<p>Your wishlist is empty.</p>';
-    }
-}
-
-// When the page loads, update the wishlist display
-document.addEventListener('DOMContentLoaded', updateWishlist);
-</script>
-
+    updateWishlistDisplay();
+  </script>
 </body>
 </html>
