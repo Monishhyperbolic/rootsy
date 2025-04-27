@@ -174,35 +174,46 @@
 
   // Fetch user data from JSONBin
   async function fetchUserData(email) {
-    const response = await fetch(jsonBinUrl, {
-      method: 'GET',
-      headers: {
-        'X-Master-Key': apiKey
+    try {
+      const response = await fetch(jsonBinUrl, {
+        method: 'GET',
+        headers: {
+          'X-Master-Key': apiKey
+        }
+      });
+      const data = await response.json();
+      console.log('Fetched Data:', data); // Log the fetched data for debugging
+
+      const user = data.users.find(user => user.email === email);
+
+      if (user) {
+        // Fill the form with existing user data
+        document.getElementById('user-name').value = user.name || '';
+        document.getElementById('user-street').value = user.address.street || '';
+        document.getElementById('user-city').value = user.address.city || '';
+        document.getElementById('user-postal-code').value = user.address.postal_code || '';
+        document.getElementById('user-country').value = user.address.country || '';
+      } else {
+        // If user doesn't exist, allow them to fill in their details
+        document.getElementById('user-name').value = '';
+        document.getElementById('user-street').value = '';
+        document.getElementById('user-city').value = '';
+        document.getElementById('user-postal-code').value = '';
+        document.getElementById('user-country').value = '';
       }
-    });
-    const data = await response.json();
-    const user = data.users.find(user => user.email === email);
-    
-    if (user) {
-      // Fill the form with existing user data
-      document.getElementById('user-name').value = user.name || '';
-      document.getElementById('user-street').value = user.address.street || '';
-      document.getElementById('user-city').value = user.address.city || '';
-      document.getElementById('user-postal-code').value = user.address.postal_code || '';
-      document.getElementById('user-country').value = user.address.country || '';
-    } else {
-      // If user doesn't exist, allow them to fill in their details
-      document.getElementById('user-name').value = '';
-      document.getElementById('user-street').value = '';
-      document.getElementById('user-city').value = '';
-      document.getElementById('user-postal-code').value = '';
-      document.getElementById('user-country').value = '';
+    } catch (error) {
+      console.error('Error fetching user data:', error); // Log errors if any
     }
   }
 
   // Update or Add User Data
   async function updateUserData() {
     const user = firebase.auth().currentUser;
+    if (!user) {
+      console.error('No user is currently logged in.');
+      return;  // Exit if no user is logged in
+    }
+
     const updatedUserData = {
       email: user.email,
       name: document.getElementById('user-name').value,
@@ -214,15 +225,19 @@
       }
     };
 
+    console.log('Updating User Data:', updatedUserData); // Log the data being sent for debugging
+
     try {
+      // Fetch current users data from JSONBin
       const response = await fetch(jsonBinUrl, {
         method: 'GET',
         headers: {
           'X-Master-Key': apiKey
         }
       });
-      
       const data = await response.json();
+      console.log('Current Data:', data); // Log current data from JSONBin
+
       const existingUserIndex = data.users.findIndex(user => user.email === updatedUserData.email);
 
       if (existingUserIndex !== -1) {
@@ -236,7 +251,7 @@
       }
 
       // Update the entire users list in JSONBin
-      await fetch(jsonBinUrl, {
+      const updateResponse = await fetch(jsonBinUrl, {
         method: 'PUT',
         headers: {
           'X-Master-Key': apiKey,
@@ -245,8 +260,14 @@
         body: JSON.stringify(data)
       });
 
+      if (updateResponse.ok) {
+        console.log('User data updated successfully on JSONBin.');
+      } else {
+        console.error('Failed to update user data on JSONBin');
+      }
+
     } catch (error) {
-      console.error('Error updating or adding user data:', error);
+      console.error('Error updating or adding user data:', error); // Log any errors
     }
   }
 
