@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Processing Payment | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <style>
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    .error-message {
+      color: red;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Processing Your Payment...</h2>
+    <p>Please wait while we verify your payment.</p>
+    <div id="error-message" class="error-message"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc81'; // Replace with your orders bin ID
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    async function verifyCoinbasePayment() {
+      const orderId = new URLSearchParams(window.location.search).get('orderId') || localStorage.getItem('lastOrderId');
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+      if (!orderId || cart.length === 0) {
+        document.getElementById('error-message').textContent = 'Invalid order or empty cart.';
+        return;
+      }
+
+      try {
+        // Verify payment via Coinbase API (replace with actual charge ID from redirect or webhook)
+        const response = await axios.get(`https://api.commerce.coinbase.com/charges/${orderId}`, {
+          headers: { 'X-CC-Api-Key': 'YOUR_COINBASE_API_KEY', 'X-CC-Version': '2018-03-22' }
+        });
+
+        if (response.data.data.payments.length > 0 && response.data.data.payments[0].status === 'CONFIRMED') {
+          // Save order
+          const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+          const order = {
+            orderId,
+            user: {
+              name: document.getElementById('user-name')?.value || localStorage.getItem('userName') || 'Guest',
+              email: localStorage.getItem('userEmail') || 'unknown@example.com',
+              phone: document.getElementById('user-phone')?.value || localStorage.getItem('userPhone') || '',
+              shippingAddress: {
+                addressLine1: document.getElementById('user-street')?.value || localStorage.getItem('userStreet') || '',
+                city: document.getElementById('user-city')?.value || localStorage.getItem('userCity') || '',
+                state: document.getElementById('user-state')?.value || localStorage.getItem('userState') || '',
+                postalCode: document.getElementById('user-postal-code')?.value || localStorage.getItem('userPostalCode') || '',
+                country: document.getElementById('user-country')?.value || localStorage.getItem('userCountry') || ''
+              }
+            },
+            products: cart.map(item => ({
+              productId: item.id || `P${Date.now()}`,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+              totalPrice: item.price * item.quantity,
+              seller: { name: item.seller || 'Rootsy Store' }
+            })),
+            orderDate: new Date().toISOString(),
+            deliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            totalAmount,
+            orderStatus: 'Pending',
+            paymentMethod: 'Coinbase',
+            paymentStatus: 'Paid'
+          };
+
+          const fetchResponse = await fetch(ordersBinUrl, {
+            method: 'GET',
+            headers: { 'X-Master-Key': apiKey }
+          });
+          const data = await fetchResponse.json();
+          const orders = data.record?.orders || [];
+
+          orders.push(order);
+
+          await fetch(ordersBinUrl, {
+            method: 'PUT',
+            headers: {
+              'X-Master-Key': apiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ orders })
+          });
+
+          localStorage.removeItem('cart');
+          localStorage.removeItem('lastOrderId');
+          window.location.href = `orderconfirmation.html?orderId=${orderId}`;
+        } else {
+          document.getElementById('error-message').textContent = 'Payment not confirmed. Please try again.';
+          setTimeout(() => window.location.href = 'paymentfailure.html', 3000);
+        }
+      } catch (error) {
+        document.getElementById('error-message').textContent = 'Error verifying payment. Please contact support.';
+        console.error('Coinbase verification error:', error);
+        setTimeout(() => window.location.href = 'paymentfailure.html', 3000);
+      }
+    }
+
+    // Store user data in localStorage before redirect (from checkout.html)
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        localStorage.setItem('userEmail', user.email);
+        localStorage.setItem('userName', document.getElementById('user-name')?.value || '');
+        localStorage.setItem('userPhone', document.getElementById('user-phone')?.value || '');
+        localStorage.setItem('userStreet', document.getElementById('user-street')?.value || '');
+        localStorage.setItem('userCity', document.getElementById('user-city')?.value || '');
+        localStorage.setItem('userState', document.getElementById('user-state')?.value || '');
+        localStorage.setItem('userPostalCode', document.getElementById('user-postal-code')?.value || '');
+        localStorage.setItem('userCountry', document.getElementById('user-country')?.value || '');
+      }
+    });
+
+    verifyCoinbasePayment();
+  </script>
+</body>
+</html>

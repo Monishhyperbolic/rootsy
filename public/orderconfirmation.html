@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order Confirmation | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <style>
+    .confirmation-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #fff;
+      text-align: center;
+    }
+    .confirmation-container h2 {
+      margin-bottom: 20px;
+    }
+    .order-details p {
+      margin: 10px 0;
+    }
+    .order-details ul {
+      list-style: none;
+      padding: 0;
+      text-align: left;
+    }
+    .order-details li {
+      margin-bottom: 10px;
+    }
+    .error-message {
+      color: red;
+      margin: 20px 0;
+    }
+    .buttons {
+      margin-top: 20px;
+    }
+    .buttons button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #5a9cf7;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header (same as checkout.html) -->
+  <header>
+    <div class="top-banner">
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="orderhistory.html" class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+  </header>
+
+  <!-- Confirmation Content -->
+  <div class="confirmation-container">
+    <h2>Thank You for Your Order!</h2>
+    <p>Your order has been placed successfully. You'll receive a confirmation email soon.</p>
+    <div class="order-details" id="order-details"></div>
+    <div class="error-message" id="error-message"></div>
+    <div class="buttons">
+      <button onclick="window.location.href='orderhistory.html'">View Order History</button>
+      <button onclick="window.location.href='shop.html'">Continue Shopping</button>
+    </div>
+  </div>
+
+  <!-- Footer (same as checkout.html) -->
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
+
+  <script>
+    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc81'; // Replace with your orders bin ID
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    async function fetchOrderDetails() {
+      const orderId = new URLSearchParams(window.location.search).get('orderId');
+      if (!orderId) {
+        document.getElementById('error-message').textContent = 'No order ID provided.';
+        return;
+      }
+
+      try {
+        const response = await fetch(ordersBinUrl, {
+          method: 'GET',
+          headers: { 'X-Master-Key': apiKey }
+        });
+        const data = await response.json();
+        const order = data.record?.orders?.find(o => o.orderId === orderId);
+
+        if (order) {
+          document.getElementById('order-details').innerHTML = `
+            <p><strong>Order ID:</strong> ${order.orderId}</p>
+            <p><strong>Total Amount:</strong> $${order.totalAmount.toFixed(2)}</p>
+            <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
+            <p><strong>Estimated Delivery:</strong> ${new Date(order.deliveryDate).toLocaleDateString()}</p>
+            <p><strong>Shipping Address:</strong> ${order.user.shippingAddress.addressLine1}, ${order.user.shippingAddress.city}, ${order.user.shippingAddress.state ? order.user.shippingAddress.state + ', ' : ''}${order.user.shippingAddress.postalCode}, ${order.user.shippingAddress.country}</p>
+            <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+            <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+            <h3>Items:</h3>
+            <ul>
+              ${order.products.map(item => `
+                <li>${item.name} - Quantity: ${item.quantity} - $${item.totalPrice.toFixed(2)}</li>
+              `).join('')}
+            </ul>
+          `;
+        } else {
+          document.getElementById('error-message').textContent = 'Order not found.';
+        }
+      } catch (error) {
+        document.getElementById('error-message').textContent = 'Error fetching order details.';
+        console.error('Error:', error);
+      }
+    }
+
+    fetchOrderDetails();
+  </script>
+</body>
+</html>

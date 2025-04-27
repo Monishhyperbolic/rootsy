@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout | Grocery Store</title>
+  <link rel="stylesheet" href="shop.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    .checkout-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .checkout-container h2 {
+      width: 100%;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .shipping-section, .cart-section, .payment-section {
+      flex: 1;
+      min-width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: #fff;
+    }
+    .shipping-section label, .payment-section label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .shipping-section input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .cart-section ul {
+      list-style: none;
+      padding: 0;
+    }
+    .cart-section li {
+      margin-bottom: 10px;
+    }
+    .cart-total {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .payment-options {
+      margin-top: 20px;
+    }
+    .payment-options button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .razorpay-btn {
+      background-color: #5a9cf7;
+      color: white;
+    }
+    .coinbase-btn {
+      background-color: #0667d0;
+      color: white;
+    }
+    .error-message {
+      color: red;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .loading {
+      text-align: center;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="top-banner">
+        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+    </div>
+    <div class="top-header">
+        <div class="left-section">
+          <a href="about.html">About Us</a>
+          <a href="profile.html">My account</a>
+          <a href="wishlist.html">Wishlist</a>
+          <span class="divider"></span>
+          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+        </div>
+        <div class="right-section">
+          <div id="google_translate_element"></div>
+          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+          <a href="#">Order Tracking</a>
+        </div>
+      </div>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="#" class="logo">
+                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+                <span id="brand"></span>
+            </a>
+            <div class="delivery">
+                <span>Deliver to</span>
+                <span>all</span>
+            </div>
+        </div>
+        <div class="navbar-center">
+            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div class="navbar-right">
+            <a href="orderhistory.html" class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
+            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+        </div>
+    </nav>
+    <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+        <a href="beverages.html">Beverages</a>
+        <a href="blog.html">Blog</a>
+        <a href="contact.html">Contact</a>
+        <a href="trendingproduct.html">Trending Products</a>
+        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+    </div>
+  </header>
+
+  <!-- Checkout Content -->
+  <div class="checkout-container">
+    <h2>Checkout</h2>
+    
+    <!-- Shipping Information -->
+    <div class="shipping-section">
+      <h3>Shipping Information</h3>
+      <p><strong>Email: </strong><span id="user-email"></span></p>
+      <label><input type="checkbox" id="use-alternate-address"> Use Alternate Address</label>
+      <div id="shipping-form">
+        <label for="user-name">Name:</label>
+        <input type="text" id="user-name" placeholder="Enter your name" required />
+        <label for="user-phone">Phone:</label>
+        <input type="text" id="user-phone" placeholder="Enter phone number" />
+        <label for="user-street">Street:</label>
+        <input type="text" id="user-street" placeholder="Enter street address" required />
+        <label for="user-city">City:</label>
+        <input type="text" id="user-city" placeholder="Enter city" required />
+        <label for="user-state">State:</label>
+        <input type="text" id="user-state" placeholder="Enter state" />
+        <label for="user-postal-code">Postal Code:</label>
+        <input type="text" id="user-postal-code" placeholder="Enter postal code" required />
+        <label for="user-country">Country:</label>
+        <input type="text" id="user-country" placeholder="Enter country" required />
+      </div>
+    </div>
+
+    <!-- Cart Summary -->
+    <div class="cart-section">
+      <h3>Cart Summary</h3>
+      <ul id="cart-items"></ul>
+      <div class="cart-total" id="cart-total">Total: $0.00</div>
+    </div>
+
+    <!-- Payment Options -->
+    <div class="payment-section">
+      <h3>Payment Options</h3>
+      <div class="payment-options">
+        <button class="razorpay-btn" onclick="initiateRazorpayPayment()">Pay with Razorpay</button>
+        <button class="coinbase-btn" onclick="initiateCoinbasePayment()">Pay with Coinbase</button>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">Loading...</div>
+    <div id="error-message" class="error-message"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="newsletter">
+        <p>Join our newsletter for exclusive discounts!</p>
+        <form>
+            <input type="email" placeholder="Enter your email">
+            <button type="submit">Subscribe</button>
+        </form>
+    </div>
+    <div class="footer-content">
+        <div class="column">
+            <h3>Need Help?</h3>
+            <p>Contact our support team: support@rootsy.com</p>
+            <p>Call us: 0800 19019028</p>
+        </div>
+        <div class="column">
+            <h3>Company Info</h3>
+            <ul>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+            </ul>
+        </div>
+        <div class="column">
+            <h3>Follow Us</h3>
+            <div class="social-media">
+                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
+            </div>
+        </div>
+        <div class="column">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-paypal"></i>
+            </div>
+        </div>
+    </div>
+    <div class="copyright">
+        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+    </div>
+    <div class="links">
+        <a href="#">Terms and Conditions</a> |
+        <a href="#">Privacy Policy</a> |
+        <a href="#">Order Tracking</a>
+    </div>
+  </footer>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
+      authDomain: "rootsy-ec110.firebaseapp.com",
+      projectId: "rootsy-ec110",
+      storageBucket: "rootsy-ec110.appspot.com",
+      messagingSenderId: "120254624474",
+      appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
+      measurementId: "G-0Y636N5BPV"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // JSONBin Configuration
+    const usersBinUrl = 'https://api.jsonbin.io/v3/b/680d30418960c979a58dcc80'; // Replace with your users bin ID
+    const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116'; // Replace with your orders bin ID
+    const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
+
+    // Check auth state and fetch user data
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "sign_in.html";
+      } else {
+        document.getElementById('user-email').textContent = user.email;
+        fetchUserData(user.email);
+        loadCart();
+      }
+    });
+
+    // Fetch user data from users bin
+    async function fetchUserData(email) {
+      try {
+        document.getElementById('loading').style.display = 'block';
+        const response = await fetch(usersBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        const users = data.record?.users || [];
+
+        const user = users.find(user => user.email === email);
+
+        if (user) {
+          document.getElementById('user-name').value = user.name || '';
+          document.getElementById('user-phone').value = user.phone || '';
+          document.getElementById('user-street').value = user.address?.street || '';
+          document.getElementById('user-city').value = user.address?.city || '';
+          document.getElementById('user-state').value = user.address?.state || '';
+          document.getElementById('user-postal-code').value = user.address?.postal_code || '';
+          document.getElementById('user-country').value = user.address?.country || '';
+        }
+        document.getElementById('loading').style.display = 'none';
+      } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-message').textContent = 'Error fetching user data. Please try again.';
+        console.error('Error fetching user data:', error);
+      }
+    }
+
+    // Load cart from localStorage
+    function loadCart() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+      let total = 0;
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<li>Your cart is empty.</li>';
+        cartTotal.textContent = 'Total: $0.00';
+        return;
+      }
+
+      cartItems.innerHTML = '';
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} - Quantity: ${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`;
+        cartItems.appendChild(li);
+        total += item.price * item.quantity;
+      });
+
+      cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+    }
+
+    // Toggle alternate address
+    document.getElementById('use-alternate-address').addEventListener('change', function() {
+      const shippingForm = document.getElementById('shipping-form');
+      if (this.checked) {
+        shippingForm.querySelectorAll('input').forEach(input => input.value = '');
+      } else {
+        fetchUserData(document.getElementById('user-email').textContent);
+      }
+    });
+
+    // Razorpay Payment
+    async function initiateRazorpayPayment() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        alert('Your cart is empty.');
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100; // Convert to paise
+
+      try {
+        // Simulated server call to create Razorpay order
+        const response = await axios.post('https://api.razorpay.com/v1/orders', {
+          amount: total,
+          currency: 'INR',
+          receipt: `receipt_${Date.now()}`
+        }, {
+          auth: {
+            username: 'rzp_test_2Z0bGlFe6nKd9T',
+            password: 'Rycc45LaazsdmTyGVOdEjuDl'
+          }
+        });
+
+        const options = {
+          key: 'rzp_test_2Z0bGlFe6nKd9T',
+          amount: total,
+          currency: 'INR',
+          name: 'Rootsy Grocery Store',
+          description: 'Order Payment',
+          order_id: response.data.id,
+          handler: async function (response) {
+            const orderId = await saveOrder('Razorpay');
+            alert('Payment successful! Order placed.');
+            localStorage.removeItem('cart');
+            window.location.href = `orderconfirmation.html?orderId=${orderId}`;
+          },
+          prefill: {
+            name: document.getElementById('user-name').value,
+            email: document.getElementById('user-email').textContent
+          },
+          theme: {
+            color: '#5a9cf7'
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } catch (error) {
+        document.getElementById('error-message').textContent = 'Error initiating Razorpay payment. Please try again.';
+        console.error('Razorpay error:', error);
+      }
+    }
+
+    // Coinbase Payment
+    async function initiateCoinbasePayment() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      if (cart.length === 0) {
+        alert('Your cart is empty.');
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const orderId = `ORD${Date.now()}`;
+
+      try {
+        // Simulated Coinbase Commerce charge creation
+        const response = await axios.post('https://api.commerce.coinbase.com/charges', {
+          name: 'Rootsy Grocery Store Order',
+          description: 'Order Payment',
+          local_price: {
+            amount: total.toFixed(2),
+            currency: 'USD'
+          },
+          pricing_type: 'fixed_price',
+          metadata: {
+            email: document.getElementById('user-email').textContent,
+            orderId
+          },
+          redirect_url: `https://yourdomain.com/coinbasecallback.html?orderId=${orderId}`,
+          cancel_url: 'https://yourdomain.com/paymentfailure.html'
+        }, {
+          headers: {
+            'X-CC-Api-Key': 'YOUR_COINBASE_API_KEY',
+            'X-CC-Version': '2018-03-22'
+          }
+        });
+
+        const checkoutUrl = response.data.data.hosted_url;
+        localStorage.setItem('lastOrderId', orderId);
+        window.location.href = checkoutUrl;
+      } catch (error) {
+        document.getElementById('error-message').textContent = 'Error initiating Coinbase payment. Please try again.';
+        console.error('Coinbase error:', error);
+      }
+    }
+
+    // Save order to orders bin
+    async function saveOrder(paymentMethod) {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const email = document.getElementById('user-email').textContent;
+      const orderId = `ORD${Date.now()}`;
+      const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const orderDate = new Date().toISOString();
+      const deliveryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days from now
+
+      const order = {
+        orderId,
+        user: {
+          name: document.getElementById('user-name').value,
+          email,
+          phone: document.getElementById('user-phone').value || '',
+          shippingAddress: {
+            addressLine1: document.getElementById('user-street').value,
+            city: document.getElementById('user-city').value,
+            state: document.getElementById('user-state').value || '',
+            postalCode: document.getElementById('user-postal-code').value,
+            country: document.getElementById('user-country').value
+          }
+        },
+        products: cart.map(item => ({
+          productId: item.id || `P${Date.now()}`,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          totalPrice: item.price * item.quantity,
+          seller: { name: item.seller || 'Rootsy Store' }
+        })),
+        orderDate,
+        deliveryDate,
+        totalAmount,
+        orderStatus: 'Pending',
+        paymentMethod,
+        paymentStatus: paymentMethod === 'Razorpay' ? 'Paid' : 'Pending' // Coinbase payment status updated later
+      };
+
+      try {
+        const response = await fetch(ordersBinUrl, {
+          method: 'GET',
+          headers: {
+            'X-Master-Key': apiKey
+          }
+        });
+        const data = await response.json();
+        const orders = data.record?.orders || [];
+
+        orders.push(order);
+
+        await fetch(ordersBinUrl, {
+          method: 'PUT',
+          headers: {
+            'X-Master-Key': apiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ orders })
+        });
+
+        return orderId;
+      } catch (error) {
+        console.error('Error saving order:', error);
+        document.getElementById('error-message').textContent = 'Error saving order. Please try again.';
+        throw error;
+      }
+    }
+
+    // Logout User
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "sign_in.html";
+      }).catch((error) => {
+        console.error('Error signing out:', error);
+      });
+    }
+  </script>
+</body>
+</html>
