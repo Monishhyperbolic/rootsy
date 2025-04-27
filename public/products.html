@@ -5,15 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Add Product - Rootsy</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <!-- Axios for API calls -->
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body class="bg-gray-50 font-sans">
-
-<!-- Header -->
 <header class="flex items-center justify-between p-4 bg-white shadow">
   <div class="flex items-center gap-2">
     <img src="https://i.ibb.co/9kyCpTBY/Image-Preview-from-Remove-bg.png" style="width: 80px; height: auto;" alt="Logo" class="h-8">
@@ -26,11 +22,7 @@
     </div>
   </div>
 </header>
-
-<!-- Sidebar + Main -->
 <div class="flex">
-
-  <!-- Sidebar -->
   <aside class="w-64 bg-white p-6 min-h-screen shadow">
     <nav class="flex flex-col gap-6">
       <a href="dashboard.html" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
@@ -47,47 +39,32 @@
       </a>
     </nav>
   </aside>
-
-  <!-- Main Content -->
   <main class="flex-1 p-6">
     <div class="mb-6">
       <h2 class="text-2xl font-bold mb-2">Add New Product</h2>
       <p class="text-gray-500">Create a new product listing for your shop</p>
     </div>
-
-    <!-- Loading State -->
     <div id="page-loading" class="text-center py-8">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       <p class="mt-2 text-gray-600">Loading...</p>
     </div>
-
-    <!-- Upload Form -->
     <div id="product-form" class="hidden">
       <div class="bg-white rounded-xl shadow p-6">
         <form id="add-product-form" class="space-y-6">
-          <!-- Product Name -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="col-span-3">
               <label for="product-name" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-              <input type="text" id="product-name" name="product-name" required
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+              <input type="text" id="product-name" name="product-name" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
             </div>
           </div>
-
-          <!-- Price and Category -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Price -->
             <div>
               <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-              <input type="number" id="product-price" name="product-price" min="0.01" step="0.01" required
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+              <input type="number" id="product-price" name="product-price" min="0.01" step="0.01" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
             </div>
-            
-            <!-- Category Dropdown -->
             <div class="col-span-2">
               <label for="product-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select id="product-category" name="product-category" required
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+              <select id="product-category" name="product-category" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
                 <option value="" disabled selected>Select a category</option>
                 <option value="Vegetables">Vegetables</option>
                 <option value="Fruits">Fruits</option>
@@ -97,48 +74,32 @@
                 <option value="Organic Produce">Organic Produce</option>
                 <option value="Beverages">Beverages</option>
                 <option value="Bakery">Bakery</option>
-                <option value="Snacks">Snacks</option>
                 <option value="Household Items">Household Items</option>
+                <option value="Agricultural Products">Agricultural Products</option>
               </select>
             </div>
           </div>
-
-          <!-- Description -->
           <div>
             <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea id="product-description" name="product-description" rows="6" required
-              class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"></textarea>
+            <textarea id="product-description" name="product-description" rows="6" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"></textarea>
           </div>
-
-          <!-- Product Image -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Product Image URL -->
             <div>
               <label for="product-image-url" class="block text-sm font-medium text-gray-700 mb-1">Product Image URL</label>
-              <input type="url" id="product-image-url" name="product-image-url" required
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border"
-                placeholder="https://example.com/image.jpg">
+              <input type="url" id="product-image-url" name="product-image-url" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border" placeholder="https://example.com/image.jpg">
               <p class="mt-1 text-sm text-gray-500">Enter the URL of your product image</p>
-              
-              <!-- Image Preview -->
               <div id="image-preview-container" class="mt-4 hidden">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Image Preview</label>
                 <img id="image-preview" src="#" alt="Preview" class="max-w-full h-auto rounded-md border border-gray-200">
               </div>
             </div>
           </div>
-
-          <!-- Inventory -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Stock Quantity -->
             <div>
               <label for="stock-quantity" class="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-              <input type="number" id="stock-quantity" name="stock-quantity" min="1" value="1" required
-                class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
+              <input type="number" id="stock-quantity" name="stock-quantity" min="1" value="1" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2 border">
             </div>
           </div>
-
-          <!-- Status Alert -->
           <div id="status-alert" class="hidden rounded-md p-4 mb-4">
             <div class="flex">
               <div id="status-icon" class="flex-shrink-0"></div>
@@ -147,8 +108,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Submit Button -->
           <div class="flex justify-end">
             <button type="submit" id="submit-button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               <span id="button-text">Add Product</span>
@@ -165,12 +124,8 @@
     </div>
   </main>
 </div>
-
-<!-- FontAwesome -->
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
 <script>
-  // Firebase Configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAwrxSvkDSSk7AdhcTeo_joMkRbdGszmD8",
     authDomain: "rootsy-ec110.firebaseapp.com",
@@ -180,17 +135,11 @@
     appId: "1:120254624474:web:1ea4defdbf9d56c8ba2be3",
     measurementId: "G-0Y636N5BPV"
   };
-
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-
-  // JSONBin Configuration
   const sellersBinUrl = 'https://api.jsonbin.io/v3/b/680d42328960c979a58dd989';
-  const productsBinUrl = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4';
+  const productsBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4120';
   const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
-
-  // DOM Elements
   const pageLoading = document.getElementById('page-loading');
   const productForm = document.getElementById('product-form');
   const addProductForm = document.getElementById('add-product-form');
@@ -206,31 +155,22 @@
   const submitButton = document.getElementById('submit-button');
   const buttonText = document.getElementById('button-text');
   const buttonSpinner = document.getElementById('button-spinner');
-
-  // Global variables
   let currentSeller = null;
-
-  // Authentication check
   auth.onAuthStateChanged(async (user) => {
     if (user) {
       try {
-        // Fetch seller details from JSONBin.io
         const sellerResponse = await axios.get(sellersBinUrl, {
           headers: { 'X-Master-Key': apiKey }
         });
         const sellers = sellerResponse.data.record?.sellerdetails || [];
         const seller = sellers.find(s => s.email === user.email);
-
         if (seller) {
           currentSeller = seller;
           sellerNameElement.textContent = seller.name;
           userAvatarElement.src = user.photoURL || 'https://via.placeholder.com/40';
-          
-          // Show product form
           pageLoading.classList.add('hidden');
           productForm.classList.remove('hidden');
         } else {
-          // Redirect to login
           window.location.href = 'sign_in.html';
         }
       } catch (error) {
@@ -238,12 +178,9 @@
         showAlert('error', 'Error loading seller information. Please try again later.');
       }
     } else {
-      // Redirect to login
       window.location.href = 'sign_in.html';
     }
   });
-
-  // Handle image URL input and preview
   productImageUrlInput.addEventListener('input', (event) => {
     const imageUrl = event.target.value;
     if (imageUrl) {
@@ -258,53 +195,39 @@
       imagePreviewContainer.classList.add('hidden');
     }
   });
-
-  // Handle form submission
   addProductForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    
     if (!currentSeller) {
       showAlert('error', 'Please log in to add products.');
       return;
     }
-
-    // Get form values
     const productName = document.getElementById('product-name').value;
     const productPrice = parseFloat(document.getElementById('product-price').value);
     const productCategory = document.getElementById('product-category').value;
     const productDescription = document.getElementById('product-description').value;
     const imageUrl = document.getElementById('product-image-url').value;
     const stockQuantity = parseInt(document.getElementById('stock-quantity').value);
-    
-    // Validate inputs
     if (isNaN(productPrice) || productPrice <= 0) {
       showAlert('error', 'Please enter a valid price.');
       return;
     }
-    
     if (!imageUrl) {
       showAlert('error', 'Please enter a product image URL.');
       return;
     }
-    
     try {
       new URL(imageUrl);
     } catch (e) {
       showAlert('error', 'Please enter a valid image URL.');
       return;
     }
-
     if (stockQuantity < 1) {
       showAlert('error', 'Stock quantity must be at least 1.');
       return;
     }
-
     try {
-      // Set button to loading state
       setButtonLoading(true);
       showAlert('info', 'Saving product data...');
-      
-      // Create product object
       const productData = {
         name: productName,
         image_url: imageUrl,
@@ -314,52 +237,37 @@
         seller_name: currentSeller.name,
         stock: stockQuantity
       };
-      
-      // Fetch existing products
       let products = [];
       try {
         const productsResponse = await axios.get(productsBinUrl, {
           headers: { 'X-Master-Key': apiKey }
         });
-        products = productsResponse.data.record?.products || [];
+        products = Array.isArray(productsResponse.data.record) ? productsResponse.data.record : [];
       } catch (error) {
         if (error.response?.status !== 404) {
           throw error;
         }
-        // Bin doesn't exist yet, will create with first product
       }
-
-      // Add new product
       products.push(productData);
-
-      // Update JSONBin.io
-      await axios.put(productsBinUrl, { products }, {
+      await axios.put(productsBinUrl, products, {
         headers: {
           'X-Master-Key': apiKey,
           'Content-Type': 'application/json'
         }
       });
-      
-      // Show success message
       showAlert('success', 'Product added successfully!');
-      
-      // Redirect to products page after 2 seconds
       setTimeout(() => {
         window.location.href = 'products.html';
       }, 2000);
-      
     } catch (error) {
       console.error('Error adding product:', error);
       showAlert('error', `Error adding product: ${error.message}`);
       setButtonLoading(false);
     }
   });
-
-  // Show alert message
   function showAlert(type, message) {
     statusAlert.classList.remove('hidden', 'bg-green-50', 'bg-red-50', 'bg-blue-50');
     statusIcon.innerHTML = '';
-    
     if (type === 'success') {
       statusAlert.classList.add('bg-green-50');
       statusMessage.className = 'text-sm font-medium text-green-800';
@@ -385,17 +293,13 @@
         </svg>
       `;
     }
-    
     statusMessage.textContent = message;
-    
     if (type === 'success' || type === 'info') {
       setTimeout(() => {
         statusAlert.classList.add('hidden');
       }, 5000);
     }
   }
-
-  // Set button loading state
   function setButtonLoading(isLoading) {
     if (isLoading) {
       buttonText.textContent = 'Adding Product...';
@@ -407,8 +311,6 @@
       submitButton.disabled = false;
     }
   }
-
-  // Logout functionality
   async function logout() {
     try {
       await auth.signOut();
@@ -418,10 +320,7 @@
       showAlert('error', 'Error signing out. Please try again.');
     }
   }
-
-  // Add event listeners
   logoutButton.addEventListener('click', logout);
 </script>
-
 </body>
 </html>
