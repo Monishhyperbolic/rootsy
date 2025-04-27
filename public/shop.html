@@ -74,9 +74,9 @@
         <h3>Price Filter</h3>
         <div class="price-filter">
           <div class="price-range">
-            <span id="price-min">₹0</span> - <span id="price-max">₹30000</span>
+            <span id="price-min">₹0</span> - <span id="price-max">₹5000</span>
           </div>
-          <input type="range" min="0" max="30000" value="30000" id="price-slider">
+          <input type="range" min="0" max="5000" value="5000" id="price-slider">
           <button id="filter-price-btn">Apply Filter</button>
         </div>
       </div>
@@ -86,21 +86,14 @@
         <ul class="categories" id="category-filters">
           <li><input type="checkbox" value="Vegetables" checked> Vegetables</li>
           <li><input type="checkbox" value="Fruits" checked> Fruits</li>
-          <li><input type="checkbox" value="Handicrafts" checked> Handicrafts & Artisanal Goods</li>
-          <li><input type="checkbox" value="Textiles" checked> Textiles</li>
-          <li><input type="checkbox" value="Pottery" checked> Pottery & Ceramics</li>
-          <li><input type="checkbox" value="Woodcrafts" checked> Woodcrafts</li>
-          <li><input type="checkbox" value="Jewelry" checked> Jewelry</li>
-          <li><input type="checkbox" value="Art" checked> Paintings & Wall Art</li>
-          <li><input type="checkbox" value="Basketry" checked> Basketry & Weaving</li>
-          <li><input type="checkbox" value="Agricultural" checked> Agricultural Products</li>
-          <li><input type="checkbox" value="Fresh" checked> Fresh Fruits & Vegetables</li>
+          <li><input type="checkbox" value="Dairy" checked> Dairy Products</li>
           <li><input type="checkbox" value="Grains" checked> Grains & Pulses</li>
           <li><input type="checkbox" value="Spices" checked> Spices & Herbs</li>
           <li><input type="checkbox" value="Organic" checked> Organic Produce</li>
-          <li><input type="checkbox" value="Dairy" checked> Dairy & Animal Products</li>
-          <li><input type="checkbox" value="Honey" checked> Honey & Natural Sweeteners</li>
-          <li><input type="checkbox" value="Homemade" checked> Homemade & Processed Foods</li>
+          <li><input type="checkbox" value="Beverages" checked> Beverages</li>
+          <li><input type="checkbox" value="Bakery" checked> Bakery</li>
+          <li><input type="checkbox" value="Snacks" checked> Snacks</li>
+          <li><input type="checkbox" value="Household" checked> Household Items</li>
         </ul>
       </div>
 
@@ -140,6 +133,9 @@
     <div class="product-grid"></div>
     <div id="no-products-message" style="display: none; text-align: center; padding: 20px;">
       No products match your current filters. Please try different filter options.
+    </div>
+    <div id="loading-message" style="text-align: center; padding: 20px;">
+      Loading products...
     </div>
   </main>
 </div>
@@ -194,10 +190,10 @@
 
 <script>
 // Global variables
-let allProducts = [];
+let allProducts = []; // Will hold all products
 let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
 let filterSettings = {
-  priceMax: 30000,
+  priceMax: 5000,
   categories: [],
   inStock: true,
   outOfStock: false,
@@ -205,12 +201,93 @@ let filterSettings = {
   itemsPerPage: 20
 };
 
+// Sample products data structure based on the provided example
+const sampleProducts = [
+  {
+    "name": "Organic Tomatoes",
+    "image_url": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=800&q=80",
+    "price": "49.99",
+    "description": "Farm-fresh organic tomatoes grown without pesticides.",
+    "category_name": "Vegetables",
+    "seller_name": "Mumbai Organic Farms",
+    "stock": 139
+  },
+  {
+    "name": "Fresh Carrots",
+    "image_url": "https://images.unsplash.com/photo-1598170845058-c2edb8b0ec96?auto=format&fit=crop&w=800&q=80",
+    "price": "39.50",
+    "description": "Sweet and crunchy carrots freshly harvested.",
+    "category_name": "Vegetables",
+    "seller_name": "Green Farms",
+    "stock": 95
+  },
+  {
+    "name": "Alphonso Mangoes",
+    "image_url": "https://images.unsplash.com/photo-1591073113125-e46713c829ed?auto=format&fit=crop&w=800&q=80",
+    "price": "399.99",
+    "description": "The king of fruits - sweet and juicy Alphonso mangoes.",
+    "category_name": "Fruits",
+    "seller_name": "Ratnagiri Farms",
+    "stock": 45
+  },
+  {
+    "name": "Brown Rice (5kg)",
+    "image_url": "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&q=80",
+    "price": "249.99",
+    "description": "Nutrient-rich brown rice, perfect for healthy meals.",
+    "category_name": "Grains",
+    "seller_name": "Organic Staples",
+    "stock": 120
+  },
+  {
+    "name": "Natural Honey",
+    "image_url": "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=800&q=80",
+    "price": "299.99",
+    "description": "Pure, raw honey collected from wildflower meadows.",
+    "category_name": "Organic",
+    "seller_name": "Himalayan Apiaries",
+    "stock": 67
+  },
+  {
+    "name": "Fresh Milk (1L)",
+    "image_url": "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&q=80",
+    "price": "69.99",
+    "description": "Farm-fresh cow's milk, pasteurized and ready to drink.",
+    "category_name": "Dairy",
+    "seller_name": "Happy Cow Dairy",
+    "stock": 0
+  },
+  {
+    "name": "Organic Spinach",
+    "image_url": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=800&q=80",
+    "price": "59.99",
+    "description": "Fresh, organic spinach leaves perfect for salads and cooking.",
+    "category_name": "Vegetables",
+    "seller_name": "Green Valley Farms",
+    "stock": 89
+  },
+  {
+    "name": "Assorted Spices Pack",
+    "image_url": "https://images.unsplash.com/photo-1532336414038-cf19250c5757?auto=format&fit=crop&w=800&q=80",
+    "price": "499.99",
+    "description": "A collection of essential Indian spices in a gift box.",
+    "category_name": "Spices",
+    "seller_name": "Kerala Spice Market",
+    "stock": 35
+  }
+];
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
   initGeolocation();
   loadCartFromStorage();
-  fetchProducts();
   setupEventListeners();
+  
+  // Use this function for API fetch
+  fetchProducts();
+  
+  // Use this as a fallback or for testing
+  // loadSampleProducts();
 });
 
 // Setup all event listeners
@@ -267,13 +344,31 @@ function setupEventListeners() {
       const filteredProducts = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchTerm) ||
         product.description.toLowerCase().includes(searchTerm) ||
-        product.seller_name.toLowerCase().includes(searchTerm)
+        product.seller_name.toLowerCase().includes(searchTerm) ||
+        product.category_name.toLowerCase().includes(searchTerm)
       );
       renderProducts(filteredProducts);
     } else {
       applyFilters();
     }
   });
+}
+
+// Fallback function to load sample products (for testing or if API fails)
+function loadSampleProducts() {
+  document.getElementById('loading-message').style.display = 'none';
+  
+  // Add unique IDs to sample products
+  allProducts = sampleProducts.map((product, index) => ({
+    ...product,
+    id: 'product-' + (index + 1)
+  }));
+  
+  // Initialize category filters
+  updateCategoryFilters();
+  
+  // Apply filters and render products
+  applyFilters();
 }
 
 // Initialize category filters based on checkboxes
@@ -286,9 +381,9 @@ function updateCategoryFilters() {
 function resetFilters() {
   // Reset price slider
   const priceSlider = document.getElementById('price-slider');
-  priceSlider.value = 30000;
-  document.getElementById('price-max').textContent = '₹30000';
-  filterSettings.priceMax = 30000;
+  priceSlider.value = 5000;
+  document.getElementById('price-max').textContent = '₹5000';
+  filterSettings.priceMax = 5000;
   
   // Reset category checkboxes
   const categoryCheckboxes = document.querySelectorAll('#category-filters input[type="checkbox"]');
@@ -323,26 +418,23 @@ function applyFilters() {
   
   // Apply price filter
   filteredProducts = filteredProducts.filter(product => 
-    product.price <= filterSettings.priceMax
+    parseFloat(product.price) <= filterSettings.priceMax
   );
   
   // Apply category filters if any are selected
   if (filterSettings.categories.length > 0) {
-    // This is a simplified example - in a real implementation, each product would have a categories array
-    // For now, we'll just filter based on name and description containing category keywords
-    filteredProducts = filteredProducts.filter(product => {
-      const productText = (product.name + ' ' + product.description).toLowerCase();
-      return filterSettings.categories.some(category => 
-        productText.includes(category.toLowerCase())
-      );
-    });
+    filteredProducts = filteredProducts.filter(product => 
+      filterSettings.categories.some(category => 
+        product.category_name && product.category_name.includes(category)
+      )
+    );
   }
   
   // Apply stock status filters
   if (filterSettings.inStock && !filterSettings.outOfStock) {
-    filteredProducts = filteredProducts.filter(product => product.stock > 0);
+    filteredProducts = filteredProducts.filter(product => parseInt(product.stock) > 0);
   } else if (!filterSettings.inStock && filterSettings.outOfStock) {
-    filteredProducts = filteredProducts.filter(product => product.stock <= 0);
+    filteredProducts = filteredProducts.filter(product => parseInt(product.stock) <= 0);
   } else if (!filterSettings.inStock && !filterSettings.outOfStock) {
     // If neither is checked, show no products
     filteredProducts = [];
@@ -352,10 +444,10 @@ function applyFilters() {
   // Apply sorting
   switch (filterSettings.sort) {
     case 'price-low':
-      filteredProducts.sort((a, b) => a.price - b.price);
+      filteredProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
       break;
     case 'price-high':
-      filteredProducts.sort((a, b) => b.price - a.price);
+      filteredProducts.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
       break;
     case 'name-asc':
       filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
@@ -372,36 +464,71 @@ function applyFilters() {
   renderProducts(filteredProducts);
 }
 
-// Fetch products from API
+// Fetch products from API with error handling and retries
 async function fetchProducts() {
   const url = 'https://api.jsonbin.io/v3/b/680d27ca8960c979a58dc8a4';
   const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
-
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'X-Master-Key': apiKey
+  const maxRetries = 3;
+  let retries = 0;
+  
+  const fetchWithRetry = async () => {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'X-Master-Key': apiKey
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      
+      const data = await response.json();
+      
+      // Check if the API returned the expected data structure
+      if (data && Array.isArray(data)) {
+        allProducts = data.map((product, index) => ({
+          ...product,
+          id: 'product-' + (index + 1)
+        }));
+      } else if (data && data.record && Array.isArray(data.record)) {
+        // Handle the case where data is wrapped in a 'record' property
+        allProducts = data.record.map((product, index) => ({
+          ...product,
+          id: 'product-' + (index + 1)
+        }));
+      } else {
+        // If we can't find an array structure, use our sample data
+        console.warn('API response did not match expected format. Using sample data.');
+        loadSampleProducts();
+        return;
+      }
+      
+      document.getElementById('loading-message').style.display = 'none';
+      
+      // Initialize category filters
+      updateCategoryFilters();
+      
+      // Apply filters and render products
+      applyFilters();
+      
+    } catch (error) {
+      console.error(`Attempt ${retries + 1} failed to fetch products:`, error);
+      
+      if (retries < maxRetries) {
+        retries++;
+        console.log(`Retrying... (${retries}/${maxRetries})`);
+        setTimeout(fetchWithRetry, 1000 * retries); // Exponential backoff
+      } else {
+        console.error('Failed to fetch products after multiple attempts. Loading sample data instead.');
+        document.getElementById('loading-message').style.display = 'none';
+        loadSampleProducts();
+      }
     }
-    
-    const data = await response.json();
-    allProducts = data.record || [];
-    
-    // Initialize category filters
-    updateCategoryFilters();
-    
-    // Apply filters and render products
-    applyFilters();
-    
-  } catch (error) {
-    console.error('Failed to fetch products:', error);
-    document.querySelector('.product-grid').innerHTML = 
-      '<div class="error-message">Failed to load products. Please try again later.</div>';
-  }
+  };
+  
+  // Start the fetch process
+  fetchWithRetry();
 }
 
 // Render products to the product grid
@@ -425,21 +552,21 @@ function renderProducts(products) {
     const productCard = document.createElement('div');
     productCard.className = 'product-card';
     productCard.innerHTML = `
-      ${product.stock > 0 ? 
+      ${parseInt(product.stock) > 0 ? 
         `<div class="discount-badge">New</div>` : 
         `<div class="discount-badge" style="background-color:red;">Out of stock</div>`}
       <img src="${product.image_url}" alt="${product.name}" class="product-image">
       <h4>${product.name}</h4>
       <div class="price">
-        <span class="new-price">₹${product.price.toFixed(2)}</span>
+        <span class="new-price">₹${parseFloat(product.price).toFixed(2)}</span>
       </div>
       <p class="description">${product.description}</p>
       <p class="seller">Sold by: ${product.seller_name}</p>
       <div class="product-actions">
-        <span class="stock">${product.stock > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
+        <span class="stock">${parseInt(product.stock) > 0 ? 'IN STOCK' : 'OUT OF STOCK'}</span>
         <button class="add-to-cart ${isInCart ? 'in-cart' : ''}" 
                 data-id="${product.id}" 
-                ${product.stock > 0 ? '' : 'disabled'}>
+                ${parseInt(product.stock) > 0 ? '' : 'disabled'}>
           <i class="fas ${isInCart ? 'fa-check' : 'fa-shopping-cart'}"></i>
           ${isInCart ? 'Added' : 'Add to Cart'}
         </button>
@@ -478,7 +605,7 @@ function addToCart(product) {
     cartItems.push({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: parseFloat(product.price),
       image: product.image_url,
       quantity: 1,
       seller: product.seller_name
@@ -637,45 +764,8 @@ function initGeolocation() {
   );
 }
 
-// Countdown timer for the sale banner
-function updateCountdown() {
-  const countdownElement = document.querySelector('.countdown');
-  if (!countdownElement) return;
-  
-  // Set end date to 47 days from now (as shown in the initial HTML)
-  const now = new Date();
-  const endDate = new Date(now);
-  endDate.setDate(endDate.getDate() + 47);
-  endDate.setHours(now.getHours() + 6);
-  endDate.setMinutes(now.getMinutes() + 57);
-  endDate.setSeconds(now.getSeconds() + 8);
-  
-  const updateTimer = () => {
-    const currentTime = new Date();
-    const diff = endDate - currentTime;
-    
-    if (diff <= 0) {
-      countdownElement.textContent = 'Sale has ended!';
-      return;
-    }
-    
-    // Calculate remaining time
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    // Update the countdown text
-    countdownElement.textContent = `${days} days ${hours.toString().padStart(2, '0')} hours ${minutes.toString().padStart(2, '0')} minutes ${seconds.toString().padStart(2, '0')} sec.`;
-  };
-  
-  // Update immediately and then every second
-  updateTimer();
-  setInterval(updateTimer, 1000);
-}
 
-// Start the countdown timer
-updateCountdown();
+
 </script>
 </body>
 </html>
