@@ -461,14 +461,14 @@
                 <tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${product.name}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.quantity}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">$${product.totalPrice.toFixed(2)}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">₹${product.totalPrice.toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
             <tfoot class="bg-gray-50">
               <tr>
                 <td class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" colspan="2">Total</td>
-                <td class="px-6 py-3 text-right text-xs font-medium text-gray-900 tracking-wider">$${amount.toFixed(2)}</td>
+                <td class="px-6 py-3 text-right text-xs font-medium text-gray-900 tracking-wider">₹${amount.toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>
