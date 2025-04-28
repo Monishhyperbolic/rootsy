@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Checkout | Grocery Store</title>
   <link rel="stylesheet" href="shop.css">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <!-- Stellar SDK and QR Code library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/10.0.0/stellar-sdk.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
@@ -20,70 +18,99 @@
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
+      font-family: Arial, sans-serif;
     }
     .checkout-container h2 {
       width: 100%;
       text-align: center;
       margin-bottom: 20px;
+      font-size: 28px;
+      color: #333;
     }
     .shipping-section, .cart-section, .payment-section {
       flex: 1;
       min-width: 300px;
-      border: 1px solid #ddd;
+      border: 1px solid #e0e0e0;
       border-radius: 8px;
       padding: 20px;
       background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .shipping-section label, .payment-section label {
+    .shipping-section h3, .cart-section h3, .payment-section h3 {
+      margin-bottom: 15px;
+      font-size: 20px;
+      color: #444;
+    }
+    .shipping-section label {
       display: block;
       margin: 10px 0 5px;
+      font-weight: 500;
     }
     .shipping-section input {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       margin-bottom: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-size: 14px;
+    }
+    .shipping-section input:invalid {
+      border-color: #e74c3c;
     }
     .cart-section ul {
       list-style: none;
       padding: 0;
+      max-height: 300px;
+      overflow-y: auto;
     }
     .cart-section li {
-      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
     }
-    .cart-total {
-      margin-top: 20px;
+    .cart-section li img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      margin-right: 15px;
+      border-radius: 4px;
+    }
+    .cart-total, .discount-info {
+      margin-top: 15px;
+      font-size: 16px;
       font-weight: bold;
+      color: #333;
     }
     .coupon-section {
-      margin-top: 10px;
+      margin-top: 15px;
       display: flex;
       gap: 10px;
     }
     .coupon-section input {
-      padding: 8px;
+      padding: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
       flex: 1;
+      font-size: 14px;
     }
     .coupon-section button {
-      padding: 8px 16px;
+      padding: 10px 20px;
       background-color: #28a745;
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
+    }
+    .coupon-section button:hover {
+      background-color: #218838;
     }
     .coupon-notification {
       margin-top: 10px;
       color: #28a745;
       font-size: 14px;
-    }
-    .discount-info {
-      margin-top: 10px;
-      color: #e67e22;
-      font-weight: bold;
     }
     .payment-options {
       margin-top: 20px;
@@ -91,33 +118,57 @@
     .payment-options button {
       display: block;
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
       border: none;
       border-radius: 4px;
       cursor: pointer;
       font-size: 16px;
+      color: white;
+      transition: background-color 0.2s;
     }
     .razorpay-btn {
       background-color: #5a9cf7;
-      color: white;
+    }
+    .razorpay-btn:hover {
+      background-color: #4a8ce7;
     }
     .coinbase-btn {
       background-color: #0667d0;
-      color: white;
+    }
+    .coinbase-btn:hover {
+      background-color: #0557b0;
     }
     .stellar-btn {
       background-color: #00b7eb;
-      color: white;
+    }
+    .stellar-btn:hover {
+      background-color: #00a7db;
+    }
+    .cancel-stellar-btn {
+      background-color: #e74c3c;
+      margin-top: 10px;
+    }
+    .cancel-stellar-btn:hover {
+      background-color: #c0392b;
     }
     .error-message {
-      color: red;
+      color: #e74c3c;
       text-align: center;
       margin: 20px 0;
+      font-size: 14px;
+    }
+    .success-message {
+      color: #28a745;
+      text-align: center;
+      margin: 20px 0;
+      font-size: 14px;
     }
     .loading {
       text-align: center;
       margin: 20px 0;
+      font-size: 16px;
+      color: #555;
       display: none;
     }
     #stellar-payment-details {
@@ -126,66 +177,66 @@
       display: none;
     }
     #stellar-qr-code {
-      margin: 10px auto;
+      margin: 15px auto;
     }
     #stellar-status {
       margin-top: 10px;
-      font-weight: bold;
+      font-size: 14px;
+      color: #333;
     }
   </style>
 </head>
 <body>
-
   <!-- Header -->
   <header>
     <div class="top-banner">
-        <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
-        <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
+      <p>FREE delivery & 40% Discount for next 3 orders! Place your 1st order in.</p>
+      <p>Until the end of the sale: <span class="countdown">47 days 06 hours 57 minutes 08 sec.</span></p>
     </div>
     <div class="top-header">
-        <div class="left-section">
-          <a href="about.html">About Us</a>
-          <a href="profile.html">My account</a>
-          <a href="wishlist.html">Wishlist</a>
-          <span class="divider"></span>
-          <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
-        </div>
-        <div class="right-section">
-          <div id="google_translate_element"></div>
-          <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
-          <a href="#">Order Tracking</a>
+      <div class="left-section">
+        <a href="about.html">About Us</a>
+        <a href="profile.html">My account</a>
+        <a href="wishlist.html">Wishlist</a>
+        <span class="divider"></span>
+        <span class="delivery-text">We deliver to you every day from <strong class="highlight">7:00 to 23:00</strong></span>
+      </div>
+      <div class="right-section">
+        <div id="google_translate_element"></div>
+        <a href="seller_login.html"><button class="seller-btn">Seller Login</button></a>
+        <a href="#">Order Tracking</a>
+      </div>
+    </div>
+    <nav class="navbar">
+      <div class="navbar-left">
+        <a href="#" class="logo">
+          <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
+          <span id="brand"></span>
+        </a>
+        <div class="delivery">
+          <span>Deliver to</span>
+          <span>all</span>
         </div>
       </div>
-    <nav class="navbar">
-        <div class="navbar-left">
-            <a href="#" class="logo">
-                <img src="https://i.postimg.cc/44q6yn32/RRootsy.png" alt="Grobox Logo">
-                <span id="brand"></span>
-            </a>
-            <div class="delivery">
-                <span>Deliver to</span>
-                <span>all</span>
-            </div>
-        </div>
-        <div class="navbar-center">
-            <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
-            <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-        </div>
-        <div class="navbar-right">
-            <a href="orderhistory.html" class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
-            <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
-            <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
-        </div>
+      <div class="navbar-center">
+        <input type="text" placeholder="Search for products, categories or brands..." id="searchbox">
+        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+      </div>
+      <div class="navbar-right">
+        <a href="orderhistory.html" class="account"><i class="fa-solid fa-user"></i><span><b> ORDER HISTORY</b></span></a>
+        <a href="wishlist.html" class="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+        <a href="cart.html" class="cart"><i class="fa-solid fa-cart-shopping"></i><span>Cart</span></a>
+      </div>
     </nav>
     <div class="navbar-links">
-        <a href="index.html">Home</a>
-        <a href="shop.html">Shop</a>
-        <a href="fruitsvegetable.html">Fruits & Vegetables</a>
-        <a href="beverages.html">Beverages</a>
-        <a href="blog.html">Blog</a>
-        <a href="contact.html">Contact</a>
-        <a href="trendingproduct.html">Trending Products</a>
-        <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="fruitsvegetable.html">Fruits & Vegetables</a>
+      <a href="beverages.html">Beverages</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+      <a href="trendingproduct.html">Trending Products</a>
+      <a href="almostfinished.html" class="sale">Almost Finished SALE</a>
     </div>
   </header>
 
@@ -196,22 +247,22 @@
     <!-- Shipping Information -->
     <div class="shipping-section">
       <h3>Shipping Information</h3>
-      <p><strong>Email: </strong><span id="user-email"></span></p>
+      <p><strong>Email:</strong> <span id="user-email"></span></p>
       <label><input type="checkbox" id="use-alternate-address"> Use Alternate Address</label>
       <div id="shipping-form">
-        <label for="user-name">Name:</label>
+        <label for="user-name">Name *</label>
         <input type="text" id="user-name" placeholder="Enter your name" required />
-        <label for="user-phone">Phone:</label>
+        <label for="user-phone">Phone</label>
         <input type="text" id="user-phone" placeholder="Enter phone number" />
-        <label for="user-street">Street:</label>
+        <label for="user-street">Street *</label>
         <input type="text" id="user-street" placeholder="Enter street address" required />
-        <label for="user-city">City:</label>
+        <label for="user-city">City *</label>
         <input type="text" id="user-city" placeholder="Enter city" required />
-        <label for="user-state">State:</label>
+        <label for="user-state">State</label>
         <input type="text" id="user-state" placeholder="Enter state" />
-        <label for="user-postal-code">Postal Code:</label>
+        <label for="user-postal-code">Postal Code *</label>
         <input type="text" id="user-postal-code" placeholder="Enter postal code" required />
-        <label for="user-country">Country:</label>
+        <label for="user-country">Country *</label>
         <input type="text" id="user-country" placeholder="Enter country" required />
       </div>
     </div>
@@ -223,7 +274,7 @@
       <div class="cart-total" id="cart-subtotal">Subtotal: ₹0.00</div>
       <div class="discount-info" id="cart-discount" style="display: none;">Discount: ₹0.00</div>
       <div class="cart-total" id="cart-total">Total: ₹0.00</div>
-      <p class="coupon-notification">Use coupon hackhazards10 to get 10% off</p>
+      <p class="coupon-notification">Use coupon <strong>hackhazards10</strong> for 10% off</p>
       <div class="coupon-section">
         <input type="text" id="coupon-code" placeholder="Enter coupon code">
         <button onclick="applyCoupon()">Apply Coupon</button>
@@ -242,61 +293,64 @@
         <p>Send the exact amount to the Stellar wallet below:</p>
         <p><strong>Amount:</strong> <span id="stellar-amount"></span> XLM</p>
         <p><strong>Wallet Address:</strong> <span id="stellar-wallet"></span></p>
+        <p><strong>Memo:</strong> <span id="stellar-memo"></span></p>
         <div id="stellar-qr-code"></div>
         <p id="stellar-status">Waiting for payment...</p>
+        <button class="cancel-stellar-btn" onclick="cancelStellarPayment()">Cancel Stellar Payment</button>
       </div>
     </div>
 
-    <div id="loading" class="loading">Loading...</div>
+    <div id="loading" class="loading">Processing...</div>
     <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
   </div>
 
   <!-- Footer -->
   <footer>
     <div class="newsletter">
-        <p>Join our newsletter for exclusive discounts!</p>
-        <form>
-            <input type="email" placeholder="Enter your email">
-            <button type="submit">Subscribe</button>
-        </form>
+      <p>Join our newsletter for exclusive discounts!</p>
+      <form>
+        <input type="email" placeholder="Enter your email">
+        <button type="submit">Subscribe</button>
+      </form>
     </div>
     <div class="footer-content">
-        <div class="column">
-            <h3>Need Help?</h3>
-            <p>Contact our support team: support@rootsy.com</p>
-            <p>Call us: 0800 19019028</p>
+      <div class="column">
+        <h3>Need Help?</h3>
+        <p>Contact our support team: support@rootsy.com</p>
+        <p>Call us: 0800 19019028</p>
+      </div>
+      <div class="column">
+        <h3>Company Info</h3>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div class="column">
+        <h3>Follow Us</h3>
+        <div class="social-media">
+          <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
+          <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
+          <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
         </div>
-        <div class="column">
-            <h3>Company Info</h3>
-            <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Careers</a></li>
-            </ul>
+      </div>
+      <div class="column">
+        <h3>Payment Methods</h3>
+        <div class="payment-methods">
+          <i class="fa-brands fa-cc-visa"></i>
+          <i class="fa-brands fa-cc-mastercard"></i>
+          <i class="fa-brands fa-cc-paypal"></i>
         </div>
-        <div class="column">
-            <h3>Follow Us</h3>
-            <div class="social-media">
-                <a href="#"><img src="https://i.postimg.cc/7YSDZPGb/facebook.webp" alt="Facebook"></a>
-                <a href="#"><img src="https://i.postimg.cc/ZnZHPLcG/twitter.webp" alt="Twitter"></a>
-                <a href="#"><img src="https://i.postimg.cc/x10rjvVF/instagram.webp" alt="Instagram"></a>
-            </div>
-        </div>
-        <div class="column">
-            <h3>Payment Methods</h3>
-            <div class="payment-methods">
-                <i class="fa-brands fa-cc-visa"></i>
-                <i class="fa-brands fa-cc-mastercard"></i>
-                <i class="fa-brands fa-cc-paypal"></i>
-            </div>
-        </div>
+      </div>
     </div>
     <div class="copyright">
-        Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
+      Copyright 2025 ©️ Rootsy All rights reserved. Powered by Bewbandits.
     </div>
     <div class="links">
-        <a href="#">Terms and Conditions</a> |
-        <a href="#">Privacy Policy</a> |
-        <a href="#">Order Tracking</a>
+      <a href="#">Terms and Conditions</a> |
+      <a href="#">Privacy Policy</a> |
+      <a href="#">Order Tracking</a>
     </div>
   </footer>
 
@@ -322,12 +376,13 @@
     const ordersBinUrl = 'https://api.jsonbin.io/v3/b/680e21138960c979a58e4116';
     const apiKey = '$2a$10$veX89z01FGuT26kSCZne1O/FvlWbUvh3AQWqoS/A6Vi3Nz.KE1aV.';
 
-    // Stellar Configuration (Testnet for testing, replace with mainnet for production)
+    // Stellar Configuration (Testnet)
     const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org');
     const merchantWallet = 'GBSPECXL4NDWYGXLFRSPOB767IRT63NQ4OBSF74O2RFX44LG7QH74XZD';
+    let stellarPollingInterval = null;
 
-    // Check auth state and fetch user data
-    firebase.auth().onAuthStateChanged((user) => {
+    // Check auth state
+    auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "sign_in.html";
       } else {
@@ -337,20 +392,17 @@
       }
     });
 
-    // Fetch user data from users bin
+    // Fetch user data
     async function fetchUserData(email) {
       try {
         document.getElementById('loading').style.display = 'block';
         const response = await fetch(usersBinUrl, {
           method: 'GET',
-          headers: {
-            'X-Master-Key': apiKey
-          }
+          headers: { 'X-Master-Key': apiKey }
         });
         const data = await response.json();
         const users = data.record?.users || [];
-
-        const user = users.find(user => user.email === email);
+        const user = users.find(u => u.email === email);
 
         if (user) {
           document.getElementById('user-name').value = user.name || '';
@@ -361,15 +413,15 @@
           document.getElementById('user-postal-code').value = user.address?.postal_code || '';
           document.getElementById('user-country').value = user.address?.country || '';
         }
-        document.getElementById('loading').style.display = 'none';
       } catch (error) {
+        showError('Error fetching user data. Please try again.');
+        console.error('Fetch user error:', error);
+      } finally {
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('error-message').textContent = 'Error fetching user data. Please try again.';
-        console.error('Error fetching user data:', error);
       }
     }
 
-    // Load cart from localStorage and apply coupon if previously set
+    // Load cart
     function loadCart() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const cartItems = document.getElementById('cart-items');
@@ -378,52 +430,34 @@
       const cartTotal = document.getElementById('cart-total');
       let subtotal = 0;
 
-      if (cart.length === 0) {
-        cartItems.innerHTML = '<li>Your cart is empty.</li>';
-        cartSubtotal.textContent = 'Subtotal: ₹0.00';
-        cartDiscount.style.display = 'none';
-        cartTotal.textContent = 'Total: ₹0.00';
-        return;
-      }
-
-      cartItems.innerHTML = '';
+      cartItems.innerHTML = cart.length === 0 ? '<li>Your cart is empty.</li>' : '';
       cart.forEach(item => {
         const li = document.createElement('li');
-        li.textContent = `${item.name} - Quantity: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`;
+        const img = item.image_url ? `<img src="${item.image_url}" alt="${item.name}">` : '';
+        li.innerHTML = `${img} ${item.name} - Qty: ${item.quantity} - ₹${(item.price * item.quantity).toFixed(2)}`;
         cartItems.appendChild(li);
         subtotal += item.price * item.quantity;
       });
 
       const appliedCoupon = localStorage.getItem('appliedCoupon');
-      let discount = 0;
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
-        discount = subtotal * 0.10; // 10% discount
-        cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
-        cartDiscount.style.display = 'block';
-      } else {
-        cartDiscount.style.display = 'none';
-      }
-
+      let discount = appliedCoupon?.toLowerCase() === 'hackhazards10' ? subtotal * 0.10 : 0;
       cartSubtotal.textContent = `Subtotal: ₹${subtotal.toFixed(2)}`;
+      cartDiscount.textContent = `Discount: -₹${discount.toFixed(2)}`;
+      cartDiscount.style.display = discount > 0 ? 'block' : 'none';
       cartTotal.textContent = `Total: ₹${(subtotal - discount).toFixed(2)}`;
     }
 
-    // Apply coupon code
+    // Apply coupon
     function applyCoupon() {
-      const couponInput = document.getElementById('coupon-code');
-      const couponCode = couponInput.value.trim();
-      const errorMessage = document.getElementById('error-message');
-
-      if (couponCode.toLowerCase() === 'hackhazards10') {
+      const couponCode = document.getElementById('coupon-code').value.trim().toLowerCase();
+      if (couponCode === 'hackhazards10') {
         localStorage.setItem('appliedCoupon', couponCode);
-        errorMessage.textContent = 'Coupon applied successfully!';
-        errorMessage.style.color = 'green';
-        loadCart(); // Reload cart to reflect discount
+        showSuccess('Coupon applied successfully!');
+        loadCart();
       } else {
         localStorage.removeItem('appliedCoupon');
-        errorMessage.textContent = 'Invalid coupon code.';
-        errorMessage.style.color = 'red';
-        loadCart(); // Reload to remove any previous discount
+        showError('Invalid coupon code.');
+        loadCart();
       }
     }
 
@@ -437,51 +471,51 @@
       }
     });
 
+    // Validate shipping fields
+    function validateShippingFields() {
+      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
+      for (const field of requiredFields) {
+        const input = document.getElementById(field);
+        if (!input.value.trim()) {
+          showError(`Please fill in the ${field.replace('user-', '')} field.`);
+          input.focus();
+          return false;
+        }
+      }
+      return true;
+    }
+
     // Razorpay Payment
     async function initiateRazorpayPayment() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       if (cart.length === 0) {
-        alert('Your cart is empty.');
+        showError('Your cart is empty.');
         return;
       }
+      if (!validateShippingFields()) return;
 
-      // Validate required fields
-      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
-      for (const field of requiredFields) {
-        const value = document.getElementById(field).value.trim();
-        if (!value) {
-          document.getElementById('error-message').textContent = `Please fill in the ${field.replace('user-', '')} field.`;
-          return;
-        }
-      }
-
-      let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      let discount = 0;
-      const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
-        discount = subtotal * 0.10;
-      }
-      const total = (subtotal - discount) * 100; // Convert to paise
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const discount = localStorage.getItem('appliedCoupon')?.toLowerCase() === 'hackhazards10' ? subtotal * 0.10 : 0;
+      const total = (subtotal - discount) * 100; // In paise
       const orderId = `ORD${Date.now()}`;
 
       try {
         document.getElementById('loading').style.display = 'block';
-
         const options = {
           key: 'rzp_test_2Z0bGlFe6nKd9T',
           amount: total,
           currency: 'INR',
           name: 'Rootsy Grocery Store',
           description: `Order #${orderId}`,
-          handler: async function (response) {
+          handler: async response => {
             try {
-              const orderId = await saveOrder('Razorpay', response.razorpay_payment_id, appliedCoupon, discount);
+              const savedOrderId = await saveOrder('Razorpay', response.razorpay_payment_id, localStorage.getItem('appliedCoupon'), discount);
               alert('Payment successful! Order placed.');
               localStorage.removeItem('cart');
               localStorage.removeItem('appliedCoupon');
-              window.location.href = `orderconfirmation.html?orderId=${orderId}`;
+              window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
             } catch (error) {
-              document.getElementById('error-message').textContent = 'Error saving order after payment. Please contact support.';
+              showError('Error saving order. Please contact support.');
               console.error('Order save error:', error);
             }
           },
@@ -489,19 +523,17 @@
             name: document.getElementById('user-name').value,
             email: document.getElementById('user-email').textContent
           },
-          theme: {
-            color: '#5a9cf7'
-          }
+          theme: { color: '#5a9cf7' }
         };
 
         const rzp = new Razorpay(options);
-        rzp.on('payment.failed', function (response) {
-          document.getElementById('error-message').textContent = `Payment failed: ${response.error.description}`;
+        rzp.on('payment.failed', response => {
+          showError(`Payment failed: ${response.error.description}`);
           console.error('Payment failed:', response.error);
         });
         rzp.open();
       } catch (error) {
-        document.getElementById('error-message').textContent = 'Error initiating Razorpay payment. Please try again.';
+        showError('Error initiating Razorpay payment.');
         console.error('Razorpay error:', error);
       } finally {
         document.getElementById('loading').style.display = 'none';
@@ -512,38 +544,21 @@
     async function initiateCoinbasePayment() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       if (cart.length === 0) {
-        alert('Your cart is empty.');
+        showError('Your cart is empty.');
         return;
       }
+      if (!validateShippingFields()) return;
 
-      // Validate required fields
-      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
-      for (const field of requiredFields) {
-        const value = document.getElementById(field).value.trim();
-        if (!value) {
-          document.getElementById('error-message').textContent = `Please fill in the ${field.replace('user-', '')} field.`;
-          return;
-        }
-      }
-
-      let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      let discount = 0;
-      const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
-        discount = subtotal * 0.10;
-      }
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const discount = localStorage.getItem('appliedCoupon')?.toLowerCase() === 'hackhazards10' ? subtotal * 0.10 : 0;
       const total = subtotal - discount;
       const orderId = `ORD${Date.now()}`;
       const email = document.getElementById('user-email').textContent;
 
-      // Store user data in localStorage for coinbasecallback.html
-      localStorage.setItem('userName', document.getElementById('user-name').value);
-      localStorage.setItem('userPhone', document.getElementById('user-phone').value || '');
-      localStorage.setItem('userStreet', document.getElementById('user-street').value);
-      localStorage.setItem('userCity', document.getElementById('user-city').value);
-      localStorage.setItem('userState', document.getElementById('user-state').value || '');
-      localStorage.setItem('userPostalCode', document.getElementById('user-postal-code').value);
-      localStorage.setItem('userCountry', document.getElementById('user-country').value);
+      // Store user data for callback
+      ['user-name', 'user-phone', 'user-street', 'user-city', 'user-state', 'user-postal-code', 'user-country'].forEach(id => {
+        localStorage.setItem(id, document.getElementById(id).value || '');
+      });
       localStorage.setItem('userEmail', email);
       localStorage.setItem('lastOrderId', orderId);
 
@@ -552,17 +567,9 @@
         const response = await axios.post('https://api.commerce.coinbase.com/charges', {
           name: 'Rootsy Grocery Store Order',
           description: `Order #${orderId}`,
-          local_price: {
-            amount: total.toFixed(2),
-            currency: 'INR'
-          },
+          local_price: { amount: total.toFixed(2), currency: 'INR' },
           pricing_type: 'fixed_price',
-          metadata: {
-            email,
-            orderId,
-            coupon: appliedCoupon || null,
-            discount: discount.toFixed(2)
-          },
+          metadata: { email, orderId, coupon: localStorage.getItem('appliedCoupon') || null, discount: discount.toFixed(2) },
           redirect_url: `https://yourdomain.com/coinbasecallback.html?orderId=${orderId}`,
           cancel_url: 'https://yourdomain.com/paymentfailure.html'
         }, {
@@ -572,10 +579,9 @@
           }
         });
 
-        const checkoutUrl = response.data.data.hosted_url;
-        window.location.href = checkoutUrl;
+        window.location.href = response.data.data.hosted_url;
       } catch (error) {
-        document.getElementById('error-message').textContent = 'Error initiating Coinbase payment. Please try again.';
+        showError('Error initiating Coinbase payment.');
         console.error('Coinbase error:', error.response?.data || error.message);
       } finally {
         document.getElementById('loading').style.display = 'none';
@@ -586,108 +592,116 @@
     async function initiateStellarPayment() {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       if (cart.length === 0) {
-        alert('Your cart is empty.');
+        showError('Your cart is empty.');
         return;
       }
+      if (!validateShippingFields()) return;
 
-      // Validate required fields
-      const requiredFields = ['user-name', 'user-street', 'user-city', 'user-postal-code', 'user-country'];
-      for (const field of requiredFields) {
-        const value = document.getElementById(field).value.trim();
-        if (!value) {
-          document.getElementById('error-message').textContent = `Please fill in the ${field.replace('user-', '')} field.`;
-          return;
-        }
-      }
-
-      let subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      let discount = 0;
-      const appliedCoupon = localStorage.getItem('appliedCoupon');
-      if (appliedCoupon && appliedCoupon.toLowerCase() === 'hackhazards10') {
-        discount = subtotal * 0.10;
-      }
+      const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const discount = localStorage.getItem('appliedCoupon')?.toLowerCase() === 'hackhazards10' ? subtotal * 0.10 : 0;
       const totalINR = subtotal - discount;
       const orderId = `ORD${Date.now()}`;
       const email = document.getElementById('user-email').textContent;
 
       try {
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('error-message').textContent = '';
+        showError('');
+        showSuccess('');
 
-        // Fetch INR to XLM conversion rate
+        // Fetch INR to XLM rate
         const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=stellar&vs_currencies=inr');
         const xlmPerInr = response.data.stellar.inr;
-        const totalXLM = (totalINR / xlmPerInr).toFixed(6); // XLM with 6 decimal places
+        const totalXLM = (totalINR / xlmPerInr).toFixed(6);
 
         // Show Stellar payment details
         const paymentDetails = document.getElementById('stellar-payment-details');
         document.getElementById('stellar-amount').textContent = totalXLM;
         document.getElementById('stellar-wallet').textContent = merchantWallet;
+        document.getElementById('stellar-memo').textContent = orderId;
+        document.getElementById('stellar-status').textContent = 'Waiting for payment...';
         paymentDetails.style.display = 'block';
 
         // Generate QR code
         const qrCodeDiv = document.getElementById('stellar-qr-code');
-        qrCodeDiv.innerHTML = ''; // Clear previous QR code
+        qrCodeDiv.innerHTML = '';
         new QRCode(qrCodeDiv, {
           text: `stellar:${merchantWallet}?amount=${totalXLM}&memo=${orderId}`,
           width: 200,
           height: 200
         });
 
-        // Monitor payment
-        let paymentConfirmed = false;
+        // Start polling
         const startTime = Date.now();
-        const timeout = 10 * 60 * 1000; // 10 minutes timeout
+        const timeout = 10 * 60 * 1000; // 10 minutes
+        let elapsed = 0;
 
-        while (!paymentConfirmed && Date.now() - startTime < timeout) {
+        stellarPollingInterval = setInterval(async () => {
+          elapsed = Date.now() - startTime;
+          if (elapsed >= timeout) {
+            clearInterval(stellarPollingInterval);
+            document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
+            showError('Payment timed out. Please try again.');
+            return;
+          }
+
           try {
             const payments = await stellarServer
               .payments()
               .forAccount(merchantWallet)
-              .limit(10)
+              .limit(50)
               .order('desc')
               .call();
 
-            const payment = payments.records.find(p => 
-              p.type === 'payment' &&
-              p.asset_type === 'native' && // XLM
-              parseFloat(p.amount) >= parseFloat(totalXLM) * 0.95 && // Allow 5% margin for volatility
-              p.to === merchantWallet &&
-              (!p.transaction_attr?.memo || p.transaction_attr?.memo === orderId)
-            );
+            const payment = payments.records.find(p => {
+              const isPayment = p.type === 'payment';
+              const isXLM = p.asset_type === 'native';
+              const isCorrectRecipient = p.to === merchantWallet;
+              const isCorrectMemo = p.transaction_attr?.memo === orderId;
+              const amountReceived = parseFloat(p.amount);
+              const expectedAmount = parseFloat(totalXLM);
+              const isAmountClose = Math.abs(amountReceived - expectedAmount) <= expectedAmount * 0.01;
+              const isRecent = new Date(p.created_at).getTime() > startTime - 60 * 1000;
+
+              return isPayment && isXLM && isCorrectRecipient && isCorrectMemo && isAmountClose && isRecent;
+            });
+
+            document.getElementById('stellar-status').textContent = `Checking payment... (${Math.floor(elapsed / 1000)}s remaining)`;
 
             if (payment) {
-              paymentConfirmed = true;
+              clearInterval(stellarPollingInterval);
               const transactionId = payment.transaction_hash;
-              const orderId = await saveOrder('Stellar', transactionId, appliedCoupon, discount);
-              alert('Payment successful! Order placed.');
+              const savedOrderId = await saveOrder('Stellar', transactionId, localStorage.getItem('appliedCoupon'), discount);
+              document.getElementById('stellar-status').textContent = 'Payment confirmed!';
+              showSuccess('Payment successful! Order placed.');
               localStorage.removeItem('cart');
               localStorage.removeItem('appliedCoupon');
-              window.location.href = `orderconfirmation.html?orderId=${orderId}`;
-              return;
+              setTimeout(() => {
+                window.location.href = `orderconfirmation.html?orderId=${savedOrderId}`;
+              }, 2000);
             }
-
-            // Wait 5 seconds before next check
-            await new Promise(resolve => setTimeout(resolve, 5000));
           } catch (error) {
-            console.error('Error checking payment:', error);
-            // Continue polling on error
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            console.error('Payment polling error:', error);
+            document.getElementById('stellar-status').textContent = 'Error checking payment. Retrying...';
           }
-        }
-
-        // Timeout reached
-        document.getElementById('stellar-status').textContent = 'Payment not received within 10 minutes.';
-        document.getElementById('error-message').textContent = 'Payment timed out. Please try again.';
+        }, 5000);
       } catch (error) {
-        document.getElementById('error-message').textContent = 'Error initiating Stellar payment. Please try again.';
+        showError('Error initiating Stellar payment.');
         console.error('Stellar error:', error);
+        clearInterval(stellarPollingInterval);
       } finally {
         document.getElementById('loading').style.display = 'none';
       }
     }
 
-    // Save order to orders bin
+    // Cancel Stellar Payment
+    function cancelStellarPayment() {
+      clearInterval(stellarPollingInterval);
+      document.getElementById('stellar-payment-details').style.display = 'none';
+      document.getElementById('stellar-status').textContent = 'Waiting for payment...';
+      showSuccess('Stellar payment cancelled. Choose another payment method.');
+    }
+
+    // Save order
     async function saveOrder(paymentMethod, paymentId = null, couponCode = null, discount = 0) {
       const cart = JSON.parse(localStorage.getItem('cart')) || [];
       const email = document.getElementById('user-email').textContent;
@@ -728,19 +742,16 @@
         paymentMethod,
         paymentStatus: paymentMethod === 'Razorpay' || paymentMethod === 'Stellar' ? 'Paid' : 'Pending',
         paymentId,
-        couponCode: couponCode || null
+        couponCode
       };
 
       try {
         const response = await fetch(ordersBinUrl, {
           method: 'GET',
-          headers: {
-            'X-Master-Key': apiKey
-          }
+          headers: { 'X-Master-Key': apiKey }
         });
         const data = await response.json();
         const orders = data.record?.orders || [];
-
         orders.push(order);
 
         await fetch(ordersBinUrl, {
@@ -754,18 +765,32 @@
 
         return orderId;
       } catch (error) {
-        console.error('Error saving order:', error);
-        document.getElementById('error-message').textContent = 'Error saving order. Please try again.';
+        showError('Error saving order. Please try again.');
+        console.error('Order save error:', error);
         throw error;
       }
     }
 
-    // Logout User
+    // Utility functions
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      errorDiv.style.display = message ? 'block' : 'none';
+    }
+
+    function showSuccess(message) {
+      const successDiv = document.getElementById('success-message');
+      successDiv.textContent = message;
+      successDiv.style.display = message ? 'block' : 'none';
+    }
+
+    // Logout
     function logout() {
       firebase.auth().signOut().then(() => {
         window.location.href = "sign_in.html";
-      }).catch((error) => {
-        console.error('Error signing out:', error);
+      }).catch(error => {
+        showError('Error signing out.');
+        console.error('Sign out error:', error);
       });
     }
   </script>
